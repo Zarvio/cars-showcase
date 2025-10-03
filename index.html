@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Cars Showcase</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="index.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+ 
+</head>
+<body>
+
+  <!-- Loader -->
+  <div class="loader-overlay" id="loader">
+    <div class="spinner"></div>
+  </div>
+
+  <header>
+    <h1> <i class="fa-solid fa-car-rear"></i> Game Cars Showcase</h1>
+    <input type="text" id="searchBox" placeholder="Search cars...">
+  </header>
+
+  <div class="gallery" id="gallery">
+    <!-- Car Cards -->
+    <div class="car-card" data-id="car1" data-name="Mahindra Thar">
+      <img src="Mahindra-Th1730824186-BUSSID-WWW-MODS4U-IN-main.jpeg" onclick="openCar('car1')" alt="Car 1">
+      <h3>Mahindra Thar Roxx</h3>
+      <div class="rating">
+        <span data-value="1">★</span>
+        <span data-value="2">★</span>
+        <span data-value="3">★</span>
+        <span data-value="4">★</span>
+        <span data-value="5">★</span>
+      </div>
+      <p class="rating-text">Ratings: 0 (0 votes)</p>
+    </div>
+
+    <div class="car-card" data-id="car2" data-name="Scorpio S11">
+      <img src="Mahindra-Sc1721546596-BUSSID-WWW-MODS4U-IN-5.jpeg" onclick="openCar('car2')" alt="Car 2">
+      <h3>Scorpio VLX</h3>
+      <div class="rating">
+        <span data-value="1">★</span>
+        <span data-value="2">★</span>
+        <span data-value="3">★</span>
+        <span data-value="4">★</span>
+        <span data-value="5">★</span>
+      </div>
+      <p class="rating-text">Ratings: 0 (0 votes)</p>
+    </div>
+
+    <div class="car-card" data-id="car3" data-name="Racer X">
+      <img src="Maruti-Omni1745939677-BUSSID-WWW-MODS4U-IN-3.jpeg" onclick="openCar('car3')" alt="Car 3">
+      <h3>Maruti Omni 4x4</h3>
+      <div class="rating">
+        <span data-value="1">★</span>
+        <span data-value="2">★</span>
+        <span data-value="3">★</span>
+        <span data-value="4">★</span>
+        <span data-value="5">★</span>
+      </div>
+      <p class="rating-text">Ratings: 0 (0 votes)</p>
+    </div>
+    <div class="car-card coming-soon" data-id="coming-soon" data-name="Coming Soon">
+  <div class="coming-soon-image">
+    <span>Coming Soon</span>
+  </div>
+  <h3>New Car</h3>
+  <p class="rating-text">Stay tuned for updates!</p>
+</div>
+
+  </div>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
+      authDomain: "inspire4ever-c60ad.firebaseapp.com",
+      databaseURL: "https://inspire4ever-c60ad-default-rtdb.firebaseio.com",
+      projectId: "inspire4ever-c60ad",
+      storageBucket: "inspire4ever-c60ad.appspot.com",
+      messagingSenderId: "125014633127",
+      appId: "1:125014633127:web:d29e4c37628ab637f40982"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const loader = document.getElementById('loader');
+    const cards = document.querySelectorAll(".car-card");
+
+    function openCar(carId){ window.location.href = `car.html?id=${carId}`; }
+
+    let ratingsLoaded = 0;
+    cards.forEach(card => {
+      const carId = card.dataset.id;
+      const stars = card.querySelectorAll(".rating span");
+      const ratingText = card.querySelector(".rating-text");
+      const carRef = db.ref('cars/' + carId);
+
+      carRef.on('value', snapshot => {
+        const data = snapshot.val();
+        const avg = data && data.ratingCount > 0 ? (data.totalRating / data.ratingCount).toFixed(1) : 0;
+        highlightStars(stars, Math.round(avg));
+        ratingText.innerText = `Ratings: ${avg} (${data ? data.ratingCount : 0} votes)`;
+
+        ratingsLoaded++;
+        if(ratingsLoaded >= cards.length){ loader.style.display = 'none'; }
+      });
+
+      stars.forEach(star => {
+        star.addEventListener("mouseover", () => highlightStars(stars, star.dataset.value));
+        star.addEventListener("mouseout", () => {
+          carRef.once('value').then(snapshot => {
+            const data = snapshot.val();
+            const avg = data && data.ratingCount > 0 ? Math.round(data.totalRating / data.ratingCount) : 0;
+            highlightStars(stars, avg);
+          });
+        });
+        star.addEventListener("click", () => {
+          const ratingValue = parseInt(star.dataset.value);
+          carRef.transaction(currentData => {
+            if(currentData){
+              currentData.totalRating += ratingValue;
+              currentData.ratingCount += 1;
+            } else { currentData = { totalRating: ratingValue, ratingCount: 1 }; }
+            return currentData;
+          });
+        });
+      });
+    });
+
+    function highlightStars(stars, rating){
+      stars.forEach(star => {
+        if(star.dataset.value <= rating) star.classList.add("selected");
+        else star.classList.remove("selected");
+      });
+    }
+
+    const searchBox = document.getElementById("searchBox");
+    searchBox.addEventListener("keyup", () => {
+      const query = searchBox.value.toLowerCase();
+      cards.forEach(card => {
+        const name = card.dataset.name.toLowerCase();
+        card.style.display = name.includes(query) ? "block" : "none";
+      });
+    });
+  </script>
+</body>
+</html>

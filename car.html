@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Detail</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 🌈 Gradient Header -->
+  <header>
+    <h1> <i class="fa-solid fa-car-rear"></i>  Car Details - Bus Simulator Indonesia</h1>
+  </header>
+
+  <!-- 📖 Main Container -->
+  <div class="container fade-in">
+    <img id="carImage" src="" alt="Car Image">
+    <h2 id="carName"></h2>
+    <p id="carDesc"></p>
+    <a id="downloadBtn" class="download-btn" href="#" target="_blank">⬇ Download Now</a>
+    <!-- ⬅ Back Button (moved below download) -->
+    <a href="index.html" class="back-btn">⬅ Back to Home</a>
+  </div>
+
+  <script>
+    const cars = {
+      car1: {
+        name: "Mahindra Thar Roxx",
+        image: "Mahindra-Th1730824186-BUSSID-WWW-MODS4U-IN-main.jpeg",
+        desc: `Mahindra Thar Roxx is a high-performance racing car designed for thrill seekers in Bus Simulator Indonesia. It comes with advanced turbo boost, sleek aerodynamic design, and excellent handling to navigate city streets, highways, and hilly terrains smoothly.
+
+Game Details:
+- Experience realistic bus driving physics and traffic conditions.
+- Explore Indonesia's famous landmarks, roads, and cityscapes.
+- Customize your vehicles including buses and cars for better performance.
+- Follow traffic rules and regulations to avoid penalties and earn rewards.
+- Participate in multiplayer mode to race and complete missions with other players.
+- Enjoy dynamic weather, day/night cycles, and realistic environment interactions.
+
+Game Policy:
+- Use vehicles responsibly in multiplayer mode.
+- Cheating, exploiting bugs, or sharing illegal game files is strictly prohibited.
+- Respect other players and maintain fair play.
+- Follow the game's code of conduct to ensure a fun and safe gaming environment for everyone.
+- Enjoy the immersive world of Bus Simulator Indonesia and improve your driving skills!`,
+        download: "https://drive.google.com/file/d/1aSkb_U4O4CiXe5RG9pyxQlEun2BAQgpD/view?usp=drive_link"
+      },
+      car2: {
+        name: "Scorpio VLX",
+        image: "Mahindra-Sc1721546596-BUSSID-WWW-MODS4U-IN-5.jpeg",
+        desc: `Scorpio VLX is a powerful SUV designed for off-road thrill seekers in Bus Simulator Indonesia. With turbo power and strong grip, it’s built to dominate city streets and rugged terrains alike.
+
+Game Details:
+- Realistic physics & weather.
+- Multiplayer missions & challenges.
+- Customization options for cars & buses.
+- Rewards for following traffic rules.
+
+Game Policy:
+- Fair play is mandatory.
+- No cheating or illegal file sharing.
+- Respect other drivers in multiplayer mode.`,
+        download: "https://drive.google.com/file/d/1Gawx1dqOq-X5rek7shjMuZY5whLK0ZDz/view?usp=sharing"
+      },
+      car3: {
+        name: "Maruti Omni 4x4",
+        image: "Maruti-Omni1745939677-BUSSID-WWW-MODS4U-IN-3.jpeg",
+        desc: `Maruti Omni 4x4 is made for speed lovers in Bus Simulator Indonesia. It’s lightweight, aerodynamic, and ideal for high-speed city challenges.
+
+Game Details:
+- High-speed missions.
+- Multiplayer racing.
+- Stunning environments with realistic traffic.
+
+Game Policy:
+- Respect other drivers.
+- No cheating.
+- Enjoy competitive and fair gameplay.`,
+        download: "https://drive.google.com/file/d/1vpBjA-04pBeABGtNbuPqqhrFooHL8Yt2/view?usp=sharing"
+      }
+    };
+
+    // 🚘 Car Details Loader
+    const params = new URLSearchParams(window.location.search);
+    const carId = params.get('id');
+    const car = cars[carId];
+
+    if(car){
+      document.getElementById('carImage').src = car.image;
+      document.getElementById('carName').innerText = car.name;
+      document.getElementById('carDesc').innerText = car.desc;
+      document.getElementById('downloadBtn').href = car.download;
+    } else {
+      document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Car not found!</h2>";
+    }
+  </script>
+</body>
+</html>

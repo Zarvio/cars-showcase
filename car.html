@@ -4,21 +4,118 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Car Detail</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="style.css">
+  
+  <style>
+    :root{
+      --bg:#071022;
+      --card:#0b1220cc;
+      --glass: rgba(255,255,255,0.04);
+      --neon:#00ffd5;
+      --accent:#6c5ce7;
+      --muted:#a6b0c3;
+      --glass-border: rgba(255,255,255,0.06);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Poppins',sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(108,92,231,0.06), transparent 8%),
+                  linear-gradient(180deg, #071022 0%, #020611 100%);
+      color:#e6eef8;
+      line-height:1.5;
+    }
+    a{color:inherit;text-decoration:none}
+
+    header{
+      text-align:center;
+      padding:24px;
+      background: linear-gradient(135deg, rgba(12,18,30,0.6), rgba(12,12,20,0.4));
+      border-bottom:1px solid var(--glass-border);
+      color:var(--neon);
+      font-weight:700;
+      font-size:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      box-shadow:0 10px 40px rgba(3,6,20,0.6);
+    }
+
+    .container{
+  max-width:350px;       /* pehle 800px tha, thoda kam kar diya */
+  margin: 24px auto;     /* auto margin se horizontally center */
+  padding:20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  border:1px solid var(--glass-border);
+  border-radius:14px;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.5);
+  display:flex;
+  flex-direction:column;
+  align-items:center;    /* center alignment */
+  gap:16px;
+}
+
+
+    img{
+      max-width:100%;
+      border-radius:12px;
+      box-shadow:0 8px 20px rgba(0,255,213,0.1);
+    }
+
+    h2{color:var(--neon);margin:0;text-align:center;}
+    p{color:var(--muted); white-space: pre-line;}
+
+    .download-btn, .back-btn{
+      display:inline-block;
+      padding:10px 16px;
+      border-radius:10px;
+      font-weight:700;
+      background: linear-gradient(90deg, var(--accent), var(--neon));
+      color:#071022;
+      box-shadow:0 8px 30px rgba(108,92,231,0.14);
+      transition: all 0.18s;
+      text-align:center;
+      margin:6px 0;
+    }
+
+    .download-btn:hover, .back-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 12px 40px rgba(0,255,213,0.2);
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0; transform:translateY(20px);}
+      to{opacity:1; transform:translateY(0);}
+    }
+
+    /* Responsive */
+    @media(max-width:640px){
+      .container{padding:16px;}
+      header{font-size:18px; padding:16px;}
+    }
+  </style>
 </head>
 <body>
   <!-- 🌈 Gradient Header -->
   <header>
-    <h1> <i class="fa-solid fa-car-rear"></i>  Car Details - Bus Simulator Indonesia</h1>
+    <i class="fa-solid fa-car-rear"></i> Car Details - Bus Simulator Indonesia
   </header>
 
   <!-- 📖 Main Container -->
-  <div class="container fade-in">
+  <div class="container">
     <img id="carImage" src="" alt="Car Image">
     <h2 id="carName"></h2>
     <p id="carDesc"></p>
     <a id="downloadBtn" class="download-btn" href="#" target="_blank">⬇ Download Now</a>
-    <!-- ⬅ Back Button (moved below download) -->
     <a href="index.html" class="back-btn">⬅ Back to Home</a>
   </div>
 
@@ -27,60 +124,23 @@
       car1: {
         name: "Mahindra Thar Roxx",
         image: "Mahindra-Th1730824186-BUSSID-WWW-MODS4U-IN-main.jpeg",
-        desc: `Mahindra Thar Roxx is a high-performance racing car designed for thrill seekers in Bus Simulator Indonesia. It comes with advanced turbo boost, sleek aerodynamic design, and excellent handling to navigate city streets, highways, and hilly terrains smoothly.
-
-Game Details:
-- Experience realistic bus driving physics and traffic conditions.
-- Explore Indonesia's famous landmarks, roads, and cityscapes.
-- Customize your vehicles including buses and cars for better performance.
-- Follow traffic rules and regulations to avoid penalties and earn rewards.
-- Participate in multiplayer mode to race and complete missions with other players.
-- Enjoy dynamic weather, day/night cycles, and realistic environment interactions.
-
-Game Policy:
-- Use vehicles responsibly in multiplayer mode.
-- Cheating, exploiting bugs, or sharing illegal game files is strictly prohibited.
-- Respect other players and maintain fair play.
-- Follow the game's code of conduct to ensure a fun and safe gaming environment for everyone.
-- Enjoy the immersive world of Bus Simulator Indonesia and improve your driving skills!`,
+        desc: `Mahindra Thar Roxx is a high-performance racing car designed for thrill seekers in Bus Simulator Indonesia. It comes with advanced turbo boost, sleek aerodynamic design, and excellent handling to navigate city streets, highways, and hilly terrains smoothly.\n\nGame Details:\n- Experience realistic bus driving physics and traffic conditions.\n- Explore Indonesia's famous landmarks, roads, and cityscapes.\n- Customize your vehicles including buses and cars for better performance.\n- Follow traffic rules and regulations to avoid penalties and earn rewards.\n- Participate in multiplayer mode to race and complete missions with other players.\n- Enjoy dynamic weather, day/night cycles, and realistic environment interactions.\n\nGame Policy:\n- Use vehicles responsibly in multiplayer mode.\n- Cheating, exploiting bugs, or sharing illegal game files is strictly prohibited.\n- Respect other players and maintain fair play.\n- Follow the game's code of conduct to ensure a fun and safe gaming environment for everyone.\n- Enjoy the immersive world of Bus Simulator Indonesia and improve your driving skills!`,
         download: "https://drive.google.com/file/d/1aSkb_U4O4CiXe5RG9pyxQlEun2BAQgpD/view?usp=drive_link"
       },
       car2: {
         name: "Scorpio VLX",
         image: "Mahindra-Sc1721546596-BUSSID-WWW-MODS4U-IN-5.jpeg",
-        desc: `Scorpio VLX is a powerful SUV designed for off-road thrill seekers in Bus Simulator Indonesia. With turbo power and strong grip, it’s built to dominate city streets and rugged terrains alike.
-
-Game Details:
-- Realistic physics & weather.
-- Multiplayer missions & challenges.
-- Customization options for cars & buses.
-- Rewards for following traffic rules.
-
-Game Policy:
-- Fair play is mandatory.
-- No cheating or illegal file sharing.
-- Respect other drivers in multiplayer mode.`,
+        desc: `Scorpio VLX is a powerful SUV designed for off-road thrill seekers in Bus Simulator Indonesia. With turbo power and strong grip, it’s built to dominate city streets and rugged terrains alike.\n\nGame Details:\n- Realistic physics & weather.\n- Multiplayer missions & challenges.\n- Customization options for cars & buses.\n- Rewards for following traffic rules.\n\nGame Policy:\n- Fair play is mandatory.\n- No cheating or illegal file sharing.\n- Respect other drivers in multiplayer mode.`,
         download: "https://drive.google.com/file/d/1Gawx1dqOq-X5rek7shjMuZY5whLK0ZDz/view?usp=sharing"
       },
       car3: {
         name: "Maruti Omni 4x4",
         image: "Maruti-Omni1745939677-BUSSID-WWW-MODS4U-IN-3.jpeg",
-        desc: `Maruti Omni 4x4 is made for speed lovers in Bus Simulator Indonesia. It’s lightweight, aerodynamic, and ideal for high-speed city challenges.
-
-Game Details:
-- High-speed missions.
-- Multiplayer racing.
-- Stunning environments with realistic traffic.
-
-Game Policy:
-- Respect other drivers.
-- No cheating.
-- Enjoy competitive and fair gameplay.`,
+        desc: `Maruti Omni 4x4 is made for speed lovers in Bus Simulator Indonesia. It’s lightweight, aerodynamic, and ideal for high-speed city challenges.\n\nGame Details:\n- High-speed missions.\n- Multiplayer racing.\n- Stunning environments with realistic traffic.\n\nGame Policy:\n- Respect other drivers.\n- No cheating.\n- Enjoy competitive and fair gameplay.`,
         download: "https://drive.google.com/file/d/1vpBjA-04pBeABGtNbuPqqhrFooHL8Yt2/view?usp=sharing"
       }
     };
 
-    // 🚘 Car Details Loader
     const params = new URLSearchParams(window.location.search);
     const carId = params.get('id');
     const car = cars[carId];
@@ -91,7 +151,7 @@ Game Policy:
       document.getElementById('carDesc').innerText = car.desc;
       document.getElementById('downloadBtn').href = car.download;
     } else {
-      document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Car not found!</h2>";
+      document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:var(--neon);'>Car not found!</h2>";
     }
   </script>
 </body>

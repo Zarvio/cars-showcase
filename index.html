@@ -1,89 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Game Cars Showcase</title>
+<link rel="stylesheet" href="index.css">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="index.css">
-
-  <!-- Firebase -->
+  <!-- Firebase (compat for your current code) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
- 
+  <meta name="theme-color" content="#0f1724" />
+
+  
 </head>
 <body>
-
   <!-- Loader -->
-  <div class="loader-overlay" id="loader">
-    <div class="spinner"></div>
-  </div>
-
-  <header>
-    <h1> <i class="fa-solid fa-car-rear"></i> Game Cars Showcase</h1>
-    <input type="text" id="searchBox" placeholder="Search cars...">
-  </header>
-
-  <div class="gallery" id="gallery">
-    <!-- Car Cards -->
-    <div class="car-card" data-id="car1" data-name="Mahindra Thar">
-      <img src="Mahindra-Th1730824186-BUSSID-WWW-MODS4U-IN-main.jpeg" onclick="openCar('car1')" alt="Car 1">
-      <h3>Mahindra Thar Roxx</h3>
-      <div class="rating">
-        <span data-value="1">★</span>
-        <span data-value="2">★</span>
-        <span data-value="3">★</span>
-        <span data-value="4">★</span>
-        <span data-value="5">★</span>
-      </div>
-      <p class="rating-text">Ratings: 0 (0 votes)</p>
-    </div>
-
-    <div class="car-card" data-id="car2" data-name="Scorpio S11">
-      <img src="Mahindra-Sc1721546596-BUSSID-WWW-MODS4U-IN-5.jpeg" onclick="openCar('car2')" alt="Car 2">
-      <h3>Scorpio VLX</h3>
-      <div class="rating">
-        <span data-value="1">★</span>
-        <span data-value="2">★</span>
-        <span data-value="3">★</span>
-        <span data-value="4">★</span>
-        <span data-value="5">★</span>
-      </div>
-      <p class="rating-text">Ratings: 0 (0 votes)</p>
-    </div>
-
-    <div class="car-card" data-id="car3" data-name="Racer X">
-      <img src="Maruti-Omni1745939677-BUSSID-WWW-MODS4U-IN-3.jpeg" onclick="openCar('car3')" alt="Car 3">
-      <h3>Maruti Omni 4x4</h3>
-      <div class="rating">
-        <span data-value="1">★</span>
-        <span data-value="2">★</span>
-        <span data-value="3">★</span>
-        <span data-value="4">★</span>
-        <span data-value="5">★</span>
-      </div>
-      <p class="rating-text">Ratings: 0 (0 votes)</p>
-    </div>
-    <div class="car-card coming-soon" data-id="coming-soon" data-name="Coming Soon">
-  <div class="coming-soon-image">
-    <span>Coming Soon</span>
-  </div>
-  <h3>New Car</h3>
-  <p class="rating-text">Stay tuned for updates!</p>
+<div id="loader">
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
 </div>
 
+  <!-- NAVBAR -->
+  <div class="navbar container" role="navigation" aria-label="Main Navigation">
+    <div class="brand"><i class="fa-solid fa-car-side"></i><div style="font-size:14px">Game Cars</div></div>
+
+    <div class="nav-links" aria-hidden="false">
+      <a href="#home">Home</a>
+      <a href="#gallery">Cars</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 
+  <!-- Mobile menu -->
+  <div id="mobileMenu" class="mobile-menu container" aria-hidden="true">
+    <a href="#home" onclick="toggleMobileMenu()">Home</a>
+    <a href="#gallery" onclick="toggleMobileMenu()">Cars</a>
+    <a href="#about" onclick="toggleMobileMenu()">About</a>
+    <a href="#contact" onclick="toggleMobileMenu()">Contact</a>
+  </div>
+
+  <main class="container">
+    <!-- HERO -->
+    <header class="hero" id="home">
+      <div class="hero-left">
+        <h1><i class="fa-solid fa-car-rear"></i> Game Cars Showcase</h1>
+        <p>Premium mods & showcase — rate your favorites. Mobile friendly, fast and neon-styled.</p>
+        <div class="small">Tip: Tap stars to rate. Use search to quickly find a car.</div>
+      </div>
+
+      <div class="search-wrap">
+        <input id="searchBox" type="search" placeholder="Search cars by name...">
+      </div>
+    </header>
+
+
+
+
+
+<!-- <div style="margin:15px 0; text-align:center;">
+  <button id="resetRatingsBtn" class="btn" style="background-color:#ff4d4f; color:white; padding:8px 16px; border:none; border-radius:6px; cursor:pointer;">
+    Reset All Ratings
+  </button>
+</div> -->
+
+
+
+
+
+    <!-- GALLERY -->
+    <section id="gallery" class="gallery" aria-label="Cars Gallery">
+      <!-- Car Cards (kept your images names; ensure these images exist in same folder) -->
+      <div class="car-card" data-id="car1" data-name="Mahindra Thar">
+        <img src="Mahindra-Th1730824186-BUSSID-WWW-MODS4U-IN-main.jpeg" onclick="openCar('car1')" alt="Mahindra Thar Roxx">
+        <h3>Mahindra Thar Roxx</h3>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+      </div>
+
+      <div class="car-card" data-id="car2" data-name="Scorpio VLX"> 
+        <img src="Mahindra-Sc1721546596-BUSSID-WWW-MODS4U-IN-5.jpeg" onclick="openCar('car2')" alt="Scorpio VLX"> 
+        <h3>Scorpio VLX</h3>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings:  (0 votes)</p>
+      </div>
+
+      <div class="car-card" data-id="car3" data-name="Maruti Omni 4x4">
+        <img src="Maruti-Omni1745939677-BUSSID-WWW-MODS4U-IN-3.jpeg" onclick="openCar('car3')" alt="Maruti Omni 4x4">
+        <h3>Maruti Omni 4x4</h3>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+      </div>
+
+      <div class="car-card" data-id="car4" data-name="Mahindra Thar">
+        <img src="https://play-lh.googleusercontent.com/SxDCg3l9TyD-T4HxkQM5I0sjl_E1BE3pLK6YPJ4G3QXj4PJKs6WyclE0Tc4sMCsBQA=w526-h296-rw" onclick="openCar('car4')" alt="Maruti Omni 4x4">
+        <h3>Mahindra Thar</h3>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+      </div>
+
+    <div class="car-card" data-id="car5" data-name="Maruti Suzuki"> 
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwDkCf27Hn9rACCJXeB5c6dVEHnZsqZVws5g&s" onclick="openCar('car5')" alt="Maruti Suzuki"> 
+        <h3>Maruti Suzuki</h3>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+      </div>
+
+ <div class="car-card" data-id="car6" data-name="Jeep">
+        <img src="https://play-lh.googleusercontent.com/_-A1nMTjXmKpw1xJvc3M0t9lFNYlQV9s70smC56VFlXuRlfcIb42dddNA1K4TPt9OqE" onclick="openCar('car6')" alt="Maruti Omni 4x4">
+        <h3>Jeep</h3>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+      </div>
+      
+      <div class="car-card" data-id="car7" data-name="Lamborghini Red">
+        <img src="https://www.mods4u.in/bsi/img/2020/LAMBORGHINI1595652819-BUSSID-WWW-MODS4U-IN-1.jpeg" onclick="openCar('car7')" alt="Maruti Omni 4x4">
+        <h3>Lamborghini Red</h3>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+      </div>
+
+      <div class="car-card" data-id="car8" data-name="Bajaj Auto">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvuL7RSdUE0lommPteFAJx5185q5-SYKFkzp37ELGGCTno2fdVOGSW-_JNsOQtxDkafi8&usqp=CAU" onclick="openCar('car8')" alt="Maruti Omni 4x4">
+        <h3>Bajaj Auto</h3>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+      </div>
+
+
+      <div class="car-card coming-soon" data-id="coming-soon" data-name="Coming Soon">
+        <div class="coming-soon-image"><span>Coming Soon</span></div>
+        <h3>New Car</h3>
+        <p class="rating-text">Stay tuned for updates!</p>
+      </div>
+    </section>
+
+    <div class="accent-line" aria-hidden="true"></div>
+
+    <!-- ABOUT + CONTACT SIDE -->
+    <div class="sections">
+      <section id="about" class="about-section" aria-labelledby="about-title">
+        <h2 id="about-title">About This Project</h2>
+        <p>This is a community-driven Game Cars Showcase — built for gamers to preview, rate and soon download car mods. Ratings are stored in Firebase realtime database, and UI is optimized for both desktop and mobile devices.</p>
+
+        <h3 style="color:var(--neon); margin-top:14px">Features</h3>
+        <ul style="color:var(--muted); padding-left:18px; margin-top:8px; line-height:1.6">
+          <li>Real-time ratings (Firebase)</li>
+          <li>Responsive glass + neon UI</li>
+          <li>Search cars instantly</li>
+          <li>Individual car pages (car.html?id=...)</li>
+        </ul>
+
+        <h3 style="color:var(--neon); margin-top:12px">How to extend</h3>
+        <p style="color:var(--muted)">You can add comments, downloads, user accounts, and favourites (localStorage) easily — tell me which one and I'll add it for you.</p>
+      </section>
+
+      <aside class="side-panel" id="contact" aria-labelledby="contact-title">
+        <h3 id="contact-title" class="contact-title">Contact / Support</h3>
+        <p class="contact-note">Send us your email — we'll reply. (Email only)</p>
+
+        <div class="email-row" role="form" aria-label="Contact form (email only)">
+          <input id="userEmail" type="email" placeholder="Your email (example@mail.com)" aria-label="Your email">
+          <button id="sendMailBtn" class="btn">Send</button>
+        </div>
+
+        <div class="small">Or email directly: <b>support@gamecars.com</b></div>
+      </aside>
+    </div>
+
+    <footer>
+      <div>© <span id="year"></span> Game Cars Showcase — Built with ❤️ & Neon</div>
+      <div class="small">Made responsive for phones. If images don't show, put the image files in same folder as this HTML.</div>
+    </footer>
+  </main>
+
   <script>
-    // Firebase Config
+    /* ----------------------
+       Firebase config + init
+       ---------------------- */
     const firebaseConfig = {
       apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
       authDomain: "inspire4ever-c60ad.firebaseapp.com",
@@ -96,65 +252,162 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const loader = document.getElementById('loader');
-    const cards = document.querySelectorAll(".car-card");
+    /* ----------------------
+       Small UI helpers
+       ---------------------- */
+    document.getElementById('year').innerText = new Date().getFullYear();
 
-    function openCar(carId){ window.location.href = `car.html?id=${carId}`; }
-
-    let ratingsLoaded = 0;
-    cards.forEach(card => {
-      const carId = card.dataset.id;
-      const stars = card.querySelectorAll(".rating span");
-      const ratingText = card.querySelector(".rating-text");
-      const carRef = db.ref('cars/' + carId);
-
-      carRef.on('value', snapshot => {
-        const data = snapshot.val();
-        const avg = data && data.ratingCount > 0 ? (data.totalRating / data.ratingCount).toFixed(1) : 0;
-        highlightStars(stars, Math.round(avg));
-        ratingText.innerText = `Ratings: ${avg} (${data ? data.ratingCount : 0} votes)`;
-
-        ratingsLoaded++;
-        if(ratingsLoaded >= cards.length){ loader.style.display = 'none'; }
-      });
-
-      stars.forEach(star => {
-        star.addEventListener("mouseover", () => highlightStars(stars, star.dataset.value));
-        star.addEventListener("mouseout", () => {
-          carRef.once('value').then(snapshot => {
-            const data = snapshot.val();
-            const avg = data && data.ratingCount > 0 ? Math.round(data.totalRating / data.ratingCount) : 0;
-            highlightStars(stars, avg);
-          });
-        });
-        star.addEventListener("click", () => {
-          const ratingValue = parseInt(star.dataset.value);
-          carRef.transaction(currentData => {
-            if(currentData){
-              currentData.totalRating += ratingValue;
-              currentData.ratingCount += 1;
-            } else { currentData = { totalRating: ratingValue, ratingCount: 1 }; }
-            return currentData;
-          });
-        });
-      });
-    });
-
-    function highlightStars(stars, rating){
-      stars.forEach(star => {
-        if(star.dataset.value <= rating) star.classList.add("selected");
-        else star.classList.remove("selected");
-      });
+    // Mobile menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    function toggleMobileMenu(){
+      mobileMenu.classList.toggle('show');
+      mobileMenu.setAttribute('aria-hidden', !mobileMenu.classList.contains('show'));
     }
+    hamburger.addEventListener('click', toggleMobileMenu);
 
-    const searchBox = document.getElementById("searchBox");
-    searchBox.addEventListener("keyup", () => {
-      const query = searchBox.value.toLowerCase();
-      cards.forEach(card => {
-        const name = card.dataset.name.toLowerCase();
-        card.style.display = name.includes(query) ? "block" : "none";
+    // Close menu on outside click (mobile)
+    document.addEventListener('click', (e)=>{
+      if(!e.target.closest('.navbar') && !e.target.closest('#mobileMenu')){
+        if(mobileMenu.classList.contains('show')) toggleMobileMenu();
+      }
+    });
+
+    /* ----------------------
+       Loader + Rating script
+       ---------------------- */
+const loader = document.getElementById('loader');
+const cards = document.querySelectorAll(".car-card");
+let ratingsLoaded = 0;
+let carRatings = []; // {card, rating} स्टोर करने के लिए
+
+function openCar(carId){ window.location.href = `car.html?id=${carId}`; }
+
+// Page load pe loader + blur
+document.body.classList.add('loading');
+
+// Initialize ratings for each card
+cards.forEach(card => {
+  const carId = card.dataset.id;
+  const stars = card.querySelectorAll(".rating span");
+  const ratingText = card.querySelector(".rating-text");
+  const carRef = db.ref('cars/' + carId);
+
+  // Listen for updates
+  carRef.on('value', snapshot => {
+    const data = snapshot.val();
+    const avg = data && data.ratingCount > 0 ? (data.totalRating / data.ratingCount) : 0;
+    highlightStars(stars, Math.round(avg));
+    ratingText.innerText = data && data.ratingCount > 0 ? `Ratings: ${avg.toFixed(1)} (${data.ratingCount} votes)` : 'Ratings: 0 (0 votes)';
+
+    // Add to carRatings array
+    carRatings.push({ card, rating: avg });
+
+    // loader hide का logic
+    ratingsLoaded++;
+    if(ratingsLoaded >= cards.length){
+      hideLoader();
+      sortGalleryByRating(); // सब ratings load होने के बाद sorting
+    }
+  });
+
+  
+
+
+  // Hover & click interactions for stars
+  stars.forEach(star => {
+    star.addEventListener("mouseover", () => highlightStars(stars, parseInt(star.dataset.value)));
+    star.addEventListener("mouseout", () => {
+      carRef.once('value').then(snapshot => {
+        const data = snapshot.val();
+        const avg = data && data.ratingCount > 0 ? Math.round(data.totalRating / data.ratingCount) : 0;
+        highlightStars(stars, avg);
       });
     });
-  </script>
+    star.addEventListener("click", () => {
+      const ratingValue = parseInt(star.dataset.value);
+      carRef.transaction(currentData => {
+        if (currentData) {
+          currentData.totalRating = (currentData.totalRating || 0) + ratingValue;
+          currentData.ratingCount = (currentData.ratingCount || 0) + 1;
+        } else {
+          currentData = { totalRating: ratingValue, ratingCount: 1 };
+        }
+        return currentData;
+      });
+    });
+  });
+});
+
+// Highlight stars function
+function highlightStars(stars, rating){
+  stars.forEach(star => {
+    if(parseInt(star.dataset.value) <= rating) star.classList.add("selected");
+    else star.classList.remove("selected");
+  });
+}
+
+// Sort gallery by rating
+function sortGalleryByRating() {
+  carRatings.sort((a, b) => b.rating - a.rating); // descending
+  const gallery = document.getElementById('gallery');
+  carRatings.forEach(item => gallery.appendChild(item.card));
+}
+
+// Hide loader
+function hideLoader() {
+  if(loader) loader.style.display = 'none';
+  document.body.classList.remove('loading');
+}
+
+// Safety fallback agar Firebase slow ho
+setTimeout(()=>{ hideLoader(); sortGalleryByRating(); }, 6000);
+
+// Search box
+const searchBox = document.getElementById("searchBox");
+searchBox.addEventListener("input", () => {
+  const query = searchBox.value.trim().toLowerCase();
+  cards.forEach(card => {
+    const name = (card.dataset.name || '').toLowerCase();
+    card.style.display = name.includes(query) ? "flex" : "none";
+  });
+});
+
+// Contact email
+const sendMailBtn = document.getElementById('sendMailBtn');
+sendMailBtn.addEventListener('click', () => {
+  const emailInput = document.getElementById('userEmail');
+  const email = (emailInput.value || '').trim();
+  if(!email || !/^\S+@\S+\.\S+$/.test(email)){
+    alert('Please enter a valid email address.');
+    emailInput.focus();
+    return;
+  }
+  const subject = encodeURIComponent('Support Request - Game Cars Showcase');
+  const body = encodeURIComponent('Hi team,%0D%0A%0D%0AI am contacting from: ' + email + '%0D%0A%0D%0A(Write your message here)%0D%0A');
+  window.location.href = `mailto:support@gamecars.com?subject=${subject}&body=${body}`;
+});
+
+// Allow enter key on email input
+document.getElementById('userEmail').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') sendMailBtn.click();
+});
+
+// Reset all ratings button
+/*document.getElementById('resetRatingsBtn').addEventListener('click', () => {
+  const confirmReset = confirm("Are you sure you want to reset all ratings?");
+  if(confirmReset){
+    const carsRef = db.ref('cars');
+    carsRef.once('value').then(snapshot => {
+      snapshot.forEach(carSnap => {
+        carSnap.ref.set({ totalRating: 0, ratingCount: 0 }); // reset
+      });
+      alert('All ratings have been reset!');
+      location.reload(); // page reload to update UI
+    });
+  }
+}); */
+</script>
+
 </body>
 </html>

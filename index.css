@@ -47,11 +47,27 @@
     .brand i{font-size:22px;color:var(--neon);filter:drop-shadow(0 0 6px rgba(0,255,213,0.12))}
     .nav-links{display:flex;align-items:center;gap:14px}
     .nav-links a{padding:8px 12px;border-radius:10px;font-weight:600;color:var(--muted);transition:all .18s}
-    .nav-links a:hover{color:white;background:linear-gradient(90deg, rgba(108,92,231,0.12), rgba(0,255,213,0.04));transform:translateY(-2px)}
+    .nav-links a:hover{color:rgb(168, 44, 44);background:linear-gradient(90deg, rgba(108,92,231,0.12), rgba(0,255,213,0.04));transform:translateY(-2px)}
 
     /* hamburger */
-    .hamburger{display:none;cursor:pointer;padding:8px;border-radius:8px}
-    .hamburger span{display:block;width:22px;height:2px;background:#cfeaf0;margin:4px 0;border-radius:2px}
+ .hamburger {
+  display: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(22, 93, 168, 0.6); /* नीला + 60% transparency */
+  backdrop-filter: blur(4px); /* optional, glass effect के लिए */
+}
+
+
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #9fb8cc; /* lines का color वैसे ही */
+  margin: 4px 0;
+  border-radius: 2px;
+}
 
     /* ---------- HEADER / HERO ---------- */
     header.hero{
@@ -176,6 +192,235 @@ body.loading *:not(#loader) {
   align-items: center;
   gap: 10px;
   z-index: 10000;
+}
+/* ⚡ Compare Button */
+#compareBtn {
+  padding: 12px 28px;
+  background: linear-gradient(90deg, #c4b7bd, #0f814c);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  box-shadow: 0 0 20px rgba(255, 0, 106, 0.6);
+  transition: all 0.3s ease;
+}
+#compareBtn:hover {
+  background: linear-gradient(90deg, #0e1d8b, #31cd5a);
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(18, 163, 105, 0.9);
+}
+#compareBtn:active {
+  transform: scale(0.97);
+}
+
+/* 🧊 Compare Modal (Popup Box) */
+#compareModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.custom-alert {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.alert-box {
+  background: #0f1724; /* Dark glass background */
+  border: 2px solid #ff006a; /* Neon border */
+  padding: 20px 30px;
+  border-radius: 12px;
+  color: #fff;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 0 15px #ff006a;
+  animation: popIn 0.3s ease-out;
+}
+
+.alert-box button {
+  margin-top: 15px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #ff006a;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* Inner box */
+#compareModal .compare-box {
+  background: rgba(20, 20, 30, 0.9);
+  color: white;
+  border: 1px solid rgba(255, 0, 106, 0.4);
+  border-radius: 16px;
+  padding: 25px;
+  width: 90%;
+  max-width: 900px;
+  box-shadow: 0 0 30px rgba(255, 0, 106, 0.4);
+  animation: slideUp 0.4s ease;
+}
+
+#compareModal table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+#compareModal th, 
+#compareModal td {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px;
+  text-align: center;
+}
+
+#compareModal th {
+  background: linear-gradient(90deg, #ff007a, #ff4d4d);
+  color: white;
+  font-weight: 700;
+}
+
+#compareModal img {
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 0, 106, 0.5);
+}
+
+#compareModal .close-btn {
+  background: linear-gradient(90deg, #ff007a, #ff4d4d);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: 0.3s;
+}
+#compareModal .close-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 0, 106, 0.7);
+}
+/* Compare Label Wrapper */
+/* Car card ke andar checkbox hamesha bottom pe rahe */
+.compare-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  
+  margin-top: auto; /* ✅ ye checkbox ko bottom pe push karega */
+  margin-bottom: 8px; /* optional, thoda space neeche */
+  transition: color 0.3s;
+}
+
+
+.compare-label:hover {
+  color: #164094; /* Neon hover color */
+}
+
+/* Hide the default checkbox */
+.compare-label input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #4765e8;
+  border-radius: 4px;
+  background: rgba(255, 0, 106, 0.1); /* Slight neon glow background */
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s;
+  outline: none;
+}
+
+/* Checked state with neon effect */
+.compare-label input[type="checkbox"]:checked {
+  background: #7d7ea5;
+  box-shadow: 0 0 6px #dcc5cf, 0 0 12px #242122;
+  border-color: #2e1f8e;
+}
+
+/* Add checkmark inside */
+.compare-label input[type="checkbox"]:checked::after {
+  content: "✔";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center perfectly */
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+  width: 100%;
+}
+
+
+/* Optional: small transition glow on hover */
+.compare-label input[type="checkbox"]:hover {
+  box-shadow: 0 0 4px #092657, 0 0 8px #452adc;
+}
+.like-dislike {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.like-btn, .dislike-btn {
+  background: #1457cb0c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.like-btn:hover, .dislike-btn:hover {
+  background: #160e478f;
+}
+.like-btn.active, .dislike-btn.active {
+  background-color: #091a5d;   /* dark highlight */
+  color: white;
+  border-radius: 6px;
+}
+
+.like-btn, .dislike-btn {
+  transition: 0.2s all;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 /* Three-dot animation */

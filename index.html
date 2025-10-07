@@ -20,7 +20,15 @@
 
   
 </head>
+
 <body>
+   <!-- Custom Alert Modal -->
+  <div id="customAlert" class="custom-alert" style="display:none;">
+    <div class="alert-box">
+      <p>⚠️ Please select 2 cars!</p>
+      <button id="alertCloseBtn">Close</button>
+    </div>
+  </div>
   <!-- Loader -->
 <div id="loader">
   <div class="dot"></div>
@@ -84,23 +92,50 @@
 
     <!-- GALLERY -->
     <section id="gallery" class="gallery" aria-label="Cars Gallery">
-      <!-- Car Cards (kept your images names; ensure these images exist in same folder) -->
-      <div class="car-card" data-id="car1" data-name="Mahindra Thar">
-        <img src="Mahindra-Th1730824186-BUSSID-WWW-MODS4U-IN-main.jpeg" onclick="openCar('car1')" alt="Mahindra Thar Roxx">
-        <h3>Mahindra Thar Roxx</h3>
-        <div class="rating">
-          <span data-value="1">★</span>
-          <span data-value="2">★</span>
-          <span data-value="3">★</span>
-          <span data-value="4">★</span>
-          <span data-value="5">★</span>
-        </div>
-        <p class="rating-text">Ratings: 0 (0 votes)</p>
-      </div>
+          </section>
 
-      <div class="car-card" data-id="car2" data-name="Scorpio VLX"> 
+    <!-- ✅ Compare Button Add karo yahan -->
+    <div style="text-align:center; margin:20px;">
+      <button id="compareBtn" class="btn" style="padding:10px 20px; background:#ff006a; color:white; border:none; border-radius:8px; cursor:pointer;">
+        ⚡ Compare Selected Cars
+      </button>
+    </div>
+
+      <!-- Car Cards (kept your images names; ensure these images exist in same folder) -->
+      <div class="car-card" data-id="car1" data-name="Mahindra Thar" data-type="4x4 SUV">
+
+  <img src="Mahindra-Th1730824186-BUSSID-WWW-MODS4U-IN-main.jpeg" onclick="openCar('car1')" alt="Mahindra Thar Roxx">
+  <h3>Mahindra Thar Roxx</h3>
+  <div class="like-dislike">
+  <button class="like-btn" data-id="car1"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car1"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+
+
+  <div class="rating">
+    <span data-value="1">★</span>
+    <span data-value="2">★</span>
+    <span data-value="3">★</span>
+    <span data-value="4">★</span>
+    <span data-value="5">★</span>
+  </div>
+  <p class="rating-text">Ratings: 0 (0 votes)</p>
+
+  <!-- ✅ Compare Checkbox Added Here -->
+  <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car1">
+    Compare
+  </label>
+</div>
+
+
+      <div class="car-card" data-id="car2" data-name="Scorpio VLX" data-type="Luxury SUV">
         <img src="Mahindra-Sc1721546596-BUSSID-WWW-MODS4U-IN-5.jpeg" onclick="openCar('car2')" alt="Scorpio VLX"> 
         <h3>Scorpio VLX</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car2"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car2"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
         <div class="rating">
           <span data-value="1">★</span>
           <span data-value="2">★</span>
@@ -109,11 +144,20 @@
           <span data-value="5">★</span>
         </div>
         <p class="rating-text">Ratings:  (0 votes)</p>
+         <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car2">
+    Compare
+  </label>
+</div>
       </div>
 
-      <div class="car-card" data-id="car3" data-name="Maruti Omni 4x4">
+      <div class="car-card" data-id="car3" data-name="Maruti Omni 4x4" data-type="Mini Van">
         <img src="Maruti-Omni1745939677-BUSSID-WWW-MODS4U-IN-3.jpeg" onclick="openCar('car3')" alt="Maruti Omni 4x4">
         <h3>Maruti Omni 4x4</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car3"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car3"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
         <div class="rating">
           <span data-value="1">★</span>
           <span data-value="2">★</span>
@@ -122,11 +166,19 @@
           <span data-value="5">★</span>
         </div>
         <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car3">
+    Compare
+  </label>
       </div>
 
-      <div class="car-card" data-id="car4" data-name="Mahindra Thar">
+       <div class="car-card" data-id="car4" data-name="Mahindra Thar" data-type="Off-Road SUV">
         <img src="https://play-lh.googleusercontent.com/SxDCg3l9TyD-T4HxkQM5I0sjl_E1BE3pLK6YPJ4G3QXj4PJKs6WyclE0Tc4sMCsBQA=w526-h296-rw" onclick="openCar('car4')" alt="Maruti Omni 4x4">
         <h3>Mahindra Thar</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car4"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car4"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
         <div class="rating">
           <span data-value="1">★</span>
           <span data-value="2">★</span>
@@ -135,11 +187,19 @@
           <span data-value="5">★</span>
         </div>
         <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car4">
+    Compare
+  </label>
       </div>
 
-    <div class="car-card" data-id="car5" data-name="Maruti Suzuki"> 
+   <div class="car-card" data-id="car5" data-name="Maruti Suzuki" data-type="Compact Sedan">
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwDkCf27Hn9rACCJXeB5c6dVEHnZsqZVws5g&s" onclick="openCar('car5')" alt="Maruti Suzuki"> 
         <h3>Maruti Suzuki</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car5"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car5"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
         <div class="rating">
           <span data-value="1">★</span>
           <span data-value="2">★</span>
@@ -148,11 +208,20 @@
           <span data-value="5">★</span>
         </div>
         <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car5">
+    Compare
+  </label>
+</div>
       </div>
 
- <div class="car-card" data-id="car6" data-name="Jeep">
+ <div class="car-card" data-id="car6" data-name="Jeep" data-type="Adventure 4x4">
         <img src="https://play-lh.googleusercontent.com/_-A1nMTjXmKpw1xJvc3M0t9lFNYlQV9s70smC56VFlXuRlfcIb42dddNA1K4TPt9OqE" onclick="openCar('car6')" alt="Maruti Omni 4x4">
         <h3>Jeep</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car6"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car6"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
         <div class="rating">
           <span data-value="1">★</span>
           <span data-value="2">★</span>
@@ -161,11 +230,20 @@
           <span data-value="5">★</span>
         </div>
         <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car6">
+    Compare
+  </label>
+</div>
       </div>
       
-      <div class="car-card" data-id="car7" data-name="Lamborghini Red">
+      <div class="car-card" data-id="car7" data-name="Lamborghini Red" data-type="Sports Car">
         <img src="https://www.mods4u.in/bsi/img/2020/LAMBORGHINI1595652819-BUSSID-WWW-MODS4U-IN-1.jpeg" onclick="openCar('car7')" alt="Maruti Omni 4x4">
         <h3>Lamborghini Red</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car7"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car7"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
         <div class="rating">
           <span data-value="1">★</span>
           <span data-value="2">★</span>
@@ -174,11 +252,20 @@
           <span data-value="5">★</span>
         </div>
         <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car7">
+    Compare
+  </label>
+</div>
       </div>
 
-      <div class="car-card" data-id="car8" data-name="Bajaj Auto">
+      <div class="car-card" data-id="car8" data-name="Bajaj Auto" data-type="Three Wheeler">
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvuL7RSdUE0lommPteFAJx5185q5-SYKFkzp37ELGGCTno2fdVOGSW-_JNsOQtxDkafi8&usqp=CAU" onclick="openCar('car8')" alt="Maruti Omni 4x4">
         <h3>Bajaj Auto</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car8"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car8"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
         <div class="rating">
           <span data-value="1">★</span>
           <span data-value="2">★</span>
@@ -187,6 +274,11 @@
           <span data-value="5">★</span>
         </div>
         <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car8">
+    Compare
+  </label>
+</div>
       </div>
 
 
@@ -205,30 +297,12 @@
         <h2 id="about-title">About This Project</h2>
         <p>This is a community-driven Game Cars Showcase — built for gamers to preview, rate and soon download car mods. Ratings are stored in Firebase realtime database, and UI is optimized for both desktop and mobile devices.</p>
 
-        <h3 style="color:var(--neon); margin-top:14px">Features</h3>
-        <ul style="color:var(--muted); padding-left:18px; margin-top:8px; line-height:1.6">
-          <li>Real-time ratings (Firebase)</li>
-          <li>Responsive glass + neon UI</li>
-          <li>Search cars instantly</li>
-          <li>Individual car pages (car.html?id=...)</li>
-        </ul>
-
+        
         <h3 style="color:var(--neon); margin-top:12px">How to extend</h3>
         <p style="color:var(--muted)">You can add comments, downloads, user accounts, and favourites (localStorage) easily — tell me which one and I'll add it for you.</p>
       </section>
 
-      <aside class="side-panel" id="contact" aria-labelledby="contact-title">
-        <h3 id="contact-title" class="contact-title">Contact / Support</h3>
-        <p class="contact-note">Send us your email — we'll reply. (Email only)</p>
-
-        <div class="email-row" role="form" aria-label="Contact form (email only)">
-          <input id="userEmail" type="email" placeholder="Your email (example@mail.com)" aria-label="Your email">
-          <button id="sendMailBtn" class="btn">Send</button>
-        </div>
-
-        <div class="small">Or email directly: <b>support@gamecars.com</b></div>
-      </aside>
-    </div>
+     
 
     <footer>
       <div>© <span id="year"></span> Game Cars Showcase — Built with ❤️ & Neon</div>
@@ -238,20 +312,103 @@
 
   <script>
     /* ----------------------
-       Firebase config + init
-       ---------------------- */
-    const firebaseConfig = {
-      apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
-      authDomain: "inspire4ever-c60ad.firebaseapp.com",
-      databaseURL: "https://inspire4ever-c60ad-default-rtdb.firebaseio.com",
-      projectId: "inspire4ever-c60ad",
-      storageBucket: "inspire4ever-c60ad.appspot.com",
-      messagingSenderId: "125014633127",
-      appId: "1:125014633127:web:d29e4c37628ab637f40982"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+   Firebase config + init
+---------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
+  authDomain: "inspire4ever-c60ad.firebaseapp.com",
+  databaseURL: "https://inspire4ever-c60ad-default-rtdb.firebaseio.com",
+  projectId: "inspire4ever-c60ad",
+  storageBucket: "inspire4ever-c60ad.appspot.com",
+  messagingSenderId: "125014633127",
+  appId: "1:125014633127:web:d29e4c37628ab637f40982"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
+// Like/Dislike Buttons
+const likeButtons = document.querySelectorAll(".like-btn");
+const dislikeButtons = document.querySelectorAll(".dislike-btn");
+
+// LocalStorage key: store user's action per car
+let userActions = JSON.parse(localStorage.getItem('userActions') || '{}');
+
+// Update button highlight function
+function updateButtonState(carId) {
+  const likeBtn = document.querySelector(`.like-btn[data-id="${carId}"]`);
+  const dislikeBtn = document.querySelector(`.dislike-btn[data-id="${carId}"]`);
+  const action = userActions[carId];
+
+  if(action === "like"){
+    likeBtn.classList.add("active");
+    dislikeBtn.classList.remove("active");
+  } else if(action === "dislike"){
+    dislikeBtn.classList.add("active");
+    likeBtn.classList.remove("active");
+  } else {
+    likeBtn.classList.remove("active");
+    dislikeBtn.classList.remove("active");
+  }
+}
+
+// Loop through each like button
+likeButtons.forEach(btn => {
+  const carId = btn.dataset.id;
+  const dislikeBtn = document.querySelector(`.dislike-btn[data-id="${carId}"]`);
+  const likeCountSpan = btn.querySelector(".like-count");
+  const dislikeCountSpan = dislikeBtn.querySelector(".dislike-count");
+  const carRef = db.ref('cars/' + carId);
+
+  // Initialize counts from Firebase
+  carRef.on('value', snapshot => {
+    const data = snapshot.val() || {};
+    likeCountSpan.innerText = data.likes || 0;
+    dislikeCountSpan.innerText = data.dislikes || 0;
+  });
+
+  // Like button click
+  btn.addEventListener('click', () => {
+    const action = userActions[carId];
+
+    if(action === "like"){
+      carRef.transaction(car => { if(car) car.likes=(car.likes||1)-1; return car; });
+      delete userActions[carId];
+    } else if(action === "dislike"){
+      carRef.transaction(car => { if(car){ car.likes=(car.likes||0)+1; car.dislikes=(car.dislikes||1)-1;} return car; });
+      userActions[carId] = "like";
+    } else {
+      carRef.transaction(car => { if(car) car.likes=(car.likes||0)+1; else car={likes:1,dislikes:0}; return car; });
+      userActions[carId] = "like";
+    }
+
+    localStorage.setItem('userActions', JSON.stringify(userActions));
+    updateButtonState(carId); // highlight button
+  });
+
+  // Dislike button click
+  dislikeBtn.addEventListener('click', () => {
+    const action = userActions[carId];
+
+    if(action === "dislike"){
+      carRef.transaction(car => { if(car) car.dislikes=(car.dislikes||1)-1; return car; });
+      delete userActions[carId];
+    } else if(action === "like"){
+      carRef.transaction(car => { if(car){ car.likes=(car.likes||1)-1; car.dislikes=(car.dislikes||0)+1;} return car; });
+      userActions[carId] = "dislike";
+    } else {
+      carRef.transaction(car => { if(car) car.dislikes=(car.dislikes||0)+1; else car={likes:0,dislikes:1}; return car; });
+      userActions[carId] = "dislike";
+    }
+
+    localStorage.setItem('userActions', JSON.stringify(userActions));
+    updateButtonState(carId); // highlight button
+  });
+
+  // On page load: highlight existing actions
+  updateButtonState(carId);
+});
+
+ 
     /* ----------------------
        Small UI helpers
        ---------------------- */
@@ -392,6 +549,80 @@ sendMailBtn.addEventListener('click', () => {
 document.getElementById('userEmail').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter') sendMailBtn.click();
 });
+/* ----------------------
+   ⚡ Compare Cars Feature
+---------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  const compareBtn = document.getElementById("compareBtn");
+
+  function showCustomAlert(message) {
+    const alertModal = document.getElementById('customAlert');
+    if(!alertModal){
+      alert(message);
+      return;
+    }
+    alertModal.querySelector('p').innerText = message;
+    alertModal.style.display = 'flex';
+    alertModal.querySelector('#alertCloseBtn').onclick = () => {
+      alertModal.style.display = 'none';
+    };
+  }
+
+  // Limit to 2 checkboxes
+  const compareCheckboxes = document.querySelectorAll(".compare-checkbox");
+  compareCheckboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      const checked = Array.from(compareCheckboxes).filter(c => c.checked);
+      if(checked.length > 2){
+        cb.checked = false;
+        showCustomAlert("⚠️ You can only compare 2 cars at a time!");
+      }
+    });
+  });
+
+  // Compare button click
+  compareBtn.addEventListener("click", () => {
+    const selected = Array.from(compareCheckboxes)
+      .filter(cb => cb.checked)
+      .map(cb => cb.closest(".car-card"));
+
+    if(selected.length < 2){
+      showCustomAlert("⚠️ Please select 2 cars!");
+      return;
+    }
+
+    // Create comparison modal
+    const modalHTML = `
+      <div id="compareModal" style="position:fixed;top:0;left:0;width:100%;height:100%;
+        background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;">
+        <div style="background:#111;color:white;padding:20px;border-radius:12px;max-width:90%;overflow:auto;">
+          <h2 style="text-align:center;color:#ff006a;">🚗 Car Comparison</h2>
+          <table border="1" style="width:100%;border-collapse:collapse;text-align:center;color:white;">
+            <tr style="background:#ff006a;color:white;">
+              <th>Feature</th>
+              ${selected.map(c => `<th>${c.querySelector("h3").innerText}</th>`).join('')}
+            </tr>
+            <tr><td>⭐ Average Rating</td>${selected.map(c => `<td>${c.querySelector(".rating-text").innerText}</td>`).join('')}</tr>
+            <tr><td>📸 Image</td>${selected.map(c => `<td><img src="${c.querySelector("img").src}" width="100"></td>`).join('')}</tr>
+            <tr><td>⚙️ Type</td>${selected.map(c => `<td>${c.dataset.type || 'N/A'}</td>`).join('')}</tr>
+          </table>
+          <div style="text-align:center;margin-top:15px;">
+            <button id="closeCompareModal" style="background:#ff006a;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    document.getElementById("closeCompareModal").addEventListener("click", () => {
+      document.getElementById("compareModal").remove();
+    });
+  });
+
+});
+
+
 
 // Reset all ratings button
 /*document.getElementById('resetRatingsBtn').addEventListener('click', () => {
@@ -410,4 +641,4 @@ document.getElementById('userEmail').addEventListener('keydown', (e)=>{
 </script>
 
 </body>
-</html>
+</html> 

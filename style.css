@@ -82,6 +82,99 @@ pre {
   font-size: 16px;
 }
 
+.popup {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6); /* सिर्फ dark overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Blur सिर्फ content box पर */
+.popup-content {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 30px 40px;
+  text-align: center;
+  color: #fff;
+  backdrop-filter: blur(10px); /* सिर्फ box blur */
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  animation: scaleUp 0.3s ease-in-out;
+}
+
+
+.popup-content h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.popup-content p {
+  font-size: 1rem;
+  color: #e0e0e0;
+  margin-bottom: 20px;
+}
+
+#btnCloseReminder {
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  padding: 10px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#btnCloseReminder:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #0072ff, #00c6ff);
+  box-shadow: 0 0 10px rgba(0, 114, 255, 0.6);
+}
+/* popup hidden class */
+.hidden { display: none; }
+
+.hidden {
+  display: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+/* Key copy animation */
+.copy-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.copy-animation.show {
+  opacity: 1;
+  transform: translate(-50%, -60%);
+}
+
+/* Small text */
+.small { font-size: 0.9rem; }
+#keyBox { padding: 8px 12px; border-radius: 6px; background:#f3f4f6; }
+#btnCopy[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+
 
 /* Buttons */
 button {

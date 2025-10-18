@@ -1,145 +1,319 @@
-<!doctype html>
-<html lang="hi">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Show → Join TG → Key</title>
-<style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  margin: 0;
-  background: #000;
-  overflow: hidden;
-}
-header {
-  position: absolute;
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-   font-family: 'Arial', sans-serif;
-  color: #00ff88;
-  font-size: calc(16px + 1vw);
-  background: rgba(0,0,0,0.6);
-  padding: 10px 25px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px #00ff88;
-  z-index: 10;
-   text-align: center;
-   padding: 15px 30px; 
-    margin: 0;
-    white-space: nowrap; /* यह लाइन टेक्स्ट को एक ही लाइन में रखेगी */
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game Cars Showcase</title>
+<link rel="stylesheet" href="index.css">
 
-.card {
-  width: 380px;
-  max-width: 80%;
-  background: rgba(0, 0, 0, 0.65);
-  padding: 35px 30px;
-  border-radius: 20px;
-  text-align: center;
-  color: #fff;
-  backdrop-filter: blur(10px);
-  border: 1px solid #00ff88;
-  box-shadow: 0 0 25px rgba(0,255,136,0.3);
-  position: relative;
-  z-index: 10;
-}
-.circle-img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #00ff88;
-  margin-bottom: 15px;
-  cursor: pointer;
-}
-button {
-  padding: 12px 20px;
-  border-radius: 10px;
-  border: none;
-  background: #00ff88;
-  color: #000;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.3s;
-}
-button:hover { transform: scale(1.05); background: #00cc66; }
-.hidden { display: none; }
-pre {
-  background: rgba(255,255,255,0.1);
-  color: #00ff88;
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: 600;
-}
-.copy-animation {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2rem; opacity: 0; transition: all 0.3s ease;
-}
-.copy-animation.show { opacity: 1; transform: translate(-50%, -60%); }
-#matrix {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  z-index: 0;
-  background: #000;
-}
-</style>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Firebase (compat for your current code) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <meta name="theme-color" content="#0f1724" />
+
+  
 </head>
+
 <body>
-
-<canvas id="matrix"></canvas>
-
-<header>Welcome to Feature Mod Keys</header>
-
-<div class="card">
-  <img src="tg.jpg" class="circle-img" alt="Logo">
-  <h2>Get Your Key</h2>
-  <p>Process: Show → Join Telegram → Key</p>
-
-  <div id="step-show">
-    <button id="btnShow">Show Key</button>
-  </div>
-  <div id="step-join" class="hidden">
-    <button id="btnJoin">Join Telegram</button>
-  </div>
-
-  <div id="step-key" class="hidden">
-    <h3>Your Key:</h3>
-    <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
-      <pre id="keyBox">—</pre>
-      <button id="btnCopy">Copy</button>
-    </div>
-    <div id="keyTimer" style="margin-top:8px;color:#00b0ff;">Time left: <span id="timeLeft">--:--:--</span></div>
-    <div id="expiredMsg" style="margin-top:8px;color:#dc2626; display:none;">Sorry Trial Key expired Purchase Vip Mod</div>
-    <div id="copyAnimation" class="copy-animation"></div>
-  </div>
-
-  <div id="admin-panel" style="display:none;margin-top:20px;">
-    <button id="btnAdminLogin">Admin Login</button>
-    <div id="adminPassSection" class="hidden" style="margin-top:10px;">
-      <input id="adminPassInput" type="password" placeholder="Enter Admin Password">
-      <button id="btnSubmitPass">Submit</button>
-      <p id="adminMsg" class="error"></p>
-    </div>
-    <div id="adminKeySection" class="hidden" style="margin-top:10px;">
-      <input id="adminKeyInput" type="text" placeholder="Add Key for users">
-      <input id="adminExpiryInput" type="number" placeholder="Expiry time (hours)">
-      <button id="btnAddKey">Add Key</button>
-      <p id="adminKeyMsg" class="small" style="color:#16a34a;"></p>
+   <!-- Custom Alert Modal -->
+  <div id="customAlert" class="custom-alert" style="display:none;">
+    <div class="alert-box">
+      <p>⚠️ Please select 2 cars!</p>
+      <button id="alertCloseBtn">Close</button>
     </div>
   </div>
+  <!-- Loader -->
+<div id="loader">
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <!-- NAVBAR -->
+  <div class="navbar container" role="navigation" aria-label="Main Navigation">
+    <div class="brand"><i class="fa-solid fa-car-side"></i><div style="font-size:14px">Game Cars</div></div>
 
-<script>
+    <div class="nav-links" aria-hidden="false">
+      <a href="#home">Home</a>
+      <a href="#gallery">Cars</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobileMenu" class="mobile-menu container" aria-hidden="true">
+    <a href="#home" onclick="toggleMobileMenu()">Home</a>
+    <a href="#gallery" onclick="toggleMobileMenu()">Cars</a>
+    <a href="#about" onclick="toggleMobileMenu()">About</a>
+    <a href="#contact" onclick="toggleMobileMenu()">Contact</a>
+  </div>
+
+  <main class="container">
+    <!-- HERO -->
+    <header class="hero" id="home">
+      <div class="hero-left">
+        <h1><i class="fa-solid fa-car-rear"></i> Game Cars Showcase</h1>
+        <p>Premium mods & showcase — rate your favorites. Mobile friendly, fast and neon-styled.</p>
+        <div class="small">Tip: Tap stars to rate. Use search to quickly find a car.</div>
+      </div>
+
+      <div class="search-wrap">
+        <input id="searchBox" type="search" placeholder="Search cars by name...">
+      </div>
+    </header>
+
+
+
+
+
+<!-- <div style="margin:15px 0; text-align:center;">
+  <button id="resetRatingsBtn" class="btn" style="background-color:#ff4d4f; color:white; padding:8px 16px; border:none; border-radius:6px; cursor:pointer;">
+    Reset All Ratings
+  </button>
+</div> -->
+
+
+
+
+
+    <!-- GALLERY -->
+    <section id="gallery" class="gallery" aria-label="Cars Gallery">
+          </section>
+
+    <!-- ✅ Compare Button Add karo yahan -->
+    <div style="text-align:center; margin:20px;">
+      <button id="compareBtn" class="btn" style="padding:10px 20px; background:#ff006a; color:white; border:none; border-radius:8px; cursor:pointer;">
+        ⚡ Compare Selected Cars
+      </button>
+    </div>
+
+      <!-- Car Cards (kept your images names; ensure these images exist in same folder) -->
+      <div class="car-card" data-id="car1" data-name="Mahindra Thar" data-type="4x4 SUV">
+
+  <img src="Mahindra-Th1730824186-BUSSID-WWW-MODS4U-IN-main.jpeg" onclick="openCar('car1')" alt="Mahindra Thar Roxx">
+  <h3>Mahindra Thar Roxx</h3>
+  <div class="like-dislike">
+  <button class="like-btn" data-id="car1"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car1"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+
+
+  <div class="rating">
+    <span data-value="1">★</span>
+    <span data-value="2">★</span>
+    <span data-value="3">★</span>
+    <span data-value="4">★</span>
+    <span data-value="5">★</span>
+  </div>
+  <p class="rating-text">Ratings: 0 (0 votes)</p>
+
+  <!-- ✅ Compare Checkbox Added Here -->
+  <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car1">
+    Compare
+  </label>
+</div>
+
+
+      <div class="car-card" data-id="car2" data-name="Scorpio VLX" data-type="Luxury SUV">
+        <img src="Mahindra-Sc1721546596-BUSSID-WWW-MODS4U-IN-5.jpeg" onclick="openCar('car2')" alt="Scorpio VLX"> 
+        <h3>Scorpio VLX</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car2"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car2"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings:  (0 votes)</p>
+         <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car2">
+    Compare
+  </label>
+</div>
+      </div>
+
+      <div class="car-card" data-id="car3" data-name="Maruti Omni 4x4" data-type="Mini Van">
+        <img src="Maruti-Omni1745939677-BUSSID-WWW-MODS4U-IN-3.jpeg" onclick="openCar('car3')" alt="Maruti Omni 4x4">
+        <h3>Maruti Omni 4x4</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car3"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car3"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car3">
+    Compare
+  </label>
+      </div>
+
+       <div class="car-card" data-id="car4" data-name="Mahindra Thar" data-type="Off-Road SUV">
+        <img src="https://play-lh.googleusercontent.com/SxDCg3l9TyD-T4HxkQM5I0sjl_E1BE3pLK6YPJ4G3QXj4PJKs6WyclE0Tc4sMCsBQA=w526-h296-rw" onclick="openCar('car4')" alt="Maruti Omni 4x4">
+        <h3>Mahindra Thar</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car4"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car4"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car4">
+    Compare
+  </label>
+      </div>
+
+   <div class="car-card" data-id="car5" data-name="Maruti Suzuki" data-type="Compact Sedan">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwDkCf27Hn9rACCJXeB5c6dVEHnZsqZVws5g&s" onclick="openCar('car5')" alt="Maruti Suzuki"> 
+        <h3>Maruti Suzuki</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car5"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car5"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car5">
+    Compare
+  </label>
+</div>
+      </div>
+
+ <div class="car-card" data-id="car6" data-name="Jeep" data-type="Adventure 4x4">
+        <img src="https://play-lh.googleusercontent.com/_-A1nMTjXmKpw1xJvc3M0t9lFNYlQV9s70smC56VFlXuRlfcIb42dddNA1K4TPt9OqE" onclick="openCar('car6')" alt="Maruti Omni 4x4">
+        <h3>Jeep</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car6"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car6"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car6">
+    Compare
+  </label>
+</div>
+      </div>
+      
+      <div class="car-card" data-id="car7" data-name="Lamborghini Red" data-type="Sports Car">
+        <img src="https://www.mods4u.in/bsi/img/2020/LAMBORGHINI1595652819-BUSSID-WWW-MODS4U-IN-1.jpeg" onclick="openCar('car7')" alt="Maruti Omni 4x4">
+        <h3>Lamborghini Red</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car7"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car7"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car7">
+    Compare
+  </label>
+</div>
+      </div>
+
+      <div class="car-card" data-id="car8" data-name="Bajaj Auto" data-type="Three Wheeler">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvuL7RSdUE0lommPteFAJx5185q5-SYKFkzp37ELGGCTno2fdVOGSW-_JNsOQtxDkafi8&usqp=CAU" onclick="openCar('car8')" alt="Maruti Omni 4x4">
+        <h3>Bajaj Auto</h3>
+        <div class="like-dislike">
+  <button class="like-btn" data-id="car8"><i class="fa-solid fa-thumbs-up"></i> <span class="like-count">0</span></button>
+  <button class="dislike-btn" data-id="car8"><i class="fa-solid fa-thumbs-down"></i> <span class="dislike-count">0</span></button>
+</div>
+        <div class="rating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <p class="rating-text">Ratings: 0 (0 votes)</p>
+        <label class="compare-label">
+    <input type="checkbox" class="compare-checkbox" data-id="car8">
+    Compare
+  </label>
+</div>
+      </div>
+
+
+      <div class="car-card coming-soon" data-id="coming-soon" data-name="Coming Soon">
+        <div class="coming-soon-image"><span>Coming Soon</span></div>
+        <h3>New Car</h3>
+        <p class="rating-text">Stay tuned for updates!</p>
+      </div>
+    </section>
+
+    <div class="accent-line" aria-hidden="true"></div>
+
+    <!-- ABOUT + CONTACT SIDE -->
+    <div class="sections">
+      <section id="about" class="about-section" aria-labelledby="about-title">
+        <h2 id="about-title">About This Project</h2>
+        <p>This is a community-driven Game Cars Showcase — built for gamers to preview, rate and soon download car mods. Ratings are stored in Firebase realtime database, and UI is optimized for both desktop and mobile devices.</p>
+
+        
+        <h3 style="color:var(--neon); margin-top:12px">How to extend</h3>
+        <p style="color:var(--muted)">You can add comments, downloads, user accounts, and favourites (localStorage) easily — tell me which one and I'll add it for you.</p>
+      </section>
+
+     
+
+    <footer>
+      <div>© <span id="year"></span> Game Cars Showcase — Built with ❤️ & Neon</div>
+      <div class="small">Made responsive for phones. If images don't show, put the image files in same folder as this HTML.</div>
+    </footer>
+  </main>
+
+  <script>
+    /* ----------------------
+   Firebase config + init
+---------------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
   authDomain: "inspire4ever-c60ad.firebaseapp.com",
@@ -152,140 +326,310 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const TELEGRAM_INVITE = 'https://t.me/+eT13u4rIiBwwY2U9';
-const btnShow = document.getElementById('btnShow');
-const stepShow = document.getElementById('step-show');
-const stepJoin = document.getElementById('step-join');
-const stepKey = document.getElementById('step-key');
-const btnJoin = document.getElementById('btnJoin');
-const keyBox = document.getElementById('keyBox');
-const btnCopy = document.getElementById('btnCopy');
-const timeLeftEl = document.getElementById('timeLeft');
-const keyTimerEl = document.getElementById('keyTimer');
-const expiredMsgEl = document.getElementById('expiredMsg');
+// Like/Dislike Buttons
+const likeButtons = document.querySelectorAll(".like-btn");
+const dislikeButtons = document.querySelectorAll(".dislike-btn");
 
-const adminPanel = document.getElementById('admin-panel');
-const btnAdminLogin = document.getElementById('btnAdminLogin');
-const adminPassSection = document.getElementById('adminPassSection');
-const adminPassInput = document.getElementById('adminPassInput');
-const btnSubmitPass = document.getElementById('btnSubmitPass');
-const adminMsg = document.getElementById('adminMsg');
-const adminKeySection = document.getElementById('adminKeySection');
-const adminKeyInput = document.getElementById('adminKeyInput');
-const adminExpiryInput = document.getElementById('adminExpiryInput');
-const btnAddKey = document.getElementById('btnAddKey');
-const DEMO_ADMIN_PASSWORD = 'feature@4.0';
+// LocalStorage key: store user's action per car
+let userActions = JSON.parse(localStorage.getItem('userActions') || '{}');
 
-let tgWindow = null, revealed = false, countdownInterval = null;
+// Update button highlight function
+function updateButtonState(carId) {
+  const likeBtn = document.querySelector(`.like-btn[data-id="${carId}"]`);
+  const dislikeBtn = document.querySelector(`.dislike-btn[data-id="${carId}"]`);
+  const action = userActions[carId];
 
-btnShow.onclick = () => {
-  stepShow.classList.add('hidden');
-  stepJoin.classList.remove('hidden');
-};
-btnJoin.onclick = () => {
-  tgWindow = window.open(TELEGRAM_INVITE, '_blank');
-  setTimeout(() => reveal(), 5000);
-};
-function reveal() {
-  if (revealed) return;
-  revealed = true;
-  stepJoin.classList.add('hidden');
-  stepKey.classList.remove('hidden');
-}
-
-btnCopy.onclick = async () => {
-  const text = keyBox.textContent.trim();
-  if (!text || text === '—') return;
-  await navigator.clipboard.writeText(text);
-};
-
-function formatTime(ms) {
-  if (ms <= 0) return "00:00:00";
-  const s = Math.floor(ms / 1000),
-        h = Math.floor(s / 3600),
-        m = Math.floor((s % 3600) / 60),
-        sc = s % 60;
-  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}`;
-}
-function disableKeyUI() {
-  keyBox.textContent = '—';
-  btnCopy.disabled = true;
-  keyTimerEl.style.display = 'none';
-  expiredMsgEl.style.display = 'block';
-}
-function enableKeyUI(k) {
-  keyBox.textContent = k;
-  btnCopy.disabled = false;
-  keyTimerEl.style.display = 'block';
-  expiredMsgEl.style.display = 'none';
-}
-function startCountdown(e) {
-  clearInterval(countdownInterval);
-  if (!e) { timeLeftEl.textContent = 'Unlimited'; return; }
-  function t() {
-    const r = e - Date.now();
-    if (r <= 0) { clearInterval(countdownInterval); disableKeyUI(); return; }
-    timeLeftEl.textContent = formatTime(r);
+  if(action === "like"){
+    likeBtn.classList.add("active");
+    dislikeBtn.classList.remove("active");
+  } else if(action === "dislike"){
+    dislikeBtn.classList.add("active");
+    likeBtn.classList.remove("active");
+  } else {
+    likeBtn.classList.remove("active");
+    dislikeBtn.classList.remove("active");
   }
-  t();
-  countdownInterval = setInterval(t, 1000);
 }
 
-db.ref('keys/latest').on('value', s => {
-  const d = s.val();
-  if (!d || !d.value) { disableKeyUI(); return; }
-  enableKeyUI(d.value);
-  startCountdown(d.expiresAt || null);
-});
+// Loop through each like button
+likeButtons.forEach(btn => {
+  const carId = btn.dataset.id;
+  const dislikeBtn = document.querySelector(`.dislike-btn[data-id="${carId}"]`);
+  const likeCountSpan = btn.querySelector(".like-count");
+  const dislikeCountSpan = dislikeBtn.querySelector(".dislike-count");
+  const carRef = db.ref('cars/' + carId);
 
-adminPanel.style.display = 'none';
-let taps=0, tapTimer;
-document.querySelector('.circle-img').addEventListener('click', () => {
-  taps++;
-  clearTimeout(tapTimer);
-  tapTimer = setTimeout(()=> taps=0, 1000);
-  if(taps>=5){ adminPanel.style.display='block'; taps=0; }
-});
-btnAdminLogin.onclick = ()=> { adminPassSection.classList.remove('hidden'); adminMsg.textContent=''; };
-btnSubmitPass.onclick = ()=>{
-  if(adminPassInput.value.trim()===DEMO_ADMIN_PASSWORD){
-    adminKeySection.classList.remove('hidden');
-    adminMsg.textContent='Logged in!'; adminMsg.style.color='#16a34a';
-    adminPassSection.classList.add('hidden');
-  } else { adminMsg.textContent='Incorrect password!'; adminMsg.style.color='#dc2626'; }
-};
-btnAddKey.onclick = ()=>{
-  const k = adminKeyInput.value.trim();
-  if(!k) return;
-  const h = +adminExpiryInput.value;
-  let e=null;
-  if(!isNaN(h)&&h>0) e=Date.now()+h*60*60*1000;
-  const p={value:k};
-  if(e) p.expiresAt=e;
-  db.ref('keys/latest').set(p).then(()=>{
-    adminKeyMsg.textContent='Key added!';
-    adminKeyInput.value=''; adminExpiryInput.value='';
+  // Initialize counts from Firebase
+  carRef.on('value', snapshot => {
+    const data = snapshot.val() || {};
+    likeCountSpan.innerText = data.likes || 0;
+    dislikeCountSpan.innerText = data.dislikes || 0;
   });
-};
 
-(function(){
-  const canvas=document.getElementById('matrix'); const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-  const letters='Feature Mod '; const fontSize=16; const columns=Math.floor(canvas.width/fontSize);
-  const drops=Array(columns).fill(1);
-  function draw(){
-    ctx.fillStyle='rgba(0,0,0,0.1)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#00ff88'; ctx.font=fontSize+'px monospace';
-    for(let i=0;i<drops.length;i++){
-      const text=letters.charAt(Math.floor(Math.random()*letters.length));
-      ctx.fillText(text,i*fontSize,drops[i]*fontSize);
-      if(drops[i]*fontSize>canvas.height && Math.random()>0.975) drops[i]=0;
-      drops[i]++;
+  // Like button click
+  btn.addEventListener('click', () => {
+    const action = userActions[carId];
+
+    if(action === "like"){
+      carRef.transaction(car => { if(car) car.likes=(car.likes||1)-1; return car; });
+      delete userActions[carId];
+    } else if(action === "dislike"){
+      carRef.transaction(car => { if(car){ car.likes=(car.likes||0)+1; car.dislikes=(car.dislikes||1)-1;} return car; });
+      userActions[carId] = "like";
+    } else {
+      carRef.transaction(car => { if(car) car.likes=(car.likes||0)+1; else car={likes:1,dislikes:0}; return car; });
+      userActions[carId] = "like";
     }
+
+    localStorage.setItem('userActions', JSON.stringify(userActions));
+    updateButtonState(carId); // highlight button
+  });
+
+  // Dislike button click
+  dislikeBtn.addEventListener('click', () => {
+    const action = userActions[carId];
+
+    if(action === "dislike"){
+      carRef.transaction(car => { if(car) car.dislikes=(car.dislikes||1)-1; return car; });
+      delete userActions[carId];
+    } else if(action === "like"){
+      carRef.transaction(car => { if(car){ car.likes=(car.likes||1)-1; car.dislikes=(car.dislikes||0)+1;} return car; });
+      userActions[carId] = "dislike";
+    } else {
+      carRef.transaction(car => { if(car) car.dislikes=(car.dislikes||0)+1; else car={likes:0,dislikes:1}; return car; });
+      userActions[carId] = "dislike";
+    }
+
+    localStorage.setItem('userActions', JSON.stringify(userActions));
+    updateButtonState(carId); // highlight button
+  });
+
+  // On page load: highlight existing actions
+  updateButtonState(carId);
+});
+
+ 
+    /* ----------------------
+       Small UI helpers
+       ---------------------- */
+    document.getElementById('year').innerText = new Date().getFullYear();
+
+    // Mobile menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    function toggleMobileMenu(){
+      mobileMenu.classList.toggle('show');
+      mobileMenu.setAttribute('aria-hidden', !mobileMenu.classList.contains('show'));
+    }
+    hamburger.addEventListener('click', toggleMobileMenu);
+
+    // Close menu on outside click (mobile)
+    document.addEventListener('click', (e)=>{
+      if(!e.target.closest('.navbar') && !e.target.closest('#mobileMenu')){
+        if(mobileMenu.classList.contains('show')) toggleMobileMenu();
+      }
+    });
+
+    /* ----------------------
+       Loader + Rating script
+       ---------------------- */
+const loader = document.getElementById('loader');
+const cards = document.querySelectorAll(".car-card");
+let ratingsLoaded = 0;
+let carRatings = []; // {card, rating} स्टोर करने के लिए
+
+function openCar(carId){ window.location.href = `car.html?id=${carId}`; }
+
+// Page load pe loader + blur
+document.body.classList.add('loading');
+
+// Initialize ratings for each card
+cards.forEach(card => {
+  const carId = card.dataset.id;
+  const stars = card.querySelectorAll(".rating span");
+  const ratingText = card.querySelector(".rating-text");
+  const carRef = db.ref('cars/' + carId);
+
+  // Listen for updates
+  carRef.on('value', snapshot => {
+    const data = snapshot.val();
+    const avg = data && data.ratingCount > 0 ? (data.totalRating / data.ratingCount) : 0;
+    highlightStars(stars, Math.round(avg));
+    ratingText.innerText = data && data.ratingCount > 0 ? `Ratings: ${avg.toFixed(1)} (${data.ratingCount} votes)` : 'Ratings: 0 (0 votes)';
+
+    // Add to carRatings array
+    carRatings.push({ card, rating: avg });
+
+    // loader hide का logic
+    ratingsLoaded++;
+    if(ratingsLoaded >= cards.length){
+      hideLoader();
+      sortGalleryByRating(); // सब ratings load होने के बाद sorting
+    }
+  });
+
+  
+
+
+  // Hover & click interactions for stars
+  stars.forEach(star => {
+    star.addEventListener("mouseover", () => highlightStars(stars, parseInt(star.dataset.value)));
+    star.addEventListener("mouseout", () => {
+      carRef.once('value').then(snapshot => {
+        const data = snapshot.val();
+        const avg = data && data.ratingCount > 0 ? Math.round(data.totalRating / data.ratingCount) : 0;
+        highlightStars(stars, avg);
+      });
+    });
+    star.addEventListener("click", () => {
+      const ratingValue = parseInt(star.dataset.value);
+      carRef.transaction(currentData => {
+        if (currentData) {
+          currentData.totalRating = (currentData.totalRating || 0) + ratingValue;
+          currentData.ratingCount = (currentData.ratingCount || 0) + 1;
+        } else {
+          currentData = { totalRating: ratingValue, ratingCount: 1 };
+        }
+        return currentData;
+      });
+    });
+  });
+});
+
+// Highlight stars function
+function highlightStars(stars, rating){
+  stars.forEach(star => {
+    if(parseInt(star.dataset.value) <= rating) star.classList.add("selected");
+    else star.classList.remove("selected");
+  });
+}
+
+// Sort gallery by rating
+function sortGalleryByRating() {
+  carRatings.sort((a, b) => b.rating - a.rating); // descending
+  const gallery = document.getElementById('gallery');
+  carRatings.forEach(item => gallery.appendChild(item.card));
+}
+
+// Hide loader
+function hideLoader() {
+  if(loader) loader.style.display = 'none';
+  document.body.classList.remove('loading');
+}
+
+// Safety fallback agar Firebase slow ho
+setTimeout(()=>{ hideLoader(); sortGalleryByRating(); }, 6000);
+
+// Search box
+const searchBox = document.getElementById("searchBox");
+searchBox.addEventListener("input", () => {
+  const query = searchBox.value.trim().toLowerCase();
+  cards.forEach(card => {
+    const name = (card.dataset.name || '').toLowerCase();
+    card.style.display = name.includes(query) ? "flex" : "none";
+  });
+});
+
+// Contact email
+const sendMailBtn = document.getElementById('sendMailBtn');
+sendMailBtn.addEventListener('click', () => {
+  const emailInput = document.getElementById('userEmail');
+  const email = (emailInput.value || '').trim();
+  if(!email || !/^\S+@\S+\.\S+$/.test(email)){
+    alert('Please enter a valid email address.');
+    emailInput.focus();
+    return;
   }
-  setInterval(draw,33);
-})();
+  const subject = encodeURIComponent('Support Request - Game Cars Showcase');
+  const body = encodeURIComponent('Hi team,%0D%0A%0D%0AI am contacting from: ' + email + '%0D%0A%0D%0A(Write your message here)%0D%0A');
+  window.location.href = `mailto:support@gamecars.com?subject=${subject}&body=${body}`;
+});
+
+// Allow enter key on email input
+document.getElementById('userEmail').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') sendMailBtn.click();
+});
+/* ----------------------
+   ⚡ Compare Cars Feature
+   ---------------------- */
+const compareBtn = document.getElementById("compareBtn");
+const compareCheckboxes = document.querySelectorAll(".compare-checkbox");
+
+// Custom Alert Function (बाहर define करें)
+function showCustomAlert() {
+  const alertModal = document.getElementById('customAlert');
+  alertModal.style.display = 'flex';
+
+  document.getElementById('alertCloseBtn').onclick = () => {
+    alertModal.style.display = 'none';
+  };
+}
+
+// Compare button click
+compareBtn.addEventListener("click", () => {
+  const selected = Array.from(compareCheckboxes)
+    .filter(cb => cb.checked)
+    .map(cb => cb.closest(".car-card"));
+
+  if (selected.length < 2) {
+    showCustomAlert();
+    return;
+  }
+
+  // ✅ Comparison table logic यहाँ रखें
+  let tableHTML = `
+    <div id="compareModal" style="position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:9999;">
+      <div class="compare-box">
+
+        <h2 style="text-align:center;">🚗 Car Comparison</h2>
+        <table border="1" style="border-collapse:collapse; width:100%; text-align:center;">
+          <tr style="background:#ff006a; color:white;">
+            <th>Feature</th>
+            ${selected.map(c => `<th>${c.querySelector("h3").innerText}</th>`).join("")}
+          </tr>
+          <tr><td>⭐ Average Rating</td>${selected.map(c => `<td>${c.querySelector(".rating-text").innerText}</td>`).join("")}</tr>
+          <tr><td>📸 Image</td>${selected.map(c => `<td><img src="${c.querySelector("img").src}" width="100"></td>`).join("")}</tr>
+          <tr><td>⚙️ Type</td>${selected.map(c => `<td>${c.dataset.type || "N/A"}</td>`).join("")}</tr>
+        </table>
+
+        <div style="text-align:center; margin-top:15px;">
+          <button onclick="document.getElementById('compareModal').remove()" 
+            style="background:#ff006a; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", tableHTML);
+});
+compareCheckboxes.forEach(cb => {
+  cb.addEventListener('change', () => {
+    const selectedCount = Array.from(compareCheckboxes).filter(c => c.checked).length;
+    if (selectedCount > 2) {
+      cb.checked = false; // तीसरे को uncheck कर दें
+      showCustomAlert();  // alert दिखाएं
+    }
+  });
+});
+
+// Reset all ratings button
+/*document.getElementById('resetRatingsBtn').addEventListener('click', () => {
+  const confirmReset = confirm("Are you sure you want to reset all ratings?");
+  if(confirmReset){
+    const carsRef = db.ref('cars');
+    carsRef.once('value').then(snapshot => {
+      snapshot.forEach(carSnap => {
+        carSnap.ref.set({ totalRating: 0, ratingCount: 0 }); // reset
+      });
+      alert('All ratings have been reset!');
+      location.reload(); // page reload to update UI
+    });
+  }
+}); */
 </script>
 
 </body>
-</html>
+</html> 

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>KD Checker</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #001f4d, #004080, #0073e6);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: #e0f7ff;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    h1 {
+      font-size: 48px;
+      margin-bottom: 60px;
+      text-shadow: 0 0 20px #00f, 0 0 40px #00bfff;
+      text-align: center;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 25px;
+    }
+
+    button {
+      background: rgba(0, 0, 50, 0.7);
+      color: #00f;
+      border: 2px solid #00bfff;
+      border-radius: 12px;
+      padding: 18px 30px;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px #00bfff;
+    }
+
+    button:hover {
+      background: #00bfff;
+      color: #001f4d;
+      transform: scale(1.08);
+      box-shadow: 0 0 20px #00f, 0 0 40px #00bfff;
+    }
+
+    .red {
+      background: #ff4d4d !important;
+      color: #fff !important;
+      border-color: #ff1a1a !important;
+      box-shadow: 0 0 15px #ff4d4d;
+    }
+
+    audio { display: none; }
+
+    @media(max-width: 600px){
+      h1 { font-size: 36px; margin-bottom: 40px; }
+      button { padding: 15px 25px; font-size: 20px; }
+      .buttons { gap: 15px; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tumhari KD kitni hai?</h1>
+
+  <div class="buttons">
+    <button data-audio="voice2.mp3" data-type="next">2+</button>
+    <button data-audio="voice5.mp3" data-type="next">7+</button>
+    <button data-audio="voice10.mp3" data-type="red">15+</button>
+  </div>
+
+  <!-- Initial voice -->
+  <audio id="kdVoice" src="voice(kd).mp3"></audio>
+
+  <script>
+    const audio = document.getElementById('kdVoice');
+
+    // Page load hote hi initial audio play
+    window.addEventListener('load', () => {
+      audio.play().catch(err => console.log("Playback blocked:", err));
+    });
+
+    document.querySelectorAll('button[data-audio]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const newSrc = btn.getAttribute('data-audio');
+        const type = btn.getAttribute('data-type'); // next ya red
+
+        audio.src = newSrc;
+        audio.currentTime = 0;
+        audio.play().catch(err => console.log("Playback blocked:", err));
+
+        if(type === "next") {
+          // Audio khatam hone ke baad next.html
+          audio.onended = () => {
+            window.location.href = "key.html";
+          };
+        } else if(type === "red") {
+          // 15+ button red ho jaye, page redirect na ho
+          btn.classList.add('red');
+          audio.onended = null; // redirect off
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

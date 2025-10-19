@@ -26,18 +26,19 @@
     100% {background-position: 0% 50%;}
   }
 
-  h1 {
-    font-size: 48px;
-    margin-bottom: 60px;
-    text-shadow: 0 0 20px rgb(81, 81, 168), 0 0 40px #00bfff;
-    text-align: center;
-    background: rgba(0,0,50,0.5);
-    padding: 20px 40px;
-    border-radius: 12px;
-    border: 2px solid #00bfff;
-    box-shadow: 0 0 15px #00bfff inset;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
+ h1 {
+  font-size: 48px;
+  margin-bottom: px; /* पहले 60px था, अब कम कर दिया */
+  text-shadow: 0 0 20px rgb(81, 81, 168), 0 0 40px #00bfff;
+  text-align: center;
+  background: rgba(0,0,50,0.5);
+  padding: 20px 40px;
+  border-radius: 12px;
+  border: 2px solid #00bfff;
+  box-shadow: 0 0 15px #00bfff inset;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
 
   h1:hover {
     transform: scale(1.05);
@@ -86,6 +87,13 @@
     pointer-events: none;
     border-radius: 50%;
   }
+img {
+  width: 320px;
+  height: 200px;
+  object-fit: cover;
+  margin-top: 10px; /* h1 के नीचे थोड़ी जगह */
+}
+
 
   audio { display: none; }
 
@@ -97,7 +105,7 @@
 </style>
 </head>
 <body>
-
+<img src="you.png" >
 <h1>Tumhari KD kitni hai?</h1>
 
 <div class="buttons">

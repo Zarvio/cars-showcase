@@ -1,104 +1,156 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <title>Feature Mod - Intro</title>
-  <style>
-    * {margin: 0; padding: 0; box-sizing: border-box;}
-    body {
-      background: linear-gradient(135deg, rgb(35, 10, 133), #070815, #000);
-      background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
-      color: #0f0;
-      font-family: 'Courier New', monospace;
-      overflow: hidden;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      position: relative;
-    }
-
-    @keyframes gradientBG {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
-
-    h1 {
-      font-size: 40px;
-      padding: 15px 40px;
-      background: rgba(0,0,0,0.8);
-      border: 2px solid #0f0;
-      border-radius: 12px;
-      text-shadow: 0 0 10px #0f0;
-      cursor: pointer;
-      z-index: 10;
-      transition: all 0.3s ease;
-      user-select: none;
-    }
-
-    h1:hover {
-      background: rgba(0,0,0,1);
-      transform: scale(1.05);
-      box-shadow: 0 0 20px #0f0, 0 0 40px #0f0 inset;
-    }
-
-    .floating-text {
-      position: absolute;
-      color: #0f0;
-      opacity: 0;
-      font-size: 20px;
-      text-shadow: 0 0 10px #0f0;
-      animation: fadeMove 6s linear infinite;
-    }
-
-    @keyframes fadeMove {
-      0% { opacity: 0; transform: translateY(20px); }
-      20% { opacity: 1; }
-      80% { opacity: 1; }
-      100% { opacity: 0; transform: translateY(-20px); }
-    }
-
-    audio { display: none; }
-  </style>
+<meta charset="UTF-8">
+<title>Soldier Mod - Intro</title>
+<style>
+* {margin:0; padding:0; box-sizing:border-box;}
+body {
+  font-family:'Courier New', monospace;
+  height:100vh;
+  overflow:hidden;
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  color:#0f0;
+  position:relative;
+}
+canvas#bgCanvas{
+  position:absolute;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+}
+h1{
+  font-size:38px;
+  padding:18px 40px;
+  background: rgba(0,0,0,0.85);
+  border:2px solid #0f0;
+  border-radius:12px;
+  text-shadow:0 0 10px #0f0,0 0 25px #00ff00;
+  cursor:pointer;
+  z-index:10;
+  transition:0.3s;
+  user-select:none;
+  box-shadow:0 0 10px #0f0 inset;
+  position:relative;
+  overflow:hidden;
+}
+h1:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 25px #0f0,0 0 45px #00ff00 inset;
+}
+.terminal-box{
+  position:absolute;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  width:90%;
+  max-width:500px;
+  height:150px;
+  background: rgba(0,0,0,0.6);
+  border:1px solid #0f0;
+  border-radius:10px;
+  overflow:hidden;
+  padding:10px;
+  font-size:14px;
+  color:#0f0;
+  box-shadow:0 0 10px #0f0 inset;
+  z-index:5;
+}
+.terminal-line{
+  opacity:0;
+  animation: fadeLine 6s linear forwards;
+}
+@keyframes fadeLine{
+  0% {opacity:0;}
+  20% {opacity:1;}
+  80% {opacity:1;}
+  100% {opacity:0;}
+}
+audio{display:none;}
+@media(max-width:600px){
+  h1{font-size:28px; padding:15px 30px;}
+  .terminal-box{height:120px; font-size:12px;}
+}
+</style>
 </head>
 <body>
+<canvas id="bgCanvas"></canvas>
+<h1 id="showKey">SHOW KEY</h1>
+<div class="terminal-box" id="terminal"></div>
+<audio id="introVoice" src="voice.mp3"></audio>
 
-  <h1 id="showKey">SHOW KEY</h1>
-  <audio id="introVoice" src="voice.mp3"></audio>
+<script>
+// BUTTON FUNCTIONALITY
+const audio=document.getElementById('introVoice');
+const showKey=document.getElementById('showKey');
+showKey.addEventListener('click',e=>{
+  audio.play().catch(err=>console.log(err));
+  audio.onended=()=>{window.location.href='next.html';};
+  showKey.style.pointerEvents='none';
+});
 
-  <script>
-    const audio = document.getElementById('introVoice');
+// TERMINAL LOGS
+const terminal=document.getElementById('terminal');
+const logMessages=[
+  "[Decoding Module...]",
+  "[Accessing Soldier Mod...]",
+  "[Loading System Data...]",
+  "[Soldier Mod Active]",
+  "[Encrypting Data...]",
+  "[Initializing Scripts...]",
+  "[Decrypting Files...]",
+  "[Memory Scan Complete]"
+];
+function addTerminalLine(){
+  const line=document.createElement('div');
+  line.className='terminal-line';
+  line.textContent=logMessages[Math.floor(Math.random()*logMessages.length)];
+  terminal.appendChild(line);
+  setTimeout(()=>line.remove(),6000);
+}
+setInterval(addTerminalLine,500);
 
-    document.getElementById('showKey').addEventListener('click', () => {
-      // 🔊 User click ke baad audio play
-      audio.play().catch(err => console.log("Playback error:", err));
+// PARTICLE BACKGROUND
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+window.addEventListener('resize',()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight;});
 
-      // 🎯 Audio khatam hone par next page
-      audio.onended = () => {
-        window.location.href = "next.html";
-      };
+const particles=[];
+for(let i=0;i<120;i++){
+  particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*2+1, dx:(Math.random()-0.5)*0.3, dy:(Math.random()-0.5)*0.3});
+}
 
-      // ⚡ Optional: Button ko disable kar do taaki multiple clicks na ho
-      document.getElementById('showKey').style.pointerEvents = 'none';
-    });
+function animateParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,255,0,0.25)';
+    ctx.fill();
+    p.x+=p.dx; p.y+=p.dy;
+    if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
+    if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
+  });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
 
-    // 🧠 Floating hacker texts
-    const texts = ["Feature Mod", "Feature Mod", "Feature Mod", "Feature Mod", "Feature Mod"];
-    function createFloatingText() {
-      const text = document.createElement('div');
-      text.classList.add('floating-text');
-      text.textContent = texts[Math.floor(Math.random() * texts.length)];
-      text.style.left = Math.random() * window.innerWidth + 'px';
-      text.style.top = Math.random() * window.innerHeight + 'px';
-      text.style.animationDuration = (4 + Math.random() * 3) + 's';
-      document.body.appendChild(text);
-      setTimeout(() => text.remove(), 6000);
-    }
-    setInterval(createFloatingText, 600);
-  </script>
+// OPTIONAL: FLOATING GLITCH SPARKS
+function createSpark(){
+  const x=Math.random()*canvas.width;
+  const y=Math.random()*canvas.height;
+  ctx.fillStyle='rgba(0,255,0,'+(Math.random()*0.5+0.1)+')';
+  ctx.fillRect(x,y,1,1);
+}
+setInterval(createSpark,50);
 
+</script>
 </body>
 </html>

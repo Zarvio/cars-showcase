@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Soldier Mod - Telegram</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#000,#003300,#001a00);
+  color:#00ff88;
+  font-family:'Poppins',sans-serif;
+  overflow:hidden;
+}
+.logo-box{
+  text-align:center;
+  animation:fadeIn 2s ease forwards;
+}
+.logo-box img{
+  width:140px;
+  height:140px;
+  border-radius:50%;
+  border:3px solid #00ff88;
+  box-shadow:0 0 25px #00ff88;
+  margin-bottom:15px;
+}
+h1{
+  font-size:2rem;
+  letter-spacing:2px;
+  text-shadow:0 0 10px #00ff88;
+}
+.join-btn{
+  margin-top:25px;
+  padding:12px 25px;
+  background:#00ff88;
+  color:#000;
+  font-weight:600;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:1.1rem;
+  box-shadow:0 0 20px rgba(0,255,136,0.5);
+  transition:0.3s;
+}
+.join-btn:hover{
+  transform:scale(1.05);
+  background:#00cc66;
+}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* blur background animation */
+.bg-blur{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  backdrop-filter:blur(12px);
+  background:rgba(0,0,0,0.3);
+  z-index:-1;
+}
+</style>
+</head>
+<body>
+
+<div class="bg-blur"></div>
+
+<div class="logo-box">
+  <img src="tg1.jpg" alt="Soldier Mod Logo">
+  <h1>SOLDIER MOD</h1>
+  <button class="join-btn" id="joinTG">Join Telegram</button>
+</div>
+
+<audio id="introVoice" src="intro.mp3" autoplay></audio>
+
+<script>
+// 🔊 Try to play voice automatically (some browsers block it)
+const introVoice = document.getElementById('introVoice');
+introVoice.play().catch(()=>{
+  document.body.addEventListener('click',()=>{
+    introVoice.play();
+  },{once:true});
+});
+
+// 🟢 Telegram Button Click
+const joinBtn = document.getElementById('joinTG');
+joinBtn.addEventListener('click',()=>{
+  localStorage.setItem('joinedTG','true'); // mark joined
+  window.location.href='https://t.me/+71oeaCdrB4JmN2Vl'; // ← अपना Telegram लिंक डालो
+});
+
+// 🕓 जब user वापस आए और joinedTG true हो
+window.addEventListener('load',()=>{
+  if(localStorage.getItem('joinedTG')==='true'){
+    setTimeout(()=>{
+      window.location.href='key.html'; // ← अगला पेज (अपना नाम डालो)
+    },3000);
+  }
+});
+</script>
+
+</body>
+</html>

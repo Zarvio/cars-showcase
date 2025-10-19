@@ -3,30 +3,133 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Feature Mod Key</title>
+<title>Soldier Mod Key</title>
 <style>
-body { font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #000; overflow: hidden; }
-header { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); font-family: 'Arial', sans-serif; color: #00ff88; font-size: calc(16px + 1vw); background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 10px; box-shadow: 0 0 10px #00ff88; z-index: 10; text-align: center; white-space: nowrap; }
-.card { width: 380px; max-width: 80%; background: rgba(0,0,0,0.65); padding: 35px 30px; border-radius: 20px; text-align: center; color: #fff; backdrop-filter: blur(10px); border: 1px solid #00ff88; box-shadow: 0 0 25px rgba(0,255,136,0.3); position: relative; z-index: 10; }
-.circle-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #00ff88; margin-bottom: 15px; cursor: pointer; }
-button { padding: 12px 20px; border-radius: 10px; border: none; background: #00ff88; color: #000; font-weight: 700; cursor: pointer; transition: 0.3s; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  background: #000;
+  overflow: hidden;
+  transition: filter 0.5s ease;
+}
+header {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Arial', sans-serif;
+  color: #00ff88;
+  font-size: calc(16px + 1vw);
+  background: rgba(0,0,0,0.6);
+  padding: 15px 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #00ff88;
+  z-index: 10;
+  text-align: center;
+  white-space: nowrap;
+}
+.card {
+  width: 380px;
+  max-width: 80%;
+  background: rgba(0,0,0,0.65);
+  padding: 35px 30px;
+  border-radius: 20px;
+  text-align: center;
+  color: #fff;
+  backdrop-filter: blur(10px);
+  border: 1px solid #00ff88;
+  box-shadow: 0 0 25px rgba(0,255,136,0.3);
+  position: relative;
+  z-index: 10;
+}
+.circle-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #00ff88;
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+button {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #00ff88;
+  color: #000;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+}
 button:hover { transform: scale(1.05); background: #00cc66; }
-pre { background: rgba(255,255,255,0.1); color: #00ff88; padding: 10px; border-radius: 8px; font-weight: 600; }
-.copy-animation { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0; transition: all 0.3s ease; }
+pre {
+  background: rgba(255,255,255,0.1);
+  color: #00ff88;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.copy-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
 .copy-animation.show { opacity: 1; transform: translate(-50%, -60%); }
 #matrix { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; background: #000; }
 .hidden { display: none; }
+
+/* 🔵 Full-page Loading Screen */
+#loadingOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #00ff88;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Three Dots Animation */
+.loading-dots::after {
+  content: '';
+  display: inline-block;
+  animation: dots 1s steps(3, end) infinite;
+}
+@keyframes dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
 </style>
 </head>
 <body>
 
 <canvas id="matrix"></canvas>
 
-<header>Welcome to Feature Mod Keys</header>
+<!-- 🌀 Loading Screen -->
+<div id="loadingOverlay">
+  <div>Loading<span class="loading-dots"></span></div>
+</div>
+
+<header>WELCOM TO SOLDIER MOD KEYS</header>
 
 <div class="card">
-  <img src="tg.jpg" class="circle-img" alt="Logo">
-  <h2>Get Your Key</h2>
+  <img src="tg1.jpg" class="circle-img" alt="Logo">
+  <h2>𝗦𝗢𝗟𝗗𝗜𝗘𝗥 𝗠𝗢𝗗 </h2>
 
   <div id="step-key">
     <h3>Your Key:</h3>
@@ -82,6 +185,7 @@ const keyTimerEl = document.getElementById('keyTimer');
 const expiredMsgEl = document.getElementById('expiredMsg');
 const copyVoice = document.getElementById('copyVoice');
 const copyAnimation = document.getElementById('copyAnimation');
+const loadingOverlay = document.getElementById('loadingOverlay');
 
 // Key Timer functions
 function formatTime(ms) {
@@ -120,6 +224,7 @@ function startCountdown(expireTime) {
 // Listen for latest key
 db.ref('keys/latest').on('value', snapshot => {
   const data = snapshot.val();
+  loadingOverlay.style.display = 'none'; // hide blur + loader when done
   if (!data || !data.value) { disableKeyUI(); return; }
   enableKeyUI(data.value);
   startCountdown(data.expiresAt || null);
@@ -143,7 +248,7 @@ btnCopy.addEventListener('click', async () => {
   }
 });
 
-// Admin logic: click 5 times on logo
+// Admin logic
 const btnAdminLogin = document.getElementById('btnAdminLogin');
 const adminPassSection = document.getElementById('adminPassSection');
 const adminPassInput = document.getElementById('adminPassInput');
@@ -154,7 +259,7 @@ const adminKeyInput = document.getElementById('adminKeyInput');
 const adminExpiryInput = document.getElementById('adminExpiryInput');
 const btnAddKey = document.getElementById('btnAddKey');
 const adminKeyMsg = document.getElementById('adminKeyMsg');
-const DEMO_ADMIN_PASSWORD = 'feature@4.0';
+const DEMO_ADMIN_PASSWORD = 'soldier@4.0';
 
 let taps=0, tapTimer;
 document.querySelector('.circle-img').addEventListener('click', ()=>{
@@ -164,14 +269,21 @@ document.querySelector('.circle-img').addEventListener('click', ()=>{
   if(taps>=5){ btnAdminLogin.classList.remove('hidden'); taps=0; }
 });
 
-btnAdminLogin.onclick = () => { adminPassSection.classList.remove('hidden'); btnAdminLogin.classList.add('hidden'); adminMsg.textContent=''; };
+btnAdminLogin.onclick = () => {
+  adminPassSection.classList.remove('hidden');
+  btnAdminLogin.classList.add('hidden');
+  adminMsg.textContent='';
+};
 btnSubmitPass.onclick = () => {
   if(adminPassInput.value.trim()===DEMO_ADMIN_PASSWORD){
     adminKeySection.classList.remove('hidden');
     adminMsg.textContent='Logged in!';
     adminMsg.style.color='#16a34a';
     adminPassSection.classList.add('hidden');
-  } else { adminMsg.textContent='Incorrect password!'; adminMsg.style.color='#dc2626'; }
+  } else {
+    adminMsg.textContent='Incorrect password!';
+    adminMsg.style.color='#dc2626';
+  }
 };
 btnAddKey.onclick = ()=>{
   const k = adminKeyInput.value.trim();
@@ -183,19 +295,25 @@ btnAddKey.onclick = ()=>{
   if(e) p.expiresAt=e;
   db.ref('keys/latest').set(p).then(()=>{
     adminKeyMsg.textContent='Key added!';
-    adminKeyInput.value=''; adminExpiryInput.value='';
+    adminKeyInput.value='';
+    adminExpiryInput.value='';
   });
 };
 
 // Matrix effect
 (function(){
-  const canvas=document.getElementById('matrix'); const ctx=canvas.getContext('2d');
+  const canvas=document.getElementById('matrix');
+  const ctx=canvas.getContext('2d');
   canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-  const letters='Feature Mod '; const fontSize=16; const columns=Math.floor(canvas.width/fontSize);
+  const letters='Soldier Mod';
+  const fontSize=16;
+  const columns=Math.floor(canvas.width/fontSize);
   const drops=Array(columns).fill(1);
   function draw(){
-    ctx.fillStyle='rgba(0,0,0,0.1)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#00ff88'; ctx.font=fontSize+'px monospace';
+    ctx.fillStyle='rgba(0,0,0,0.1)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#00ff88';
+    ctx.font=fontSize+'px monospace';
     for(let i=0;i<drops.length;i++){
       const text=letters.charAt(Math.floor(Math.random()*letters.length));
       ctx.fillText(text,i*fontSize,drops[i]*fontSize);

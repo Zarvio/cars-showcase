@@ -1,156 +1,104 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Soldier Mod - Intro</title>
-<style>
-* {margin:0; padding:0; box-sizing:border-box;}
-body {
-  font-family:'Courier New', monospace;
-  height:100vh;
-  overflow:hidden;
-  background:#000;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  color:#0f0;
-  position:relative;
+  <meta charset="UTF-8" />
+  <img src="tg1.jpg" alt="Logo" class="logo" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Show Key</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: white;
+      margin: 0;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .welcome {
+      position: absolute;
+      top: 20px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    button {
+      padding: 15px 40px;
+      font-size: 1.4rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background-color: #fff;
+      color: #2575fc;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #f4f4f4;
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .version {
+      position: absolute;
+      bottom: 15px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      button {
+        width: 80%;
+        font-size: 1.2rem;
+        padding: 12px 0;
+      }
+      .welcome {
+        font-size: 1rem;
+      }
+    }
+    
+.logo {
+  width: 80px;              /* size adjust kar lo apni need ke hisab se */
+   margin-bottom: 20px;
+  border-radius: 50%;        /* circle banata hai */
+  object-fit: cover;         /* image ke andar fit karta hai bina stretch hue */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* soft shadow for depth */
+  border: 3px solid rgba(255, 255, 255, 0.6); /* optional white border */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-canvas#bgCanvas{
-  position:absolute;
-  top:0; left:0;
-  width:100%;
-  height:100%;
-  z-index:0;
+
+.logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
-h1{
-  font-size:38px;
-  padding:18px 40px;
-  background: rgba(0,0,0,0.85);
-  border:2px solid #0f0;
-  border-radius:12px;
-  text-shadow:0 0 10px #0f0,0 0 25px #00ff00;
-  cursor:pointer;
-  z-index:10;
-  transition:0.3s;
-  user-select:none;
-  box-shadow:0 0 10px #0f0 inset;
-  position:relative;
-  overflow:hidden;
-}
-h1:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 25px #0f0,0 0 45px #00ff00 inset;
-}
-.terminal-box{
-  position:absolute;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  width:90%;
-  max-width:500px;
-  height:150px;
-  background: rgba(0,0,0,0.6);
-  border:1px solid #0f0;
-  border-radius:10px;
-  overflow:hidden;
-  padding:10px;
-  font-size:14px;
-  color:#0f0;
-  box-shadow:0 0 10px #0f0 inset;
-  z-index:5;
-}
-.terminal-line{
-  opacity:0;
-  animation: fadeLine 6s linear forwards;
-}
-@keyframes fadeLine{
-  0% {opacity:0;}
-  20% {opacity:1;}
-  80% {opacity:1;}
-  100% {opacity:0;}
-}
-audio{display:none;}
-@media(max-width:600px){
-  h1{font-size:28px; padding:15px 30px;}
-  .terminal-box{height:120px; font-size:12px;}
-}
-</style>
+
+  </style>
 </head>
 <body>
-<canvas id="bgCanvas"></canvas>
-<h1 id="showKey">SHOW KEY</h1>
-<div class="terminal-box" id="terminal"></div>
-<audio id="introVoice" src="voice.mp3"></audio>
-
-<script>
-// BUTTON FUNCTIONALITY
-const audio=document.getElementById('introVoice');
-const showKey=document.getElementById('showKey');
-showKey.addEventListener('click',e=>{
-  audio.play().catch(err=>console.log(err));
-  audio.onended=()=>{window.location.href='next.html';};
-  showKey.style.pointerEvents='none';
-});
-
-// TERMINAL LOGS
-const terminal=document.getElementById('terminal');
-const logMessages=[
-  "[Decoding Module...]",
-  "[Accessing Soldier Mod...]",
-  "[Loading System Data...]",
-  "[Soldier Mod Active]",
-  "[Encrypting Data...]",
-  "[Initializing Scripts...]",
-  "[Decrypting Files...]",
-  "[Memory Scan Complete]"
-];
-function addTerminalLine(){
-  const line=document.createElement('div');
-  line.className='terminal-line';
-  line.textContent=logMessages[Math.floor(Math.random()*logMessages.length)];
-  terminal.appendChild(line);
-  setTimeout(()=>line.remove(),6000);
-}
-setInterval(addTerminalLine,500);
-
-// PARTICLE BACKGROUND
-const canvas=document.getElementById('bgCanvas');
-const ctx=canvas.getContext('2d');
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-window.addEventListener('resize',()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight;});
-
-const particles=[];
-for(let i=0;i<120;i++){
-  particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*2+1, dx:(Math.random()-0.5)*0.3, dy:(Math.random()-0.5)*0.3});
-}
-
-function animateParticles(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  particles.forEach(p=>{
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle='rgba(0,255,0,0.25)';
-    ctx.fill();
-    p.x+=p.dx; p.y+=p.dy;
-    if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
-    if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
-  });
-  requestAnimationFrame(animateParticles);
-}
-animateParticles();
-
-// OPTIONAL: FLOATING GLITCH SPARKS
-function createSpark(){
-  const x=Math.random()*canvas.width;
-  const y=Math.random()*canvas.height;
-  ctx.fillStyle='rgba(0,255,0,'+(Math.random()*0.5+0.1)+')';
-  ctx.fillRect(x,y,1,1);
-}
-setInterval(createSpark,50);
-
-</script>
+  <div class="welcome">👋 Welcome to Solider Mod</div>
+  <button onclick="location.href='feedback.html'">Show Key</button>
+  <div class="version">Version 1.0</div>
 </body>
 </html>

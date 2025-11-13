@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome | GIF World</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+       * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      width: 100%;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: 'Poppins', sans-serif;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      letter-spacing: 1px;
+      color: #00e0ff;
+      text-shadow: 0 0 20px rgba(0, 224, 255, 0.6);
+      margin-bottom: 10px;
+      animation: fadeInDown 1.2s ease forwards;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: #ccc;
+      margin-bottom: 40px;
+      animation: fadeIn 1.8s ease forwards;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, #00bcd4, #3b82f6);
+      border: none;
+      padding: 14px 50px;
+      border-radius: 30px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s ease;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+      animation: fadeInUp 2s ease forwards;
+    }
+
+    .btn:hover {
+      transform: scale(1.08);
+      background: linear-gradient(90deg, #06b6d4, #2563eb);
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.7);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 🌌 Animated background particles */
+    .circles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .circles li {
+      position: absolute;
+      display: block;
+      list-style: none;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      animation: animate 25s linear infinite;
+      bottom: -150px;
+      border-radius: 50%;
+    }
+
+    .circles li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+    .circles li:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+    .circles li:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+    .circles li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+    .circles li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+    .circles li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+    .circles li:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 7s; }
+
+    @keyframes animate {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>👋 Welcome to Our Website</h1>
+  <p>Explore amazing GIF collections and creative designs!</p>
+  <button class="btn" onclick="goNext()">Continue</button>
+
+  <ul class="circles">
+    <li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+  </ul>
+
+  <script>
+    function goNext() {
+      window.location.href = "welcome.html"; // 👈 ye gallery page open karega
+    }
+  </script>
+</body>
+</html>

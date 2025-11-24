@@ -1,133 +1,132 @@
-/* 🌍 Global */
-body {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: #fff;
+:root{
+  --bg:#0f1724;
+  --card:#0b1220;
+  --muted:#9aa4b2;
+  --accent:#06b6d4;
+  --accent2:#7c3aed;
+  --glass: rgba(255,255,255,0.03);
+  --success: #16a34a;
+  --danger: #ef4444;
+  --radius: 12px;
+  --maxw: 920px;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-/* 🌈 Gradient Header */
-header {
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  color: white;
-  padding: 25px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+*{box-sizing:border-box}
+html,body{height:100%;}
+body{
+  margin:0;
+  background: linear-gradient(180deg,#071023 0%, #07182a 100%);
+  color:#e6eef6;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-size:15px;
+  line-height:1.35;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: 600;
-  letter-spacing: 1px;
+/* Layout */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 20px;
+  max-width:var(--maxw);
+  margin:20px auto 0;
+}
+.brand{font-weight:700; letter-spacing:0.2px; font-size:18px}
+.center{display:flex; align-items:center; justify-content:center; min-height:60vh; padding:20px; max-width:var(--maxw); margin:0 auto 40px;}
+
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));
+  border-radius:var(--radius);
+  padding:22px;
+  width:100%;
+  color:var(--muted);
+  box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+}
+.card.wide{max-width:760px}
+.card h2{color:#fff; margin:0 0 8px; font-size:20px}
+.card p{margin:8px 0 16px; color:var(--muted)}
+
+/* Buttons */
+.btn{
+  padding:10px 14px;
+  border-radius:10px;
+  background:var(--glass);
+  border:1px solid rgba(255,255,255,0.03);
+  color:#e8f1fb;
+  cursor:pointer;
+  font-weight:600;
+  transition:transform .12s ease, box-shadow .12s;
+}
+.btn:hover{transform:translateY(-3px)}
+.btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2)); box-shadow:0 6px 18px rgba(124,58,237,0.12)}
+.btn.accent{background:linear-gradient(90deg,#0ea5a4,#06b6d4)}
+.btn.danger{background: linear-gradient(90deg,#f43f5e,#ef4444)}
+
+.actions{display:flex; gap:10px; margin-top:16px;}
+.hint{color:var(--muted); font-size:13px; margin-top:12px;}
+
+/* Key box */
+.keyBox{
+  margin-top:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+  padding:18px;
+  border-radius:10px;
+  font-weight:700;
+  font-size:20px;
+  color:#fff;
+  text-align:center;
+  user-select:none;
+  -webkit-user-select:none;
+  box-shadow: inset 0 -2px 10px rgba(0,0,0,0.25);
 }
 
-/* ⬅ Back Button */
-.back-btn {
-  display: block;
-  text-align: center;
-  margin: 15px auto 0;
-  padding: 12px;
-  background: rgba(255,255,255,0.15);
-  color: white;
-  text-decoration: none;
-  border-radius: 10px;
-  width: 220px;
-  transition: 0.3s ease;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+/* Admin reveal button - hidden by default (opacity 0) */
+.adminReveal{
+  background:transparent;
+  border:1px dashed rgba(255,255,255,0.04);
+  color:var(--muted);
+  padding:8px 10px;
+  border-radius:8px;
+  opacity:0; pointer-events:none;
+  transition:opacity .3s ease, transform .12s ease;
 }
+.adminReveal.pulse{ transform:scale(1.06); box-shadow:0 10px 30px rgba(6,182,212,0.06) }
 
-.back-btn:hover {
-  background: rgba(255,255,255,0.3);
-  transform: scale(1.05);
+/* Pages visibility */
+.page{display:none;}
+.page.active{display:block;}
+
+/* Visitors list */
+.visitors{margin-top:12px; display:flex; flex-direction:column; gap:8px}
+.visitor{
+  display:flex; justify-content:space-between; align-items:center;
+  background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; color:var(--muted);
 }
+.v-id{font-weight:700; color:#fff}
+.v-meta{font-size:13px; color:var(--muted)}
 
-/* 📖 Glassmorphism Main Card */
-.container {
-  max-width: 750px;
-  margin: 30px auto;
-  background: rgba(255,255,255,0.08);
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-  backdrop-filter: blur(12px);
-  animation: fadeIn 1.2s ease-in forwards;
-  opacity: 0;
-}
+/* Stats */
+.statsRow{display:flex; gap:18px; margin:12px 0;}
+.stat{background:rgba(255,255,255,0.02); padding:14px; border-radius:8px; text-align:center; min-width:160px}
+.statValue{font-size:22px; font-weight:800; color:#fff}
+.statLabel{font-size:13px; color:var(--muted)}
 
-/* 🚘 Car Image */
-.container img {
-  width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-  transition: transform 0.3s ease;
-}
+/* modal */
+.modal{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(2,6,23,0.6); z-index:60}
+.modal.hidden{display:none}
+.modalCard{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:20px; border-radius:12px; width:320px; box-shadow:0 10px 40px rgba(2,6,23,0.7)}
+.modalCard h3{margin:0 0 12px; color:#fff}
+.modalCard input{width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:#fff; margin-bottom:12px}
 
-.container img:hover {
-  transform: scale(1.03);
-}
+/* loader */
+.loader{position:fixed; bottom:18px; right:18px; background:linear-gradient(90deg,#0ea5a4,#06b6d4); padding:10px 12px; border-radius:8px; box-shadow:0 8px 30px rgba(6,182,212,0.12)}
+.loader.hidden{display:none}
 
-/* 🏷 Car Name */
-h2 {
-  text-align: center;
-  margin: 20px 0 10px;
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #ffdf70;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-}
-
-/* 📝 Description */
-p {
-  text-align: justify;
-  line-height: 1.7;
-  white-space: pre-line;
-  font-size: 1rem;
-  color: #f1f1f1;
-}
-
-/* ⬇ Download Button */
-.download-btn {
-  display: block;
-  text-align: center;
-  padding: 15px;
-  background: linear-gradient(135deg, #28a745, #218838);
-  color: white;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: 30px;
-  margin: 25px auto 10px;
-  width: 220px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-  transition: 0.3s ease;
-}
-
-.download-btn:hover {
-  background: linear-gradient(135deg, #34d058, #1c7c31);
-  transform: scale(1.08);
-  box-shadow: 0 10px 25px rgba(40,167,69,0.7);
-}
-
-/* 🎬 Fade-in Animation */
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
-/* 📱 Responsive */
-@media (max-width: 768px) {
-  header h1 {
-    font-size: 1.4rem;
-  }
-  .container {
-    margin: 20px;
-    padding: 18px;
-  }
-  .download-btn {
-    width: 180px;
-    padding: 12px;
-  }
+/* small screens */
+@media (max-width:640px){
+  .topbar{padding:12px}
+  .card{padding:16px}
+  .stat{min-width:120px}
 }

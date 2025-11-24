@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Key Showcase</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ---------- PAGE: Home ---------- -->
+  <main id="homePage" class="page active">
+    <header class="topbar">
+      <h1 class="brand"></h1>
+      <button id="adminRevealBtn" class="adminReveal" title="Admin (press Ctrl+D)">Admin</button>
+    </header>
+
+    <section class="center">
+      <div class="card">
+        <h2>Welcome</h2>
+        <p>Click below to reveal the key.</p>
+        <button id="showKeyBtn" class="btn primary">Show Key</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ---------- PAGE: Key ---------- -->
+  <main id="keyPage" class="page">
+    <header class="topbar">
+      <h1 class="brand">Your Key</h1>
+      <button id="adminRevealBtn2" class="adminReveal" title="Admin (press Ctrl+D)">Admin</button>
+    </header>
+
+    <section class="center">
+      <div class="card wide">
+        <h2>Key Box</h2>
+
+        <!-- Put your real key text here -->
+        <div id="keyBox" class="keyBox" tabindex="-1" aria-label="Key">
+          <!-- Replace this with your actual key -->
+          MAXxMODOFFICIAL
+        </div>
+
+        <div class="actions">
+          <button id="copyBtn" class="btn accent">Copy Key</button>
+          <button id="backBtn" class="btn">Back</button>
+        </div>
+
+        <p class="hint">Text selection & dragging disabled. Key can only be copied through the Copy Key button.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ---------- ADMIN LOGIN MODAL ---------- -->
+  <div id="adminModal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modalCard">
+      <h3>Admin Login</h3>
+      <input id="adminPassword" type="password" placeholder="Enter password" />
+      <div class="modalActions">
+        <button id="adminLoginBtn" class="btn primary">Login</button>
+        <button id="adminCancelBtn" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- ADMIN DASHBOARD ---------- -->
+  <main id="adminPage" class="page">
+    <header class="topbar">
+      <h1 class="brand">Admin Analytics</h1>
+      <div class="adminControls">
+        <button id="exportJsonBtn" class="btn">Export JSON</button>
+        <button id="exportCsvBtn" class="btn">Export CSV</button>
+        <button id="resetBtn" class="btn danger">Reset</button>
+        <button id="adminLogoutBtn" class="btn">Logout</button>
+      </div>
+    </header>
+
+    <section class="center">
+      <div class="card wide">
+        <h2>Statistics</h2>
+        <div class="statsRow">
+          <div class="stat">
+            <div class="statValue" id="showCount">0</div>
+            <div class="statLabel">Unique Show Key clicks</div>
+          </div>
+          <div class="stat">
+            <div class="statValue" id="copyCount">0</div>
+            <div class="statLabel">Unique Copy clicks</div>
+          </div>
+        </div>
+
+        <h3>Visitors (global)</h3>
+        <div id="visitorsList" class="visitors"></div>
+
+        <p class="hint">Counts are stored in Firebase Realtime Database. Visitors list shows per-uid actions with timestamps and browser/os.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- loader -->
+  <div id="loader" class="loader hidden">Working...</div>
+
+<!-- Firebase SDK (make sure you have internet when running) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+/* ================= CONFIG ================= */
+/* Admin password you requested */
+const ADMIN_PASSWORD = "keymaster";
+
+/* Firebase config (use your values) */
+const firebaseConfig = {
+  apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
+  authDomain: "inspire4ever-c60ad.firebaseapp.com",
+  databaseURL: "https://inspire4ever-c60ad-default-rtdb.firebaseio.com",
+  projectId: "inspire4ever-c60ad",
+  storageBucket: "inspire4ever-c60ad.appspot.com",
+  messagingSenderId: "125014633127",
+  appId: "1:125014633127:web:d29e4c37628ab637f40982"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ================= UI ELEMENTS ================= */
+const homePage = document.getElementById("homePage");
+const keyPage = document.getElementById("keyPage");
+const adminPage = document.getElementById("adminPage");
+
+const showKeyBtn = document.getElementById("showKeyBtn");
+const backBtn = document.getElementById("backBtn");
+const copyBtn = document.getElementById("copyBtn");
+const keyBox = document.getElementById("keyBox");
+
+const adminRevealBtn = document.getElementById("adminRevealBtn");
+const adminRevealBtn2 = document.getElementById("adminRevealBtn2");
+const adminModal = document.getElementById("adminModal");
+const adminPassword = document.getElementById("adminPassword");
+const adminLoginBtn = document.getElementById("adminLoginBtn");
+const adminCancelBtn = document.getElementById("adminCancelBtn");
+const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+
+const exportJsonBtn = document.getElementById("exportJsonBtn");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
+const resetBtn = document.getElementById("resetBtn");
+
+const visitorsList = document.getElementById("visitorsList");
+const showCountEl = document.getElementById("showCount");
+const copyCountEl = document.getElementById("copyCount");
+
+const loader = document.getElementById("loader");
+
+/* ================= UID (per browser/device) ================= */
+let uid = localStorage.getItem("showkey_uid");
+if (!uid) {
+  uid = "u_" + Math.random().toString(36).slice(2, 12);
+  localStorage.setItem("showkey_uid", uid);
+}
+
+/* Small UA detect */
+function parseUA(ua) {
+  let browser = "Unknown";
+  if (/chrome|crios|crmo/i.test(ua) && !/edge|edg/i.test(ua)) browser = "Chrome";
+  else if (/firefox/i.test(ua)) browser = "Firefox";
+  else if (/safari/i.test(ua) && !/chrome|crios/i.test(ua)) browser = "Safari";
+  else if (/edg/i.test(ua)) browser = "Edge";
+  else if (/opr|opera/i.test(ua)) browser = "Opera";
+
+  let os = "Unknown";
+  if (/android/i.test(ua)) os = "Android";
+  else if (/iphone|ipad|ipod/i.test(ua)) os = "iOS";
+  else if (/windows nt/i.test(ua)) os = "Windows";
+  else if (/mac os x/i.test(ua)) os = "macOS";
+  else if (/linux/i.test(ua)) os = "Linux";
+
+  return { browser, os };
+}
+
+/* ================= Firebase helpers ================= */
+
+/**
+ * increaseCounter(type)
+ * type: "show_key" or "copy_key"
+ * Logic:
+ *  - Check if db.ref(`clicks/${uid}/${type}`) exists
+ *  - If not exists, set timestamp there and increment db.ref(`global/${type}`) via transaction
+ */
+async function increaseCounter(type) {
+  try {
+    const clickRef = db.ref(`clicks/${uid}/${type}`);
+    const snap = await clickRef.once("value");
+    if (!snap.exists()) {
+      // mark this user clicked with server timestamp
+      await clickRef.set({
+        ts: firebase.database.ServerValue.TIMESTAMP,
+        ua: navigator.userAgent,
+        browser: parseUA(navigator.userAgent).browser,
+        os: parseUA(navigator.userAgent).os
+      });
+      // increment global counter transactionally
+      const gRef = db.ref(`global/${type}`);
+      await gRef.transaction(current => (current || 0) + 1);
+    }
+  } catch (err) {
+    console.error("increaseCounter error:", err);
+  }
+}
+
+/* Read global counts and update admin UI in realtime */
+db.ref("global").on("value", snap => {
+  const data = snap.val() || {};
+  showCountEl.innerText = data.show_key || 0;
+  copyCountEl.innerText = data.copy_key || 0;
+});
+
+/* For visitors list: fetch clicks node and map uids */
+async function refreshVisitorsList() {
+  try {
+    const snap = await db.ref("clicks").once("value");
+    const all = snap.val() || {};
+    const rows = Object.keys(all).map(id => {
+      const r = all[id] || {};
+      return {
+        id,
+        shownTs: r.show_key ? r.show_key.ts || null : null,
+        copiedTs: r.copy_key ? r.copy_key.ts || null : null,
+        ua: (r.show_key && r.show_key.ua) || (r.copy_key && r.copy_key.ua) || "",
+        browser: (r.show_key && r.show_key.browser) || (r.copy_key && r.copy_key.browser) || "",
+        os: (r.show_key && r.show_key.os) || (r.copy_key && r.copy_key.os) || ""
+      };
+    }).sort((a,b) => {
+      const ta = a.shownTs || a.copiedTs || 0;
+      const tb = b.shownTs || b.copiedTs || 0;
+      return tb - ta;
+    });
+
+    visitorsList.innerHTML = "";
+    if (rows.length === 0) {
+      visitorsList.innerHTML = "<div class='hint'>No visitors yet</div>";
+      return;
+    }
+
+    rows.forEach(r => {
+      const el = document.createElement("div");
+      el.className = "visitor";
+      const shown = r.shownTs ? new Date(r.shownTs).toLocaleString() : "—";
+      const copied = r.copiedTs ? new Date(r.copiedTs).toLocaleString() : "—";
+      el.innerHTML = `
+        <div class="v-left">
+          <div class="v-id">${r.id.slice(0,8)}</div>
+          <div class="v-meta">${(r.ua ? r.browser + " / " + r.os : "")} ${r.ua ? "• " + (r.ua.length>60? r.ua.slice(0,60)+"...": r.ua) : ""}</div>
+        </div>
+        <div class="v-right">
+          <div>Shown: ${shown}</div>
+          <div>Copied: ${copied}</div>
+        </div>
+      `;
+      visitorsList.appendChild(el);
+    });
+  } catch (err) {
+    console.error("refreshVisitorsList:", err);
+  }
+}
+
+/* Realtime listener to update visitors list when clicks change */
+db.ref("clicks").on("value", () => refreshVisitorsList());
+
+/* ========== UI helpers & existing behavior (copy protection etc.) ========== */
+
+function showPage(p) {
+  document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
+  p.classList.add("active");
+}
+function showLoader() { loader.classList.remove("hidden"); }
+function hideLoader() { loader.classList.add("hidden"); }
+
+/* Show Key handler */
+showKeyBtn.addEventListener("click", async () => {
+  showPage(keyPage);
+  // Increment global show_key if this uid hasn't clicked before
+  await increaseCounter("show_key");
+});
+
+/* Back */
+backBtn.addEventListener("click", () => showPage(homePage));
+
+/* Copy logic - only via button */
+let allowCopyByButton = false;
+copyBtn.addEventListener("click", async () => {
+  const keyText = keyBox.innerText.trim();
+  if (!keyText || keyText === "YOUR-KEY-HERE") {
+    return alert("Key missing. Add it in index.html at the keyBox element.");
+  }
+
+  try {
+    showLoader();
+    allowCopyByButton = true;
+    await navigator.clipboard.writeText(keyText);
+    // update firebase
+    await increaseCounter("copy_key");
+    hideLoader();
+    copyBtn.innerText = "Copied ✓";
+    setTimeout(() => (copyBtn.innerText = "Copy Key"), 1500);
+  } catch (err) {
+    hideLoader();
+    console.error(err);
+    alert("Copy failed (browser may block clipboard).");
+  } finally {
+    setTimeout(() => { allowCopyByButton = false; }, 300);
+  }
+});
+
+/* Prevent selecting the key text or dragging it */
+keyBox.addEventListener("selectstart", e => e.preventDefault());
+keyBox.addEventListener("dragstart", e => e.preventDefault());
+keyBox.style.userSelect = "none";
+keyBox.addEventListener("contextmenu", e => e.preventDefault());
+keyBox.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") e.preventDefault();
+});
+
+/* Block copy events not triggered by our button */
+document.addEventListener("copy", e => {
+  if (!allowCopyByButton) {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const container = sel.getRangeAt(0).commonAncestorContainer;
+      if (keyBox.contains(container) || container === keyBox) e.preventDefault();
+    }
+  }
+});
+
+/* ========== Admin reveal on Ctrl+D ========== */
+function revealAdminUI() {
+  [adminRevealBtn, adminRevealBtn2].forEach(btn => {
+    if (btn) { btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; }
+  });
+}
+function hideAdminUI() {
+  [adminRevealBtn, adminRevealBtn2].forEach(btn => {
+    if (btn) { btn.style.opacity = "0"; btn.style.pointerEvents = "none"; }
+  });
+}
+hideAdminUI();
+
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
+    e.preventDefault();
+    const isHidden = adminRevealBtn.style.opacity === "0" || adminRevealBtn.style.opacity === "";
+    if (isHidden) {
+      revealAdminUI();
+      setTimeout(() => {
+        adminRevealBtn.classList.add("pulse");
+        adminRevealBtn2.classList.add("pulse");
+        setTimeout(() => {
+          adminRevealBtn.classList.remove("pulse");
+          adminRevealBtn2.classList.remove("pulse");
+        }, 1200);
+      }, 60);
+    } else {
+      hideAdminUI();
+    }
+  }
+});
+
+/* Admin button opens modal */
+[adminRevealBtn, adminRevealBtn2].forEach(btn => {
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    adminModal.classList.remove("hidden");
+    adminModal.setAttribute("aria-hidden", "false");
+    adminPassword.value = "";
+    adminPassword.focus();
+  });
+});
+
+/* Admin modal actions */
+adminCancelBtn.addEventListener("click", () => {
+  adminModal.classList.add("hidden");
+  adminModal.setAttribute("aria-hidden", "true");
+});
+
+adminLoginBtn.addEventListener("click", async () => {
+  const p = adminPassword.value || "";
+  if (p === ADMIN_PASSWORD) {
+    adminModal.classList.add("hidden");
+    adminModal.setAttribute("aria-hidden", "true");
+    showPage(adminPage);
+    // refresh list immediately
+    refreshVisitorsList();
+  } else {
+    alert("Wrong password.");
+  }
+});
+
+/* Admin logout */
+adminLogoutBtn.addEventListener("click", () => {
+  showPage(homePage);
+  hideAdminUI();
+});
+
+/* Export JSON/CSV and Reset */
+exportJsonBtn.addEventListener("click", async () => {
+  try {
+    const snap = await db.ref().once("value");
+    const data = snap.val() || {};
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "firebase_full_dump.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) { console.error(err); alert("Export failed"); }
+});
+
+exportCsvBtn.addEventListener("click", async () => {
+  try {
+    const snap = await db.ref("clicks").once("value");
+    const all = snap.val() || {};
+    const header = ["id","shownTs","copiedTs","browser","os","ua"];
+    const rows = Object.keys(all).map(id => {
+      const r = all[id] || {};
+      const s = r.show_key ? r.show_key.ts : "";
+      const c = r.copy_key ? r.copy_key.ts : "";
+      const b = (r.show_key && r.show_key.browser) || (r.copy_key && r.copy_key.browser) || "";
+      const o = (r.show_key && r.show_key.os) || (r.copy_key && r.copy_key.os) || "";
+      const ua = (r.show_key && r.show_key.ua) || (r.copy_key && r.copy_key.ua) || "";
+      return [`"${id}"`,`"${s}"`,`"${c}"`,`"${b}"`,`"${o}"`,"\""+(ua||"")+"\""].join(",");
+    });
+    const csv = [header.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "showkey_analytics.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) { console.error(err); alert("CSV export failed"); }
+});
+
+resetBtn.addEventListener("click", async () => {
+  if (!confirm("Reset ALL analytics in Firebase? This will DELETE global counters and clicks. Proceed?")) return;
+  try {
+    await db.ref("global").remove();
+    await db.ref("clicks").remove();
+    alert("Firebase analytics reset.");
+    // update UI
+    showCountEl.innerText = "0";
+    copyCountEl.innerText = "0";
+    visitorsList.innerHTML = "<div class='hint'>No visitors yet</div>";
+  } catch (err) { console.error(err); alert("Reset failed"); }
+});
+
+/* Accessibility: close admin modal on ESC */
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    adminModal.classList.add("hidden");
+    adminModal.setAttribute("aria-hidden", "true");
+  }
+});
+
+/* Init: fetch current global counts once (listener is already attached above) */
+(async function init() {
+  // ensure some structure exists
+  const g = await db.ref("global").once("value");
+  if (!g.exists()) {
+    await db.ref("global").set({ show_key: 0, copy_key: 0 });
+  }
+  // refresh visitors list
+  refreshVisitorsList();
+})();
+</script>
+</body>
+</html>

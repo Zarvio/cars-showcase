@@ -1,104 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <img src="tg1.jpg" alt="Logo" class="logo" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Show Key</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Poppins', 'Arial', sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      color: white;
-      margin: 0;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .welcome {
-      position: absolute;
-      top: 20px;
-      font-size: 1.2rem;
-      font-weight: 500;
-      animation: fadeIn 2s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    button {
-      padding: 15px 40px;
-      font-size: 1.4rem;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      background-color: #fff;
-      color: #2575fc;
-      font-weight: bold;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #f4f4f4;
-      transform: scale(1.05);
-    }
-
-    button:active {
-      transform: scale(0.97);
-    }
-
-    .version {
-      position: absolute;
-      bottom: 15px;
-      font-size: 0.9rem;
-      opacity: 0.8;
-    }
-
-    /* Responsive */
-    @media (max-width: 600px) {
-      button {
-        width: 80%;
-        font-size: 1.2rem;
-        padding: 12px 0;
-      }
-      .welcome {
-        font-size: 1rem;
-      }
-    }
-    
-.logo {
-  width: 80px;              /* size adjust kar lo apni need ke hisab se */
-   margin-bottom: 20px;
-  border-radius: 50%;        /* circle banata hai */
-  object-fit: cover;         /* image ke andar fit karta hai bina stretch hue */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* soft shadow for depth */
-  border: 3px solid rgba(255, 255, 255, 0.6); /* optional white border */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.logo:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insta Rockets + Admin Control</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<style>
+  html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; font-family: Arial, sans-serif;}
+  body { background: url('gg.jpg') center/cover no-repeat fixed; position:relative; }
+  #insta {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background: rgba(0,0,0,0.5);
+    color:white;
+    padding:20px 30px;
+    border-radius:12px;
+    text-align:center;
+    font-size:24px;
+    z-index:2;
+    cursor:pointer;
+  }
+  #adminBtn {
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    padding:10px 18px;
+    font-size:16px;
+    display:none;
+    cursor:pointer;
+    border-radius:8px;
+    background:rgba(255,0,0,0.7);
+    color:white;
+    z-index:3;
+  }
+  #rocketOptions {
+    position:fixed;
+    bottom:70px;
+    right:20px;
+    padding:12px;
+    display:none;
+    background:rgba(0,0,0,0.6);
+    border-radius:8px;
+    color:white;
+    z-index:3;
+  }
+  canvas {
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    z-index:1;
+    pointer-events:none;
+  }
+</style>
 </head>
 <body>
-  <div class="welcome">👋 Welcome to Solider Mod</div>
-  <button onclick="location.href='feedback.html'">Show Key</button>
-  <div class="version">Version 1.0</div>
+
+<div id="insta">@the_rabbit_555</div>
+<button id="adminBtn">Admin</button>
+<div id="rocketOptions">
+  Rockets per auto-launch: <input type="number" id="rocketCount" value="1" min="1" max="10"><br><br>
+  Rocket speed multiplier: <input type="number" id="rocketSpeed" value="1" min="0.1" max="5" step="0.1">
+</div>
+<canvas id="fx"></canvas>
+
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
+    authDomain: "inspire4ever-c60ad.firebaseapp.com",
+    databaseURL: "https://inspire4ever-c60ad-default-rtdb.firebaseio.com",
+    projectId: "inspire4ever-c60ad",
+    storageBucket: "inspire4ever-c60ad.appspot.com",
+    messagingSenderId: "125014633127",
+    appId: "1:125014633127:web:d29e4c37628ab637f40982"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Open Instagram on text click
+  document.getElementById('insta').onclick = ()=>{
+    window.open("https://www.instagram.com/the_rabbit_555/?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==", "_blank");
+  };
+
+  // Admin click logic
+  let clickCount = 0;
+  const adminBtn = document.getElementById("adminBtn");
+  const rocketOptions = document.getElementById("rocketOptions");
+
+  document.addEventListener("click", ()=> {
+    clickCount++;
+    if(clickCount >=5){ 
+      adminBtn.style.display="block"; 
+      clickCount=0; 
+    }
+  });
+
+  adminBtn.onclick = ()=>{
+    const pwd = prompt("Enter Admin Password");
+    if(pwd === "grasim555"){
+      rocketOptions.style.display="block";
+      alert("Admin access granted");
+    } else {
+      alert("Wrong Password!");
+    }
+  };
+
+  // Rockets / Fireworks System
+  const canvas = document.getElementById('fx');
+  const ctx = canvas.getContext('2d');
+  let W=canvas.width=window.innerWidth, H=canvas.height=window.innerHeight;
+  let rockets=[], particles=[];
+  let rocketPerAuto = 1;
+  let rocketSpeed = 1; // speed multiplier
+
+  const rocketsRef = db.ref("rockets");
+
+  class Rocket{
+    constructor(x,y,tx,ty){ 
+      this.x=x; this.y=y; this.tx=tx; this.ty=ty; 
+      this.vx=(tx-x)/60 * rocketSpeed; 
+      this.vy=(ty-y)/60 * rocketSpeed; 
+      this.age=0; this.color=Math.random()*360;
+    }
+    step(){ 
+      this.x+=this.vx; this.y+=this.vy; this.age++; 
+      particles.push(new Particle(this.x,this.y,0,0,this.color,8,0.06,true));
+      if(this.age>55){ explode(this.x,this.y,this.color); return false;} 
+      return true; 
+    }
+    draw(){ 
+      ctx.save(); 
+      ctx.fillStyle=`hsl(${this.color},100%,60%)`; 
+      ctx.shadowColor=`hsl(${this.color},100%,60%)`; 
+      ctx.shadowBlur=14; 
+      ctx.fillRect(this.x-2,this.y-8,4,12); 
+      ctx.restore();
+    }
+  }
+
+  class Particle{
+    constructor(x,y,vx,vy,h,s,d,sm){ 
+      this.x=x; this.y=y; this.vx=vx; this.vy=vy; this.h=h; this.s=s; this.d=d; this.life=1; 
+      this.dec=Math.random()*0.02+0.01; this.sm=sm;
+    }
+    step(){ 
+      this.vx*=(1-this.d); this.vy*=(1-this.d); 
+      this.vy+=0.06; 
+      this.x+=this.vx; this.y+=this.vy; 
+      this.life-=this.dec; 
+      return this.life>0 && this.y<H+50;
+    }
+    draw(){ 
+      ctx.save(); ctx.globalCompositeOperation=this.sm?'source-over':'lighter'; ctx.beginPath();
+      let a=this.life;
+      if(this.sm){ 
+        ctx.fillStyle=`rgba(200,200,200,${0.08*a})`; 
+        ctx.arc(this.x,this.y,this.s,0,2*Math.PI); ctx.fill();
+      } else { 
+        ctx.fillStyle=`hsla(${this.h},100%,60%,${a})`; 
+        ctx.shadowBlur=8; ctx.shadowColor='white'; 
+        ctx.arc(this.x,this.y,this.s*(0.6+Math.random()*0.8),0,2*Math.PI); 
+        ctx.fill(); 
+      }
+      ctx.restore(); 
+    }
+  }
+
+  function explode(x,y,c){
+    for(let i=0;i<Math.random()*20+20;i++){
+      let sp=Math.random()*4+2, an=Math.random()*6.28;
+      particles.push(new Particle(x,y,Math.cos(an)*sp,Math.sin(an)*sp,c,Math.random()*2+2,0.01,false));
+    }
+  }
+
+  function step(){
+    requestAnimationFrame(step);
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.fillRect(0,0,W,H);
+
+    for(let i=rockets.length-1;i>=0;i--) if(!rockets[i].step()) rockets.splice(i,1);
+    for(let i=particles.length-1;i>=0;i--) if(!particles[i].step()) particles.splice(i,1);
+
+    for(const p of particles) p.draw();
+    for(const r of rockets) r.draw();
+
+    autoCount++;
+    if(autoCount>60){
+      autoCount=0;
+      for(let i=0;i<rocketPerAuto;i++){
+        rockets.push(new Rocket(Math.random()*(W-120)+60,H+10,Math.random()*(W-160)+80,Math.random()*H*0.4));
+      }
+      rocketsRef.set({ count: rocketPerAuto, speed: rocketSpeed });
+    }
+  }
+  let autoCount=0;
+  step();
+
+  // Admin input listeners
+  document.getElementById('rocketCount').addEventListener('change', e=>{
+    rocketPerAuto = parseInt(e.target.value);
+    rocketsRef.set({ count: rocketPerAuto, speed: rocketSpeed });
+  });
+  document.getElementById('rocketSpeed').addEventListener('change', e=>{
+    rocketSpeed = parseFloat(e.target.value);
+    rocketsRef.set({ count: rocketPerAuto, speed: rocketSpeed });
+  });
+
+  // Sync rockets per auto-launch and speed from Firebase
+  rocketsRef.on('value', snap=>{
+    if(snap.val()){
+      if(snap.val().count) document.getElementById('rocketCount').value = snap.val().count;
+      if(snap.val().speed) document.getElementById('rocketSpeed').value = snap.val().speed;
+      rocketPerAuto = snap.val().count || 1;
+      rocketSpeed = snap.val().speed || 1;
+    }
+  });
+
+  // Responsive canvas
+  window.addEventListener('resize', ()=>{
+    W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight;
+  });
+</script>
+
 </body>
 </html>

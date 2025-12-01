@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Setup</title>
+
+    <link rel="stylesheet" href="profile.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- Login -->
+        <div id="loginBox" class="box">
+            <h2>Login with Google</h2>
+            <button id="googleLoginBtn">Continue with Google</button>
+        </div>
+<div id="profileBox" class="hidden">
+    <img id="profilePic" src="default.jpg" alt="Profile Photo">
+    <input type="file" id="uploadPhoto">
+    <button id="saveProfile">Save Profile</button>
+    <p id="followersCount">Followers: 0</p>
+    <p id="followingCount">Following: 0</p>
+</div>
+
+        <!-- Name Form -->
+        <div id="nameBox" class="box hidden">
+            <h2>Enter Your Name</h2>
+            <input type="text" id="firstName" placeholder="First Name">
+            <input type="text" id="lastName" placeholder="Surname">
+            <button id="saveNameBtn">Continue</button>
+        </div>
+
+        <!-- Username Form -->
+        <div id="usernameBox" class="box hidden">
+            <h2>Choose Username</h2>
+            <input type="text" id="username" placeholder="@username">
+            <p id="errorMsg" class="error"></p>
+            <button id="saveUsernameBtn">Save</button>
+        </div>
+
+        <!-- Done -->
+        <div id="doneBox" class="box hidden">
+            <h2>Profile Completed 🎉</h2>
+            <p>Your account is ready.</p>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a class="nav-item" id="btnHome">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+
+        <a class="nav-item" id="btnSearch">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Search</span>
+        </a>
+
+        <a class="nav-item" id="btnNotifs">
+            <i class="fa-regular fa-bell"></i>
+            <span>Notification</span>
+        </a>
+
+        <a class="nav-item active" id="btnProfile">
+            <i class="fa-regular fa-circle-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="profile.js"></script>
+</body>
+</html>

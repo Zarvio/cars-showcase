@@ -1,4 +1,4 @@
-// ------------------ Firebase Config ------------------
+// ---------- Firebase Config (your existing keys kept) ----------
 const firebaseConfig = {
   apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
   authDomain: "inspire4ever-c60ad.firebaseapp.com",
@@ -8,167 +8,285 @@ const firebaseConfig = {
   messagingSenderId: "125014633127",
   appId: "1:125014633127:web:d29e4c37628ab637f40982"
 };
-
 firebase.initializeApp(firebaseConfig);
 
 // Elements
 const loginBox = document.getElementById("loginBox");
 const nameBox = document.getElementById("nameBox");
 const usernameBox = document.getElementById("usernameBox");
-const doneBox = document.getElementById("doneBox");
+const profileView = document.getElementById("profileView");
 
-// Buttons
 const googleLoginBtn = document.getElementById("googleLoginBtn");
 const saveNameBtn = document.getElementById("saveNameBtn");
 const saveUsernameBtn = document.getElementById("saveUsernameBtn");
 
-// Inputs
 const firstName = document.getElementById("firstName");
 const lastName = document.getElementById("lastName");
 const usernameInput = document.getElementById("username");
 const errorMsg = document.getElementById("errorMsg");
+const usernameIcon = document.getElementById("usernameIcon");
 
-let currentUser;
+const profilePic = document.getElementById("profilePic");
+const displayName = document.getElementById("displayName");
+const displayUsername = document.getElementById("displayUsername");
+const followersCount = document.getElementById("followersCount");
+const followingCount = document.getElementById("followingCount");
+const uploadPhoto = document.getElementById("uploadPhoto");
 
-// ------------------ GOOGLE LOGIN ------------------
-googleLoginBtn.onclick = function () {
-    var provider = new firebase.auth.GoogleAuthProvider();
+let currentUser = null;
+let tempName = "";
+let tempSurname = "";
+let usernameAvailable = false;
+let usernameCheckTimeout = null;
 
-    firebase.auth().signInWithPopup(provider).then(res => {
-        currentUser = res.user;
+// --- Navigation redirects (same as your original) ---
+document.getElementById("btnHome").addEventListener("click", () => window.location.href = "index.html");
+document.getElementById("btnSearch").addEventListener("click", () => window.location.href = "search.html");
+document.getElementById("btnNotifs").addEventListener("click", () => window.location.href = "notification.html");
+document.getElementById("btnProfile").addEventListener("click", () => window.location.href = "profile.html");
+document.getElementById("btnUpload").addEventListener("click", () => window.location.href = "upload.html");
 
-        // Check if user data already exists
-        firebase.database().ref("users/" + currentUser.uid).once("value")
-            .then(snapshot => {
-
-                if (snapshot.exists()) {
-                    // Already fully set → go to done
-                    loginBox.classList.add("hidden");
-                    doneBox.classList.remove("hidden");
-                } else {
-                    // Need to enter name
-                    loginBox.classList.add("hidden");
-                    nameBox.classList.remove("hidden");
-                }
-            });
-
-    }).catch(err => alert(err.message));
+// ---------- Google Login ----------
+googleLoginBtn.onclick = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).then(res => {
+    currentUser = res.user;
+    checkUserSetup();
+  }).catch(err => alert(err.message));
 };
 
+// onAuthStateChanged -> decide which screen to show
 firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-        currentUser = user;
-
-        // Check if user data exists
-        firebase.database().ref("users/" + currentUser.uid).once("value")
-            .then(snapshot => {
-                if (snapshot.exists()) {
-                    // User already setup → show done/profile
-                    loginBox.classList.add("hidden");
-                    doneBox.classList.remove("hidden");
-
-                    // Optionally load user profile
-                    loadUserProfile(snapshot.val());
-                } else {
-                    // Need to enter name
-                    loginBox.classList.add("hidden");
-                    nameBox.classList.remove("hidden");
-                }
-            });
-    } else {
-        // User not logged in → show login
-        loginBox.classList.remove("hidden");
-        nameBox.classList.add("hidden");
-        usernameBox.classList.add("hidden");
-        doneBox.classList.add("hidden");
-    }
+  if (user) {
+    currentUser = user;
+    checkUserSetup();
+  } else {
+    // show login
+    showOnly(loginBox);
+  }
 });
 
-
-
-
-// ------------------ SAVE NAME ------------------
-saveNameBtn.onclick = () => {
-    if (firstName.value.trim() === "" || lastName.value.trim() === "") {
-        alert("Please enter full name");
-        return;
-    }
-
-    nameBox.classList.add("hidden");
-    usernameBox.classList.remove("hidden");
-};
-
-// ------------------ SAVE USERNAME ------------------
-saveUsernameBtn.onclick = () => {
-    let username = usernameInput.value.trim().toLowerCase();
-
-    if (username.length < 4) {
-        errorMsg.innerText = "Username must be at least 4 characters.";
-        return;
-    }
-
-    // Check if username exists
-    firebase.database().ref("usernames/" + username).once("value")
-        .then(snapshot => {
-
-            if (snapshot.exists()) {
-                errorMsg.innerText = "Username already taken!";
-            } else {
-
-                // Save username
-                firebase.database().ref("users/" + currentUser.uid).set({
-                    name: firstName.value.trim(),
-                    surname: lastName.value.trim(),
-                    email: currentUser.email,
-                    username: username
-                });
-
-                // Mark username as used
-                firebase.database().ref("usernames/" + username).set(currentUser.uid);
-
-                usernameBox.classList.add("hidden");
-                doneBox.classList.remove("hidden");
-            }
-        });
-};
-// Navigation Buttons Redirect
-
-document.getElementById("btnHome").addEventListener("click", () => {
-    window.location.href = "index.html";
-});
-
-document.getElementById("btnSearch").addEventListener("click", () => {
-    window.location.href = "search.html";
-});
-
-document.getElementById("btnNotifs").addEventListener("click", () => {
-    window.location.href = "notification.html"; // बाद में बनायेंगे
-});
-
-document.getElementById("btnProfile").addEventListener("click", () => {
-    window.location.href = "profile.html"; // बाद में बनायेंगे
-});
-
-function loadUserProfile(userData) {
-    document.getElementById("profileBox").classList.remove("hidden");
-    document.getElementById("profilePic").src = userData.photoURL || "default.jpg";
-
-    // Load followers/following
-    firebase.database().ref("followers/" + currentUser.uid).once("value")
-        .then(snap => document.getElementById("followersCount").innerText = "Followers: " + (snap.numChildren() || 0));
-
-    firebase.database().ref("following/" + currentUser.uid).once("value")
-        .then(snap => document.getElementById("followingCount").innerText = "Following: " + (snap.numChildren() || 0));
+// Check if this user already has profile data
+function checkUserSetup() {
+  if (!currentUser) return;
+  firebase.database().ref("users/" + currentUser.uid).once("value")
+    .then(snapshot => {
+      if (snapshot.exists()) {
+        // user already set up — show profile
+        loadUserProfile(snapshot.val());
+        showOnly(profileView);
+      } else {
+        // new user => prefill name from Google if available and show name form
+        firstName.value = currentUser.displayName ? (currentUser.displayName.split(" ")[0] || "") : "";
+        lastName.value = currentUser.displayName ? (currentUser.displayName.split(" ").slice(1).join(" ") || "") : "";
+        showOnly(nameBox);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showOnly(loginBox);
+    });
 }
 
-// Upload profile photo
-document.getElementById("uploadPhoto").onchange = function (e) {
-    const file = e.target.files[0];
-    const storageRef = firebase.storage().ref("profilePics/" + currentUser.uid);
-    storageRef.put(file).then(() => {
-        storageRef.getDownloadURL().then(url => {
-            document.getElementById("profilePic").src = url;
-            firebase.database().ref("users/" + currentUser.uid + "/photoURL").set(url);
-        });
+// --- Save Name button ---
+saveNameBtn.onclick = () => {
+  const fn = firstName.value.trim();
+  const ln = lastName.value.trim();
+  if (!fn || !ln) {
+    alert("Please enter both first name and surname.");
+    return;
+  }
+  tempName = fn;
+  tempSurname = ln;
+
+  // go to username step
+  showOnly(usernameBox);
+};
+
+// --- Username live-check (debounced) ---
+usernameInput.addEventListener("input", (e) => {
+  const val = e.target.value.trim().toLowerCase();
+  errorMsg.innerText = "";
+  usernameAvailable = false;
+  setUsernameIcon(null);
+  setSaveButtonState(false);
+
+  if (usernameCheckTimeout) clearTimeout(usernameCheckTimeout);
+  usernameCheckTimeout = setTimeout(() => validateUsername(val), 500);
+});
+
+function validateUsername(val) {
+  // basic rules
+  if (!val || val.length < 4) {
+    errorMsg.innerText = "Username must be at least 4 characters.";
+    setUsernameIcon('red');
+    return;
+  }
+  // allow only alphanumeric + underscore + dot
+  if (!/^[a-z0-9._]+$/.test(val)) {
+    errorMsg.innerText = "Only lowercase letters, numbers, dot and underscore allowed.";
+    setUsernameIcon('red');
+    return;
+  }
+
+  // check DB
+  firebase.database().ref("usernames/" + val).once("value")
+    .then(snap => {
+      if (snap.exists()) {
+        // taken
+        errorMsg.innerText = "Username already taken!";
+        setUsernameIcon('red');
+        usernameAvailable = false;
+        setSaveButtonState(false);
+      } else {
+        // available
+        errorMsg.innerText = "";
+        setUsernameIcon('green');
+        usernameAvailable = true;
+        setSaveButtonState(true);
+      }
+    }).catch(err => {
+      console.error(err);
+      errorMsg.innerText = "Could not check username. Try again.";
+      setUsernameIcon('red');
+      setSaveButtonState(false);
+    });
+}
+
+function setUsernameIcon(val) {
+  usernameIcon.className = 'status-icon';
+  if (val === 'green') usernameIcon.classList.add('green'), usernameIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+  else if (val === 'red') usernameIcon.classList.add('red'), usernameIcon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+  else usernameIcon.innerHTML = '';
+}
+
+function setSaveButtonState(enabled) {
+  if (enabled) {
+    saveUsernameBtn.classList.remove('disabled');
+    saveUsernameBtn.disabled = false;
+  } else {
+    saveUsernameBtn.classList.add('disabled');
+    saveUsernameBtn.disabled = true;
+  }
+}
+
+// --- Save Username (finalize profile) ---
+saveUsernameBtn.onclick = () => {
+  if (!currentUser) { alert("User not logged in."); return; }
+  const username = usernameInput.value.trim().toLowerCase();
+  if (!usernameAvailable) { alert("Choose a valid username first."); return; }
+
+  // write both nodes atomically (simple approach)
+  const updates = {};
+  updates["/users/" + currentUser.uid] = {
+    name: tempName,
+    surname: tempSurname,
+    email: currentUser.email,
+    username: username,
+    photoURL: currentUser.photoURL || null,
+    createdAt: Date.now()
+  };
+  updates["/usernames/" + username] = currentUser.uid;
+
+  firebase.database().ref().update(updates)
+    .then(() => {
+      // done
+      loadUserProfile(updates["/users/" + currentUser.uid]);
+      showOnly(profileView);
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Could not save profile. Try again.");
     });
 };
+
+// --- Load profile UI from DB object ---
+function loadUserProfile(data) {
+  if (!data) return;
+  displayName.innerText = (data.name || "") + (data.surname ? " " + data.surname : "");
+  displayUsername.innerText = "@" + (data.username || "");
+  profilePic.src = data.photoURL || currentUser.photoURL || "default.jpg";
+
+  // followers / following counts
+  firebase.database().ref("followers/" + currentUser.uid).once("value")
+    .then(snap => followersCount.innerText = snap ? snap.numChildren() : 0)
+    .catch(()=> followersCount.innerText = 0);
+
+  firebase.database().ref("following/" + currentUser.uid).once("value")
+    .then(snap => followingCount.innerText = snap ? snap.numChildren() : 0)
+    .catch(()=> followingCount.innerText = 0);
+}
+
+// --- Upload profile photo (edit photo only) ---
+uploadPhoto.onchange = function(e) {
+  const file = uploadPhoto.files[0];
+  if (!file || !currentUser) return;
+
+  const storageRef = firebase.storage().ref("profilePics/" + currentUser.uid);
+  storageRef.put(file).then(() => {
+    return storageRef.getDownloadURL();
+  }).then(url => {
+    firebase.database().ref("users/" + currentUser.uid + "/photoURL").set(url);
+    profilePic.src = url;
+  }).catch(err => {
+    console.error(err);
+    alert("Photo upload failed.");
+  });
+};
+
+
+// --- Utility to show only one area at a time ---
+function showOnly(el) {
+  [loginBox, nameBox, usernameBox, profileView].forEach(x => x.classList.add("hidden"));
+  if (el) el.classList.remove("hidden");
+}
+
+
+
+
+
+
+
+
+const loaderOverlay = document.getElementById("loaderOverlay");
+const profileContent = document.getElementById("profileView"); // profileView is your main profile div
+
+
+firebase.auth().onAuthStateChanged(async user => {
+  if (user) {
+    currentUser = user;
+
+    // Show loader, hide other content
+    loaderOverlay.style.display = "flex";
+    profileContent.style.display = "none";
+    loginBox.style.display = "none";
+
+    try {
+      const snapshot = await firebase.database().ref("users/" + user.uid).once("value");
+      if (snapshot.exists()) {
+        // User already set up → load profile
+        const data = snapshot.val();
+        loadUserProfile(data);
+        profileContent.style.display = "block";
+      } else {
+        // New user → prefill name form
+        firstName.value = currentUser.displayName?.split(" ")[0] || "";
+        lastName.value = currentUser.displayName?.split(" ").slice(1).join(" ") || "";
+        showOnly(nameBox);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error loading profile data");
+      showOnly(loginBox);
+    } finally {
+      // Hide loader in all cases
+      loaderOverlay.style.display = "none";
+    }
+
+  } else {
+    // Not logged in → hide loader, show login
+    loaderOverlay.style.display = "none";
+    profileContent.style.display = "none";
+    loginBox.style.display = "block";
+  }
+});

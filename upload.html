@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pinora Web</title>
-    <link rel="stylesheet" href="styles.css" />
-    <!-- head में डालो -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
+    <title>Upload - Pinora</title>
+    <link rel="stylesheet" href="upload.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 
 <body>
@@ -18,31 +16,19 @@
         <div class="profile-icon"></div>
     </header>
 
-
-
-
-
-
-
- <div class="center-box">
-    <h1>Coming Soon</h1>
-    <p>Budget Problem 😥
-        Future update =22%
-    </p>
-  </div>
-
-
-
-
     <!-- MAIN CONTENT -->
     <main class="main-content">
-        <!-- Home content will load here -->
-        
+        <h2 class="welcome">Upload your Pins here</h2>
+        <form id="uploadForm">
+            <input type="text" placeholder="Title" id="pinTitle" required>
+            <input type="url" placeholder="Image URL" id="pinURL" required>
+            <button type="submit">Upload</button>
+        </form>
     </main>
 
     <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
-        <a class="nav-item active" id="btnHome">
+        <a class="nav-item" id="btnHome">
             <i class="fa-solid fa-house"></i>
             <span>Home</span>
         </a>
@@ -52,10 +38,10 @@
             <span>Search</span>
         </a>
 
-        <a class="nav-item" id="btnUpload">
-        <i class="fa-solid fa-plus"></i>
-        <span>Upload</span>
-    </a>
+        <a class="nav-item active" id="btnUpload">
+            <i class="fa-solid fa-plus"></i>
+            <span>Upload</span>
+        </a>
 
         <a class="nav-item" id="btnNotifs">
             <i class="fa-regular fa-bell"></i>
@@ -68,6 +54,6 @@
         </a>
     </nav>
 
-    <script src="script.js"></script>
+    <script src="upload.js"></script>
 </body>
 </html>

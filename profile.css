@@ -1,9 +1,9 @@
-/* Reset */
+/* RESET */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial;
+    font-family: 'Inter', Arial, sans-serif;
 }
 
 body {
@@ -11,55 +11,271 @@ body {
     color: white;
 }
 
-/* Container */
-.container {
-    padding: 20px;
-    margin-top: 40px;
+/* Page Header */
+.header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
 }
-
-/* Boxes */
-.box {
-    background: rgba(255,255,255,0.06);
-    padding: 20px;
-    border-radius: 12px;
-    backdrop-filter: blur(6px);
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.hidden {
-    display: none;
-}
-
-/* Inputs */
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 10px;
-    border: none;
-    outline: none;
-    background: rgba(255,255,255,0.12);
+.header .title {
+    font-weight: 600;
+    font-size: 16px;
     color: white;
 }
 
-/* Buttons */
-button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    background: white;
-    border: none;
-    border-radius: 10px;
-    color: black;
-    font-size: 16px;
-    cursor: pointer;
+/* Container */
+.container {
+    padding: 18px;
+    max-width: 480px;
+    margin: 0 auto 90px;
 }
 
-/* Error message */
+/* Card / Box (glass) */
+.card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+.center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+/* HIDDEN */
+.hidden {
+    display: none !important;
+}
+
+/* Login Avatar */
+.login-avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #1a2333;
+}
+
+/* Buttons */
+.btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn.primary {
+    background: white;
+    color: black;
+}
+
+.btn.outline {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.22);
+    color: white;
+    width: 48%;
+}
+
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Name inputs */
+.row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.row input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.10);
+    color: white;
+}
+
+/* Username Field */
+.username-field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 14px 0;
+}
+
+.username-field .at {
+    background: rgba(255,255,255,0.12);
+    padding: 10px 12px;
+    border-radius: 10px 0 0 10px;
+    border: 1px solid rgba(255,255,255,0.18);
+}
+
+.username-field input {
+    padding: 10px;
+    width: 60%;
+    border-radius: 0 10px 10px 0;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.10);
+    color: white;
+}
+
+.status-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.status-icon.green {
+    background: rgba(0, 255, 120, 0.15);
+    color: #00ff90;
+}
+
+.status-icon.red {
+    background: rgba(255, 0, 60, 0.18);
+    color: #ff5a5a;
+}
+
 .error {
     color: #ff6b6b;
-    margin-top: 5px;
+    margin-top: 6px;
+}
+
+/* PROFILE VIEW */
+.profile-card {
+    padding-top: 26px;
+    text-align: center;
+}
+
+/* Profile Avatar */
+.avatar-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.avatar-ring {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    padding: 5px;
+    background: linear-gradient(180deg, #2f6fff, #2ab7ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #fff;
+}
+
+.edit-photo {
+    position: absolute;
+    right: calc(50% - 65px);
+    bottom: 6px;
+    background: white;
+    color: black;
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* Profile Info */
+.info {
+    margin-top: 14px;
+}
+
+.name {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+}
+
+.handle {
+    color: #bbb;
+    margin-top: 4px;
+}
+
+.counts {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #ccc;
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 26px;
+    margin-top: 18px;
+}
+
+.tab {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-weight: 600;
+    padding: 6px 0;
+    cursor: pointer;
+    position: relative;
+}
+
+.tab.active {
+    color: white;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -8px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+}
+
+/* Empty State */
+.empty-state {
+    padding: 22px 0 6px;
+    color: #aaa;
 }
 
 /* Bottom Navigation */
@@ -85,9 +301,36 @@ button {
 .nav-item span {
     display: block;
     font-size: 12px;
+    margin-top: 3px;
 }
 
 .active {
     background: rgba(255,255,255,0.12);
     color: white;
 }
+
+
+
+
+
+
+.loader-overlay {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  backdrop-filter: blur(6px);
+  background-color: rgba(255,255,255,0.4);
+  z-index:9999;
+}
+.loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}

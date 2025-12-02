@@ -39,3 +39,6 @@ document.getElementById("btnNotifs").addEventListener("click", () => {
 document.getElementById("btnProfile").addEventListener("click", () => {
     window.location.href = "profile.html"; // बाद में बनायेंगे
 });
+document.getElementById("btnUpload").addEventListener("click", () => {
+    window.location.href = "upload.html"; // ये पेज तुम बनाओगे
+});

@@ -31,7 +31,7 @@ body {
 .profile-icon {
     width: 42px;
     height: 42px;
-    background: url('pin.png');
+    background: url('default.jpg');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;

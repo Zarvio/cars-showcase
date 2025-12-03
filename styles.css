@@ -136,24 +136,15 @@ body {
 }
 
 
-/* Admin Panel Button */
+.hidden {
+    display: none; /* पहले से छुपा रहेगा */
+}
+
 .admin-panel {
-    position: fixed;
-    bottom: 60px; /* bottom-nav se upar */
-    right: 20px;
-    background-color: #0095f6; /* Instagram blue */
-    color: #fff;
-    padding: 10px 22px;
-    border-radius: 25px;
-    font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    z-index: 1000; /* bottom nav ke upar */
-    transition: all 0.3s ease;
-    text-align: center;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    width: max-content;
 }
-
-.admin-panel:hover {
-    background-color: #0077cc;
-}
-

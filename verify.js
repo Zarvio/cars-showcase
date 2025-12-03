@@ -20,7 +20,7 @@ const userName = document.getElementById("userName");
 const verifyBadge = document.getElementById("verifyBadge");
 
 let searchedUID = null;
-
+let isVerified = false;
 
 // ----------------- SEARCH USER -----------------
 searchBtn.addEventListener("click", async () => {
@@ -36,7 +36,8 @@ searchBtn.addEventListener("click", async () => {
         return;
     }
 
-    let data = snap.val();
+    const data = snap.val();
+    isVerified = data.verified === true;
 
     // Show info
     userImg.src = data.photoURL || "default.jpg";
@@ -45,53 +46,59 @@ searchBtn.addEventListener("click", async () => {
     resultBox.classList.remove("hidden");
     verifyBtn.classList.remove("hidden");
 
-    // Check if already verified
-    if (data.verified === true) {
+    // Update button & badge
+    if (isVerified) {
         verifyBadge.classList.remove("hidden");
-        verifyBtn.innerText = "Already Verified";
-        verifyBtn.disabled = true;
+        verifyBtn.innerText = "Remove Verify Badge";
     } else {
         verifyBadge.classList.add("hidden");
         verifyBtn.innerText = "Add Verify Badge";
     }
 });
 
-
-// ----------------- ADD VERIFY BADGE -----------------
+// ----------------- TOGGLE VERIFY BADGE -----------------
 verifyBtn.addEventListener("click", async () => {
     if (!searchedUID) return;
 
+    // Toggle verified status
+    isVerified = !isVerified;
+
     await firebase.database().ref("users/" + searchedUID).update({
-        verified: true
+        verified: isVerified
     });
 
-    verifyBadge.classList.remove("hidden");
-    verifyBtn.innerText = "Verified ✔";
-    verifyBtn.disabled = true;
-
-    alert("User Verified Successfully!");
-});
-if (data.verified === true) {
-    displayUsername.innerHTML = "@" + data.username + 
-        ' <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px;margin-left:4px;">';
-} else {
-    displayUsername.innerText = "@" + data.username;
-}
-
-db.ref("users/" + uid).once("value").then(snapshot => {
-    if(snapshot.exists()) {
-        const u = snapshot.val();
-        console.log(u); // ✅ Debug → check kya u.verified true hai ya nahi
-
-        document.getElementById("profilePhoto").src = u.photoURL || "default.jpg";
-
-        if(u.verified === true) {
-            document.getElementById("username").innerHTML = "@" + u.username + 
-                ' <img src="verify-icon.png" width="16" style="margin-left:4px;">';
-        } else {
-            document.getElementById("username").innerText = "@" + u.username;
-        }
-
-        document.getElementById("name").innerText = (u.name || "") + " " + (u.surname || "");
+    if (isVerified) {
+        verifyBadge.classList.remove("hidden");
+        verifyBtn.innerText = "Remove Verify Badge";
+        alert("User Verified Successfully!");
+    } else {
+        verifyBadge.classList.add("hidden");
+        verifyBtn.innerText = "Add Verify Badge";
+        alert("User Verification Removed!");
     }
 });
+
+// ----------------- DISPLAY PROFILE PAGE -----------------
+function displayProfile(uid) {
+    firebase.database().ref("users/" + uid).once("value").then(snapshot => {
+        if(snapshot.exists()) {
+            const u = snapshot.val();
+            console.log(u); // debug
+
+            document.getElementById("profilePhoto").src = u.photoURL || "default.jpg";
+
+            const usernameBox = document.getElementById("username");
+            if(u.verified === true) {
+                usernameBox.innerHTML = `
+                    <div style="display:flex; justify-content:center; align-items:center; gap:4px; width:100%;">
+                        @${u.username} <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px;height:16px;">
+                    </div>
+                `;
+            } else {
+                usernameBox.innerHTML = `<div style="text-align:center; width:100%;">@${u.username}</div>`;
+            }
+
+            document.getElementById("name").innerText = (u.name || "") + " " + (u.surname || "");
+        }
+    });
+}

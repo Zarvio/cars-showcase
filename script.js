@@ -30,19 +30,19 @@ document.getElementById("btnUpload").addEventListener("click", () => {
 
 
 const adminBtn = document.getElementById("adminPanelBtn");
+const adminPanelBtn = document.getElementById("adminPanelBtn");
 
-// Ctrl + P → show admin panel button
+// Ctrl + P दबाने पर button दिखाओ
 document.addEventListener("keydown", (e) => {
     if (e.ctrlKey && e.key.toLowerCase() === "p") {
-        e.preventDefault();  
-        adminBtn.classList.remove("hidden");
+        e.preventDefault(); // default print action रोको
+        adminPanelBtn.classList.remove("hidden");
     }
 });
 
-// Click → ask password → open panel.html only if correct
-adminBtn.addEventListener("click", () => {
+// Button click → password verify → panel.html
+adminPanelBtn.addEventListener("click", () => {
     const pass = prompt("Enter Admin Password:");
-
     if (pass === "deepak55") {
         window.location.href = "panel.html";
     } else {

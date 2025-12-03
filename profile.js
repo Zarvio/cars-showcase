@@ -203,19 +203,42 @@ saveUsernameBtn.onclick = () => {
 // --- Load profile UI from DB object ---
 function loadUserProfile(data) {
   if (!data) return;
+
   displayName.innerText = (data.name || "") + (data.surname ? " " + data.surname : "");
-  displayUsername.innerText = "@" + (data.username || "");
+  
+  // ✅ Username + verify badge
+  if (data.verified === true) {
+       displayUsername.innerHTML = `
+        <div style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+        ">
+            @${data.username || ""}
+            <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" 
+                style="width:16px; height:16px;"
+            >
+        </div>
+    `;
+  } else {
+    displayUsername.innerText = "@" + (data.username || "");
+  }
+
   profilePic.src = data.photoURL || currentUser.photoURL || "default.jpg";
 
   // followers / following counts
-  firebase.database().ref("followers/" + currentUser.uid).once("value")
+  firebase.database().ref("followers/" + (data.uid || currentUser.uid)).once("value")
     .then(snap => followersCount.innerText = snap ? snap.numChildren() : 0)
     .catch(()=> followersCount.innerText = 0);
 
-  firebase.database().ref("following/" + currentUser.uid).once("value")
+  firebase.database().ref("following/" + (data.uid || currentUser.uid)).once("value")
     .then(snap => followingCount.innerText = snap ? snap.numChildren() : 0)
     .catch(()=> followingCount.innerText = 0);
 }
+
 
 // --- Upload profile photo (edit photo only) ---
 uploadPhoto.onchange = function(e) {
@@ -288,5 +311,62 @@ firebase.auth().onAuthStateChanged(async user => {
     loaderOverlay.style.display = "none";
     profileContent.style.display = "none";
     loginBox.style.display = "block";
+  }
+});
+// URL se UID le lo (search se click hua ho to)
+const params = new URLSearchParams(window.location.search);
+let profileUid = params.get("uid"); // clicked UID
+
+
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) {
+    // Not logged in → show login
+    loaderOverlay.style.display = "none";
+    profileContent.style.display = "none";
+    loginBox.style.display = "block";
+    return;
+  }
+
+  currentUser = user;
+
+  // Show loader, hide profile content
+  loaderOverlay.style.display = "flex";
+  profileContent.style.display = "none";
+  loginBox.style.display = "none";
+
+  // URL se UID le lo (agar search se click hua ho to)
+  const params = new URLSearchParams(window.location.search);
+  let profileUid = params.get("uid") || currentUser.uid; // apni profile default
+
+  try {
+    const snapshot = await firebase.database().ref("users/" + profileUid).once("value");
+    if (!snapshot.exists()) {
+      alert("User profile not found");
+      showOnly(loginBox);
+      return;
+    }
+
+    const data = snapshot.val();
+    loadUserProfile(data);
+    profileContent.style.display = "block";
+
+    // --- Buttons sirf apni profile ke liye enable kare ---
+    const isOwnProfile = (profileUid || "").trim() === (currentUser.uid || "").trim();
+    uploadPhoto.disabled = !isOwnProfile;
+    saveUsernameBtn.disabled = !isOwnProfile;
+
+    // Agar apni profile hai aur naye user hai → name / username setup
+    if (isOwnProfile && !data.username) {
+      firstName.value = currentUser.displayName?.split(" ")[0] || "";
+      lastName.value = currentUser.displayName?.split(" ").slice(1).join(" ") || "";
+      showOnly(nameBox);
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Error loading profile data");
+    showOnly(loginBox);
+  } finally {
+    loaderOverlay.style.display = "none";
   }
 });

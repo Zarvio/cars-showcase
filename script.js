@@ -27,3 +27,25 @@ document.getElementById("btnProfile").addEventListener("click", () => {
 document.getElementById("btnUpload").addEventListener("click", () => {
     window.location.href = "upload.html"; // ये पेज तुम बनाओगे
 });
+
+
+const adminBtn = document.getElementById("adminPanelBtn");
+
+// Ctrl + P → show admin panel button
+document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key.toLowerCase() === "p") {
+        e.preventDefault();  
+        adminBtn.classList.remove("hidden");
+    }
+});
+
+// Click → ask password → open panel.html only if correct
+adminBtn.addEventListener("click", () => {
+    const pass = prompt("Enter Admin Password:");
+
+    if (pass === "deepak55") {
+        window.location.href = "panel.html";
+    } else {
+        alert("Wrong password!");
+    }
+});

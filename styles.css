@@ -100,3 +100,60 @@ body {
   box-shadow: 0 8px 20px rgba(0,0,0,0.2); /* subtle shadow */
   font-family: Arial, sans-serif;
 }
+
+
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(8px);
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-around;
+    z-index: 999;
+}
+
+.nav-item {
+    text-align: center;
+    color: #bbb;
+    font-size: 14px;
+    padding: 8px 15px;
+    border-radius: 15px;
+}
+
+.nav-item span {
+    display: block;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.nav-item.active {
+    background: rgba(255,255,255,0.12);
+    color: white;
+}
+
+
+/* Admin Panel Button */
+.admin-panel {
+    position: fixed;
+    bottom: 60px; /* bottom-nav se upar */
+    right: 20px;
+    background-color: #0095f6; /* Instagram blue */
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 1000; /* bottom nav ke upar */
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.admin-panel:hover {
+    background-color: #0077cc;
+}
+

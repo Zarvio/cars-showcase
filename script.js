@@ -49,3 +49,4 @@ adminPanelBtn.addEventListener("click", () => {
         alert("Wrong password!");
     }
 });
+

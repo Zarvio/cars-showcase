@@ -9,7 +9,7 @@
 }
 
 body {
-    background: #020c1b;
+    background: #070707f9;
     color: white;
 }
 
@@ -78,7 +78,7 @@ body {
     position: fixed;
     bottom: 0;
     width: 100%;
-    background: rgba(255,255,255,0.06);
+    background: #07070700;
     backdrop-filter: blur(8px);
     padding: 10px 0;
     display: flex;

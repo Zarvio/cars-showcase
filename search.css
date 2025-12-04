@@ -7,14 +7,14 @@
 }
 
 body {
-    background: #020c1b;
+    background: #070707f9;
     color: white;
 }
 
 /* Search Header */
 .search-header {
     padding: 15px;
-    background: #020c1b;
+    background: #07070700;
     position: sticky;
     top: 0;
 }
@@ -75,7 +75,7 @@ body {
     position: fixed;
     bottom: 0;
     width: 100%;
-    background: rgba(255,255,255,0.06);
+    background: #07070700;
     backdrop-filter: blur(8px);
     padding: 10px 0;
     display: flex;

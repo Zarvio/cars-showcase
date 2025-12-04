@@ -172,11 +172,18 @@ function setSaveButtonState(enabled) {
 
 // --- Save Username (finalize profile) ---
 saveUsernameBtn.onclick = () => {
-  if (!currentUser) { alert("User not logged in."); return; }
-  const username = usernameInput.value.trim().toLowerCase();
-  if (!usernameAvailable) { alert("Choose a valid username first."); return; }
+  if (!currentUser) { 
+    alert("User not logged in."); 
+    return; 
+  }
 
-  // write both nodes atomically (simple approach)
+  const username = usernameInput.value.trim().toLowerCase();
+  if (!usernameAvailable) { 
+    alert("Choose a valid username first."); 
+    return; 
+  }
+
+  // Data update
   const updates = {};
   updates["/users/" + currentUser.uid] = {
     name: tempName,
@@ -188,17 +195,25 @@ saveUsernameBtn.onclick = () => {
   };
   updates["/usernames/" + username] = currentUser.uid;
 
+  // ⭐ Only ONE update call (correct)
   firebase.database().ref().update(updates)
     .then(() => {
-      // done
-      loadUserProfile(updates["/users/" + currentUser.uid]);
-      showOnly(profileView);
+
+      // 👉 SHOW POPUP
+      document.getElementById("profilePopup").classList.remove("hidden");
+
+      // 👉 BUTTON CLICK → REFRESH TO PROFILE
+      document.getElementById("popupBtn").onclick = () => {
+        window.location.href = "profile.html";
+      };
+
     })
     .catch(err => {
       console.error(err);
       alert("Could not save profile. Try again.");
     });
 };
+
 
 // --- Load profile UI from DB object ---
 function loadUserProfile(data) {

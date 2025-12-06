@@ -10,6 +10,8 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
+
+
 // Elements
 const loginBox = document.getElementById("loginBox");
 const nameBox = document.getElementById("nameBox");
@@ -45,6 +47,16 @@ document.getElementById("btnSearch").addEventListener("click", () => window.loca
 document.getElementById("btnNotifs").addEventListener("click", () => window.location.href = "notification.html");
 document.getElementById("btnProfile").addEventListener("click", () => window.location.href = "profile.html");
 document.getElementById("btnUpload").addEventListener("click", () => window.location.href = "upload.html");
+
+
+
+
+
+
+
+
+
+
 
 // ---------- Google Login ----------
 googleLoginBtn.onclick = () => {
@@ -256,20 +268,42 @@ function loadUserProfile(data) {
 
 
 // --- Upload profile photo (edit photo only) ---
-uploadPhoto.onchange = function(e) {
-  const file = uploadPhoto.files[0];
-  if (!file || !currentUser) return;
+uploadPhoto.onchange = async function(e) {
+    const file = uploadPhoto.files[0];
+    if (!file || !currentUser) return;
 
-  const storageRef = firebase.storage().ref("profilePics/" + currentUser.uid);
-  storageRef.put(file).then(() => {
-    return storageRef.getDownloadURL();
-  }).then(url => {
-    firebase.database().ref("users/" + currentUser.uid + "/photoURL").set(url);
-    profilePic.src = url;
-  }).catch(err => {
-    console.error(err);
-    alert("Photo upload failed.");
-  });
+    try {
+        // Safe file name
+        const safeFileName = file.name.replace(/[^\w\-\.]/g, '_').substring(0, 100);
+        const filePath = `profilePics/${currentUser.uid}_${safeFileName}`;
+
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabaseClient
+            .storage
+            .from("Zarvio") // your Supabase bucket name
+            .upload(filePath, file, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: publicURL } = supabaseClient
+            .storage
+            .from("Zarvio")
+            .getPublicUrl(filePath);
+
+        const profileUrl = publicURL.publicUrl;
+
+        // ✅ Update Firebase user table photoURL
+        await firebase.database().ref("users/" + currentUser.uid + "/photoURL").set(profileUrl);
+
+        // Update front-end immediately
+        profilePic.src = profileUrl;
+        alert("Profile photo updated successfully!");
+
+    } catch (err) {
+        console.error(err);
+        alert("Profile photo upload failed!");
+    }
 };
 
 
@@ -385,3 +419,9 @@ firebase.auth().onAuthStateChanged(async user => {
     loaderOverlay.style.display = "none";
   }
 });
+
+
+// ---------- Supabase Config ----------
+const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA"; // yaha apna anon key dalna
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

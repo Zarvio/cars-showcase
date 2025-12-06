@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Upload - Pinora</title>
+    
     <link rel="stylesheet" href="upload.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
@@ -19,11 +20,20 @@
     <!-- MAIN CONTENT -->
     <main class="main-content">
         <h2 class="welcome">Upload your Pins here</h2>
-        <form id="uploadForm">
-            <input type="text" placeholder="Title" id="pinTitle" required>
-            <input type="url" placeholder="Image URL" id="pinURL" required>
-            <button type="submit">Upload</button>
-        </form>
+<form id="uploadForm">
+    <input type="text" placeholder="Title" id="pinTitle" required>
+    
+    <!-- IMAGE/VIDEO FILE INPUT (IMPORTANT) -->
+    <input type="file" id="pinFile" accept="image/*,video/*" required>
+
+    <button type="submit">Upload</button>
+</form>
+
+
+<!-- SUPABASE JS CDN ADD KARO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="upload.js"></script>
+
     </main>
 
     <!-- BOTTOM NAV -->

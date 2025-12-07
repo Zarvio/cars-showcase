@@ -61,11 +61,24 @@ document.getElementById("btnUpload").addEventListener("click", () => window.loca
 // ---------- Google Login ----------
 googleLoginBtn.onclick = () => {
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).then(res => {
-    currentUser = res.user;
-    checkUserSetup();
-  }).catch(err => alert(err.message));
+
+  // Force Google to show account list
+  provider.setCustomParameters({
+    prompt: "select_account"
+  });
+
+  firebase.auth()
+    .signInWithPopup(provider)
+    .then(res => {
+      currentUser = res.user;
+      checkUserSetup();
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Google login failed!");
+    });
 };
+
 
 // onAuthStateChanged -> decide which screen to show
 firebase.auth().onAuthStateChanged(user => {
@@ -232,23 +245,13 @@ function loadUserProfile(data) {
   if (!data) return;
 
   displayName.innerText = (data.name || "") + (data.surname ? " " + data.surname : "");
-  
-  // ✅ Username + verify badge
+
   if (data.verified === true) {
-       displayUsername.innerHTML = `
-        <div style="
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            width: 100%;
-        ">
-            @${data.username || ""}
-            <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" 
-                style="width:16px; height:16px;"
-            >
-        </div>
+    displayUsername.innerHTML = `
+      <div style="display:flex; justify-content:center; align-items:center; gap:5px;">
+        @${data.username || ""}
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px; height:16px;">
+      </div>
     `;
   } else {
     displayUsername.innerText = "@" + (data.username || "");
@@ -256,15 +259,19 @@ function loadUserProfile(data) {
 
   profilePic.src = data.photoURL || currentUser.photoURL || "default.jpg";
 
-  // followers / following counts
   firebase.database().ref("followers/" + (data.uid || currentUser.uid)).once("value")
-    .then(snap => followersCount.innerText = snap ? snap.numChildren() : 0)
-    .catch(()=> followersCount.innerText = 0);
+    .then(snap => followersCount.innerText = snap ? snap.numChildren() : 0);
 
   firebase.database().ref("following/" + (data.uid || currentUser.uid)).once("value")
-    .then(snap => followingCount.innerText = snap ? snap.numChildren() : 0)
-    .catch(()=> followingCount.innerText = 0);
+    .then(snap => followingCount.innerText = snap ? snap.numChildren() : 0);
+
+  // ✅ Add this part
+  const bioEl = document.getElementById("displayBio");
+  if (bioEl) {
+    bioEl.innerText = data.bio || "";
+  }
 }
+
 
 
 // --- Upload profile photo (edit photo only) ---
@@ -425,3 +432,178 @@ firebase.auth().onAuthStateChanged(async user => {
 const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA"; // yaha apna anon key dalna
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ----------------------
+// 🔧 ADVANCED EDIT PROFILE
+// ----------------------
+const editProfileBtn = document.getElementById("editProfileBtn");
+const editProfileModal = document.getElementById("editProfileModal");
+const bioInput = document.getElementById("bioInput");
+const newUsernameInput = document.getElementById("newUsernameInput");
+const saveProfileBtn = document.getElementById("saveProfileBtn");
+const displayBio = document.getElementById("displayBio");
+
+let originalUsername = "";
+let usernameOk = true;
+
+// Open modal
+editProfileBtn?.addEventListener("click", async () => {
+  editProfileModal.classList.remove("hidden");
+
+  const snap = await firebase.database().ref("users/" + currentUser.uid).once("value");
+  const data = snap.val();
+
+  originalUsername = data.username || "";
+  bioInput.value = data.bio || "";
+  newUsernameInput.value = originalUsername;
+
+  usernameOk = true;
+  saveProfileBtn.disabled = false;
+});
+
+// ------ Live Username Check ------
+newUsernameInput?.addEventListener("input", async () => {
+  const val = newUsernameInput.value.trim().toLowerCase();
+
+  // Username same as before? OK.
+  if (val === originalUsername) {
+    usernameOk = true;
+    setUsernameStatus("same");
+    saveProfileBtn.disabled = false;
+    return;
+  }
+
+  // Rules
+  if (val.length < 4 || !/^[a-z0-9._]+$/.test(val)) {
+    usernameOk = false;
+    setUsernameStatus("invalid");
+    saveProfileBtn.disabled = true;
+    return;
+  }
+
+  // Check DB
+  const check = await firebase.database().ref("usernames/" + val).once("value");
+  if (check.exists()) {
+    usernameOk = false;
+    setUsernameStatus("taken");
+    saveProfileBtn.disabled = true;
+  } else {
+    usernameOk = true;
+    setUsernameStatus("ok");
+    saveProfileBtn.disabled = false;
+  }
+});
+
+// ------ UI status icon & messages ------
+function setUsernameStatus(type) {
+  let msg = "";
+
+  if (!document.getElementById("usernameStatus")) {
+    const div = document.createElement("div");
+    div.id = "usernameStatus";
+    div.style.fontSize = "12px";
+    div.style.marginBottom = "5px";
+    newUsernameInput.after(div);
+  }
+
+  const statusDiv = document.getElementById("usernameStatus");
+
+  if (type === "same") {
+    msg = "✔ Username unchanged";
+    statusDiv.style.color = "#00ffcc";
+  } 
+  else if (type === "ok") {
+    msg = "✔ Username available";
+    statusDiv.style.color = "#00ff66";
+  } 
+  else if (type === "taken") {
+    msg = "✖ Username already taken";
+    statusDiv.style.color = "red";
+  } 
+  else if (type === "invalid") {
+    msg = "✖ Invalid username";
+    statusDiv.style.color = "orange";
+  }
+
+  statusDiv.innerText = msg;
+}
+
+// ------ Save Profile ------
+saveProfileBtn?.addEventListener("click", async () => {
+  const bio = bioInput.value.trim();
+  const newUsername = newUsernameInput.value.trim().toLowerCase();
+
+  if (bio.length > 150) return alert("Bio too long!");
+
+  const updates = {};
+
+  // ✅ Always save bio if changed
+  updates[`users/${currentUser.uid}/bio`] = bio;
+
+  // ✅ If username changed and valid
+  if (newUsername !== originalUsername && usernameOk) {
+    // remove old username
+    updates[`usernames/${originalUsername}`] = null;
+
+    // save new
+    updates[`usernames/${newUsername}`] = currentUser.uid;
+    updates[`users/${currentUser.uid}/username`] = newUsername;
+  }
+
+  await firebase.database().ref().update(updates);
+
+  // UI Update
+  displayBio.innerText = bio;
+  editProfileModal.classList.add("hidden");
+
+  
+});
+// Close / cancel modal
+const closeEditModal = document.getElementById("closeEditModal");
+
+closeEditModal?.addEventListener("click", () => {
+  editProfileModal.classList.add("hidden");
+});
+
+// ✅ Function ko bahar rakho
+function showPopup(message) {
+  const popup = document.getElementById("customPopup");
+  const text = document.getElementById("popupText");
+
+  text.innerText = message;
+  popup.classList.remove("hidden");
+
+  setTimeout(() => {
+    popup.classList.add("hidden");
+  }, 2500);
+}
+
+// ✅ Save button logic
+saveProfileBtn?.addEventListener("click", async () => {
+  const bio = bioInput.value.trim();
+  const newUsername = newUsernameInput.value.trim().toLowerCase();
+
+  const updates = {};
+  updates[`users/${currentUser.uid}/bio`] = bio;
+
+  if (newUsername !== originalUsername && usernameOk) {
+    updates[`usernames/${originalUsername}`] = null;
+    updates[`usernames/${newUsername}`] = currentUser.uid;
+    updates[`users/${currentUser.uid}/username`] = newUsername;
+  }
+
+  await firebase.database().ref().update(updates);
+
+  // ✅ UI update
+  displayBio.innerText = bio;
+  editProfileModal.classList.add("hidden");
+
+  // ✅ show custom popup
+  showPopup("Profile Updated 🎉");
+});
+
+// ✅ Close / cancel modal
+
+closeEditModal?.addEventListener("click", () => {
+  editProfileModal.classList.add("hidden");
+});

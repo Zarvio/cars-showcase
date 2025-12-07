@@ -6,61 +6,94 @@
     <title>Pinora Web</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+
+
+    </style>
 </head>
 
 <body>
     
-    <!-- HEADER -->
+<!-- HEADER -->
 <header class="top-header">
-    <!-- Logo -->
-    <div class="logo">
-         Pinora
-    </div>
+    <div class="logo">Pinora</div>
 </header>
 
-              <!-- Meaasage -->
+<!-- Message Icon -->
+<a class="nav-item" id="btnmessage">
+    <i class="fa-regular fa-message"></i>
+</a>
 
-            <a class="nav-item" id="btnmessage">
-            <i class="fa-regular fa-message"></i>
-        </a>
+<!-- VIDEOS SEARCH (TOP) isme id change ki hai to sabi mein dekh lena feature mein iski id pahle username ki hai wo thi -->
+<div class="search-header" id="userSearchBox">
+    <input type="text" id="searchVideoInput" name="user" placeholder="Search videos...">
+</div> 
 
-
+<!-- Main Content -->
 <main class="main-content"></main>
 
+<!-- Video Modal -->
+<div id="videoModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="closeBtn">&times;</span>
+    <video id="modalVideo" controls autoplay style="width:100%; max-height:60vh;"></video>
+<img id="modalImage" style="width:100%; max-height:60vh; display:none; border-radius:12px;">
+<h3 id="modalTitle"></h3>
 
-    <!-- BOTTOM NAV -->
-    <nav class="bottom-nav">
-        <a class="nav-item active" id="btnHome">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
-        </a>
+    <div id="relatedVideos" class="related-videos"></div>
+  </div>
+</div>
 
-        <a class="nav-item" id="btnSearch">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <span>Search</span>
-        </a>
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <a class="nav-item active" id="btnHome">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+    </a>
 
-        <a class="nav-item" id="btnUpload">
-            <i class="fa-solid fa-plus"></i>
-            <span>Upload</span>
-        </a>
+    <a class="nav-item" id="btnSearch">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>Search</span>
+    </a>
 
-        <a class="nav-item" id="btnNotifs">
-            <i class="fa-regular fa-bell"></i>
-            <span>Notification</span>
-        </a>
+    <a class="nav-item" id="btnUpload">
+        <i class="fa-solid fa-plus"></i>
+        <span>Upload</span>
+    </a>
 
-        <a class="nav-item" id="btnProfile">
-            <i class="fa-regular fa-circle-user"></i>
-            <span>Profile</span>
-        </a>
+    <a class="nav-item" id="btnNotifs" style="position:relative;">
+    <i class="fa-regular fa-bell"></i>
+    <span>Notification</span>
+    <span id="notifDot" style="
+        display:none;
+        width:8px;
+        height:8px;
+        background:red;
+        border-radius:50%;
+        position:absolute;
+        top:5px;
+        right:10px;
+    "></span>
+</a>
 
-        <!-- Admin Panel Button (hidden by default) -->
-        <div id="adminPanelBtn" class="admin-panel hidden">Admin Panel</div>
-    </nav>
 
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <a class="nav-item" id="btnProfile">
+        <i class="fa-regular fa-circle-user"></i>
+        <span>Profile</span>
+    </a>
+
+    <!-- Admin Panel Button -->
+    <div id="adminPanelBtn" class="admin-panel hidden">Admin Panel</div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<!-- Your JS -->
 <script src="script.js"></script>
 
 </body>

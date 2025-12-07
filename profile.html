@@ -19,6 +19,22 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 </head>
 <body>
+
+<!-- Logout Popup -->
+<div id="logoutPopup" class="hidden">
+  <div class="popup-content">
+    <h3>Are you sure you want to logout?</h3>
+    <div class="popup-buttons">
+      <button id="logoutYes">Yes</button>
+      <button id="logoutNo">No</button>
+    </div>
+  </div>
+</div>
+  
+  <div id="customPopup" class="custom-popup hidden">
+  <span id="popupText">Profile Updated 🎉</span>
+</div>
+
   <div class="page">
 
     <!-- Header (small) -->
@@ -102,10 +118,49 @@
           </div>
 
           <div class="actions">
-            <button id="shareBtn" class="btn outline"><i class="fa-solid fa-share-nodes"></i> Share</button>
-            <button id="editBtn" class="btn outline" disabled><i class="fa-solid fa-pen-to-square"></i> Edit profile</button>
-          </div>
-        </div>
+
+  <!-- Bio text (profile ke niche show hoga) -->
+  <p id="displayBio" class="profile-bio"></p>
+
+  <!-- Edit Profile Button -->
+  <button id="editProfileBtn" class="edit-profile-btn">
+    Edit Profile
+  </button>
+
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" class="edit-profile-modal hidden">
+
+  <!-- Header with back arrow -->
+  <div class="edit-header">
+    <span id="closeEditModal" class="back-arrow">❌</span>
+    <span class="edit-title">Edit Profile</span>
+  </div>
+
+  <textarea 
+    id="bioInput" 
+    maxlength="150" 
+    placeholder="Write your bio (max 150 characters)">
+  </textarea>
+
+  <input 
+    type="text" 
+    id="newUsernameInput" 
+    placeholder="Change username" 
+  />
+
+  <div id="usernameStatus"></div>
+
+  <button id="saveProfileBtn" class="save-profile-btn">
+    Save Changes
+  </button>
+
+</div>
+<button id="logoutBtn">Logout</button>
+
+
+</div>
+
+
 
         <div class="tabs">
          <!--   <button class="tab active">Created</button> -->

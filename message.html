@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages - Pinora</title>
+
+  <link rel="stylesheet" href="message.css" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Chat List -->
+<div id="chatListScreen" class="screen">
+  
+  <div class="header">
+    <button id="listBackBtn">←</button>
+    Messages
+  </div>
+  
+  <div id="chatList" class="chat-list"></div>
+
+</div>
+
+
+  <!-- Chat Screen -->
+  <div id="chatScreen" class="screen chat-screen hidden">
+    
+    <div class="chat-header">
+      <button id="backBtn">←</button>
+      <span id="chatUserName">Chat</span>
+    </div>
+
+    <div id="chatBox" class="chat-box"></div>
+
+    <div class="chat-input">
+      <input type="text" id="msgInput" placeholder="Type a message..." />
+      <button id="sendBtn">➤</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="message.js"></script>
+</body>
+</html>

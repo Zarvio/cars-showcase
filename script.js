@@ -87,8 +87,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (media) {
                 media.style.width = "100%";
-                media.style.height = "150px";
-                media.style.objectFit = "cover";
+                media.style.height = "auto";
+media.style.maxHeight = "350px";   // long view
+media.style.objectFit = "cover";
+
                 media.style.borderRadius = "12px";
                 media.style.cursor = "pointer";
 
@@ -108,42 +110,47 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                     // Related videos
                     relatedVideos.innerHTML = "";
-                    allPosts.forEach(other => {
-                        if (other.id === post.id) return;
+allPosts.forEach(other => {
+    if (other.id === post.id) return;
 
-                        let related;
-                        if (other.file_type.startsWith("video")) {
-                            related = document.createElement("video");
-                            related.src = other.file_url;
-                            related.muted = true;
-                            related.loop = true;
-                        } else {
-                            related = document.createElement("img");
-                            related.src = other.file_url;
-                        }
+    // wrapper
+    let wrap = document.createElement("div");
+    wrap.className = "relatedBox";
 
-                        if (related) {
-                            related.style.width = "120px";
-                            related.style.height = "70px";
-                            related.style.borderRadius = "8px";
-                            related.style.cursor = "pointer";
+    // actual thumb
+    let related;
+    if (other.file_type.startsWith("video")) {
+        related = document.createElement("video");
+        related.src = other.file_url;
+        related.muted = true;
+        related.playsInline = true;
+        related.preload = "metadata";   // 🔥 autoplay बंद
+    } else {
+        related = document.createElement("img");
+        related.src = other.file_url;
+    }
 
-                            related.addEventListener("click", () => {
-                                if (other.file_type.startsWith("video")) {
-                                    modalVideo.src = other.file_url;
-                                    modalVideo.style.display = "block";
-                                    modalImage.style.display = "none";
-                                } else {
-                                    modalImage.src = other.file_url;
-                                    modalImage.style.display = "block";
-                                    modalVideo.style.display = "none";
-                                }
-                                modalTitle.innerText = other.title || "";
-                            });
+    related.className = "relatedThumb";
 
-                            relatedVideos.appendChild(related);
-                        }
-                    });
+    wrap.appendChild(related);
+
+    wrap.addEventListener("click", () => {
+        if (other.file_type.startsWith("video")) {
+            modalVideo.src = other.file_url;
+            modalVideo.style.display = "block";
+            modalImage.style.display = "none";
+        } else {
+            modalImage.src = other.file_url;
+            modalImage.style.display = "block";
+            modalVideo.style.display = "none";
+        }
+        modalTitle.innerText = other.title ?? "";
+    });
+
+    relatedVideos.appendChild(wrap);
+});
+
+
                 });
 
                 box.appendChild(media);
@@ -162,6 +169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("btnSearch")?.addEventListener("click", () => location.href = "search.html");
     document.getElementById("btnProfile")?.addEventListener("click", () => location.href = "profile.html");
     document.getElementById("btnUpload")?.addEventListener("click", () => location.href = "upload.html");
+     document.getElementById("btnmessage")?.addEventListener("click", () => location.href = "message.html");
 });
 
 // ----------------------
@@ -221,3 +229,113 @@ document.addEventListener("keydown", function (e) {
     }
 });
 
+const btnMessage = document.getElementById("btnmessage");
+
+// रेड नंबर
+const messageCount = document.createElement("span");
+messageCount.style.cssText = `
+    display:none;
+    min-width:16px;
+    height:16px;
+    background:red;
+    color:white;
+    font-size:12px;
+    font-weight:bold;
+    text-align:center;
+    line-height:16px;
+    border-radius:50%;
+    position:absolute;
+    top:0px;
+    right:0px;
+    pointer-events:none;
+    z-index:1001;
+    padding: 0 4px;
+`;
+btnMessage.style.position = "fixed";
+btnMessage.appendChild(messageCount);
+
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) return;
+  const uid = user.uid;
+
+  const chatsRef = firebase.database().ref("chats");
+
+  const updateUnreadCount = () => {
+    chatsRef.once("value", snapshot => {
+      const chats = snapshot.val();
+      if (!chats) {
+        messageCount.style.display = "none";
+        return;
+      }
+
+      let unread = 0;
+
+      Object.keys(chats).forEach(chatId => {
+        if (!chatId.includes(uid)) return;
+
+        const messages = chats[chatId];
+        Object.keys(messages).forEach(msgId => {
+          const msg = messages[msgId];
+          if (msg.sender !== uid && !msg.read) unread++;
+        });
+      });
+
+      if (unread > 0) {
+        messageCount.style.display = "block";
+        messageCount.innerText = unread;
+      } else {
+        messageCount.style.display = "none";
+      }
+    });
+  };
+
+  // listener for new messages
+  chatsRef.on("child_added", updateUnreadCount);
+  chatsRef.on("child_changed", updateUnreadCount);
+  chatsRef.on("child_removed", updateUnreadCount);
+});
+
+btnMessage.onclick = () => {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+  const chatsRef = firebase.database().ref("chats");
+
+  chatsRef.once("value", snapshot => {
+    const chats = snapshot.val();
+    if (!chats) return;
+
+    Object.keys(chats).forEach(chatId => {
+      if (!chatId.includes(uid)) return;
+
+      const messages = chats[chatId];
+      Object.keys(messages).forEach(msgId => {
+        const msg = messages[msgId];
+        if (msg.sender !== uid && !msg.read) {
+          // mark message as read
+          chatsRef.child(chatId).child(msgId).update({ read: true });
+        }
+      });
+    });
+
+    // click करते ही number hide
+    messageCount.style.display = "none";
+    window.location.href = "message.html";
+  });
+};
+// सबसे पहले modal element को select करो
+const modal = document.querySelector(".modal"); // या जो भी आपका actual modal class/id है
+
+// अगर modal के अंदर वीडियो है
+const modalVideo = document.querySelector(".modal video"); // या आपका वीडियो selector
+
+// फिर आपका click handler
+document.querySelector(".closeBtn").addEventListener("click", () => {
+    if (!modal.classList.contains("hidden")) {
+        modal.classList.add("hidden");
+        modalVideo.pause();
+    } else {
+        window.history.back();
+    }
+});

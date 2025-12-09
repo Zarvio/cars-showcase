@@ -20,6 +20,7 @@ const loaderOverlay = document.getElementById("loaderOverlay");
 const profileContent = document.getElementById("profileView");
 const followBtn = document.getElementById("followBtn");
 const displayBio = document.getElementById("displayBio");
+const messageBtn = document.getElementById("messageBtn");
 
 // UID from URL
 const params = new URLSearchParams(window.location.search);
@@ -62,29 +63,47 @@ firebase.auth().onAuthStateChanged(async user => {
     }
 
     const data = snapshot.val();
-    displayName.innerText = (data.name || "") + (data.surname ? " " + data.surname : "");
-    
-    // username + verified badge
+
+    // ✅ Name
+    displayName.innerText =
+      (data.name || "") + (data.surname ? " " + data.surname : "");
+
+    // ✅ Username with/without verified badge
     if (data.verified === true) {
       displayUsername.innerHTML = `
         <div style="display:flex; align-items:center; justify-content:center; gap:5px; width:100%;">
           @${data.username || ""}
           <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px; height:16px;">
         </div>
-      `
-      // ✅ Show bio
-if (data.bio && data.bio.trim() !== "") {
-  displayBio.innerText = data.bio;
-} else {
-  displayBio.innerText = "";
-}
-;
+      `;
     } else {
-      displayUsername.innerHTML = `<div style="text-align:center; width:100%;">@${data.username || ""}</div>`;
-      
+      displayUsername.innerHTML = `
+        <div style="text-align:center; width:100%;">
+          @${data.username || ""}
+        </div>
+      `;
     }
 
+    // ✅ Bio
+    if (data.bio && data.bio.trim() !== "") {
+      displayBio.innerText = data.bio;
+    } else {
+      displayBio.innerText = "";
+    }
+
+    // ✅ Profile pic
     profilePic.src = data.photoURL || "default.jpg";
+
+    // ✅ Message button logic
+    if (currentUid === profileUid) {
+      messageBtn.style.display = "none";
+    } else {
+      messageBtn.style.display = "inline-block";
+    }
+
+    messageBtn.onclick = () => {
+      window.location.href = `message.html?uid=${profileUid}`;
+    };
 
     // followers / following count
     const followersSnap = await firebase.database().ref("followers/" + profileUid).once("value");
@@ -101,7 +120,6 @@ if (data.bio && data.bio.trim() !== "") {
     const followRef = firebase.database().ref(`followers/${profileUid}/${currentUid}`);
     const followingRef = firebase.database().ref(`following/${currentUid}/${profileUid}`);
 
-    // Live listener for follow button & followers count
     followRef.on("value", snap => {
       if (snap.exists()) {
         followBtn.innerText = "Unfollow";
@@ -117,42 +135,38 @@ if (data.bio && data.bio.trim() !== "") {
     });
 
     followBtn.onclick = async () => {
-  const isFollowing = followBtn.dataset.following === "yes";
-  const updates = {};
+      const isFollowing = followBtn.dataset.following === "yes";
+      const updates = {};
 
-  if (isFollowing) {
-    // Unfollow
-    updates[`followers/${profileUid}/${currentUid}`] = null;
-    updates[`following/${currentUid}/${profileUid}`] = null;
-  } else {
-    // Follow
-    updates[`followers/${profileUid}/${currentUid}`] = true;
-    updates[`following/${currentUid}/${profileUid}`] = true;
+      if (isFollowing) {
+        updates[`followers/${profileUid}/${currentUid}`] = null;
+        updates[`following/${currentUid}/${profileUid}`] = null;
+      } else {
+        updates[`followers/${profileUid}/${currentUid}`] = true;
+        updates[`following/${currentUid}/${profileUid}`] = true;
 
-    // Get current user's name from database
-    const currentUserSnapshot = await firebase.database().ref(`users/${currentUid}`).once("value");
-    const currentUserData = currentUserSnapshot.val();
-    const currentUserName = currentUserData ? (currentUserData.name || "Someone") + (currentUserData.surname ? " " + currentUserData.surname : "") : "Someone";
+        const currentUserSnapshot = await firebase.database().ref(`users/${currentUid}`).once("value");
+        const currentUserData = currentUserSnapshot.val();
+        const currentUserName = currentUserData
+          ? (currentUserData.name || "Someone") + (currentUserData.surname ? " " + currentUserData.surname : "")
+          : "Someone";
 
-    // Notification for target user
-    const notifRef = firebase.database().ref(`notifications/${profileUid}`).push();
-    updates[`notifications/${profileUid}/${notifRef.key}`] = {
-      type: "follow",
-      fromUid: currentUid,
-      text: `${currentUserName} started following you.`,
-      timestamp: Date.now(),
-      read: false
+        const notifRef = firebase.database().ref(`notifications/${profileUid}`).push();
+        updates[`notifications/${profileUid}/${notifRef.key}`] = {
+          type: "follow",
+          fromUid: currentUid,
+          text: `${currentUserName} started following you.`,
+          timestamp: Date.now(),
+          read: false
+        };
+      }
+
+      firebase.database().ref().update(updates)
+        .then(() => {
+          if (!isFollowing) console.log("Followed successfully!");
+        })
+        .catch(err => console.error(err));
     };
-  }
-
-  // Update Firebase
-  firebase.database().ref().update(updates)
-    .then(() => {
-      if (!isFollowing) console.log("Followed successfully!");
-    })
-    .catch(err => console.error(err));
-};
-
 
   } catch (err) {
     console.error(err);
@@ -161,4 +175,3 @@ if (data.bio && data.bio.trim() !== "") {
     loaderOverlay.style.display = "none";
   }
 });
-displayUsername.innerHTML

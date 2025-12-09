@@ -36,6 +36,7 @@ firebase.auth().onAuthStateChanged(user => {
     const profileImg = sender?.photoURL || "default.jpg";
     const senderName = (sender?.name || "") + (sender?.surname ? " " + sender.surname : "");
     const text = n.text || "New notification";
+    const isVerified = sender?.verified || false;
 
     let iconClass = "fa-solid fa-bell";
     if (n.type === "follow") iconClass = "fa-solid fa-user-plus";
@@ -55,8 +56,11 @@ firebase.auth().onAuthStateChanged(user => {
 
     div.innerHTML = `
       <img src="${profileImg}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-      <div>
-        <b>${senderName || "Someone"}</b><br>
+      <div style="display:flex; flex-direction:column; justify-content:center;">
+        <div style="display:flex; align-items:center; gap:4px; font-weight:500;">
+          <b>${senderName || "Someone"}</b>
+          ${isVerified ? '<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px; height:14px;">' : ''}
+        </div>
         <span style="font-size:13px; opacity:0.8;">${text}</span>
       </div>
       <i class="${iconClass}" style="margin-left:auto;"></i>
@@ -73,6 +77,7 @@ firebase.auth().onAuthStateChanged(user => {
     loader.style.display = "none"; // नोटिफ़िकेशन आने के बाद loader hide करें
   });
 });
+
 
   
 

@@ -219,3 +219,52 @@ p {
     }
 }
 
+.msg-btn {
+    width: 100%;                /* Full width */
+    padding: 12px 0;            /* Thoda lamba aur tall */
+    border-radius: 25px;        /* Rounded like Instagram */
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    outline: none;
+    margin-left: 0;             /* Agar container me margin nahi chahiye */
+    margin-top: 15px;           /* Thoda upar space */
+}
+
+/* Send State */
+.msg-btn.send {
+    background-color: #0095f6;  /* Instagram blue */
+    color: #fff;
+}
+
+.msg-btn.send:hover {
+    background-color: #0077cc;  /* Darker blue on hover */
+}
+
+/* Disabled State */
+.msg-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Alternate State (Optional) */
+.msg-btn.cancel {
+    background-color: #0a192f;  /* Dark background */
+    color: #fff;
+    border: 1px solid #ccc;
+}
+
+.msg-btn.cancel:hover {
+    background-color: #1e2a45;  /* Slightly lighter on hover */
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    .msg-btn {
+        padding: 10px 0;
+        font-size: 15px;
+    }
+}
+

@@ -420,3 +420,65 @@ body {
     opacity: 0.7;
 }
 
+/* Main uploader header */
+.uploaderHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* thoda kam gap */
+    margin-bottom: 8px;
+    padding: 2px 0;
+}
+
+.uploaderDP {
+    width: 35px;   /* chhoti circle */
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease;
+}
+
+.uploaderDP:hover {
+    transform: scale(1.1);
+}
+
+.uploaderName {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    white-space: normal; /* multiline allowed */
+    overflow: visible;   
+    text-overflow: clip;
+    max-width: calc(100% - 40px); /* DP ke liye space bachaye */
+}
+
+/* Small uploader for related videos / thumbnails */
+.uploaderHeaderSmall {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.smallDP {
+    width: 25px;  /* chhoti se chhoti circle */
+    height: 25px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    transition: transform 0.2s ease;
+}
+
+.smallDP:hover {
+    transform: scale(1.1);
+}
+
+.smallName {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}

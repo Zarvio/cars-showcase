@@ -62,102 +62,145 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // Display Videos
-    function displayVideos(posts) {
-        main.innerHTML = "";
+   function displayVideos(posts) {
+    main.innerHTML = "";
 
-        if (!posts || posts.length === 0) {
-            main.innerHTML = "<p>No videos found.</p>";
-            return;
+    if (!posts || posts.length === 0) {
+        main.innerHTML = "<p>No videos found.</p>";
+        return;
+    }
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    posts.forEach(post => {
+        const box = document.createElement("div");
+        box.classList.add("pin-box");
+
+        // ⬆️ Uploader Header
+        const header = document.createElement("div");
+        header.className = "uploaderHeader";
+        header.innerHTML = `
+            <img src="${post.uploader_image || 'images/default.jpg'}" class="uploaderDP">
+            <span class="uploaderName">${post.uploader_name || 'Unknown'}</span>
+        `;
+        box.appendChild(header);
+
+        // MEDIA SHOW
+        let media;
+        if (post.file_type.startsWith("video") && isMobile) {
+            media = document.createElement("img");
+            media.src = post.thumb_url || 'images/default.jpg';
+        } else if (post.file_type.startsWith("video")) {
+            media = document.createElement("video");
+            media.src = post.file_url;
+            media.muted = true;
+            media.loop = true;
+            media.playsInline = true;
+            media.preload = "metadata";
+        } else {
+            media = document.createElement("img");
+            media.src = post.file_url;
         }
 
-        posts.forEach(post => {
-            const box = document.createElement("div");
-            box.classList.add("pin-box");
+        if (media) {
+            media.style.cssText = `
+                width:100%;
+                max-height:350px;
+                object-fit:cover;
+                border-radius:12px;
+                cursor:pointer;
+            `;
 
-            let media;
-            if (post.file_type.startsWith("video")) {
-                media = document.createElement("video");
-                media.src = post.file_url;
-                media.muted = true;
-                media.loop = true;
-            } else if (post.file_type.startsWith("image")) {
-                media = document.createElement("img");
-                media.src = post.file_url;
-            }
+            // Click to open modal
+            media.addEventListener("click", () => {
+                if (post.file_type.startsWith("video")) {
+                    modalVideo.src = post.file_url;
+                    modalVideo.style.display = "block";
+                    modalImage.style.display = "none";
+                } else {
+                    modalImage.src = post.file_url;
+                    modalImage.style.display = "block";
+                    modalVideo.style.display = "none";
+                }
 
-            if (media) {
-                media.style.width = "100%";
-                media.style.height = "auto";
-media.style.maxHeight = "350px";   // long view
-media.style.objectFit = "cover";
+                modalTitle.innerHTML = `
+                    ${post.title || ""}
+                    <div class="modalUploader">
+                        <img src="${post.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+                        <span>${post.uploader_name || 'Unknown'}</span>
+                    </div>
+                `;
+                modal.classList.remove("hidden");
 
-                media.style.borderRadius = "12px";
-                media.style.cursor = "pointer";
+                // Related videos
+                relatedVideos.innerHTML = "";
+                allPosts.forEach(other => {
+                    if (other.id === post.id) return;
 
-                media.addEventListener("click", () => {
-                    if (post.file_type.startsWith("video")) {
-                        modalVideo.src = post.file_url;
-                        modalVideo.style.display = "block";
-                        modalImage.style.display = "none";
+                    const wrap = document.createElement("div");
+                    wrap.className = "relatedBox";
+
+                    wrap.innerHTML = `
+                        <div class="uploaderHeaderSmall">
+                            <img src="${other.uploader_image || 'images/default.jpg'}" class="smallDP">
+                            <span class="smallName">${other.uploader_name || "User"}</span>
+                        </div>
+                    `;
+
+                    let relatedMedia;
+                    if (other.file_type.startsWith("video") && isMobile) {
+                        relatedMedia = document.createElement("img");
+                        relatedMedia.src = other.thumb_url || 'images/default.jpg';
+                    } else if (other.file_type.startsWith("video")) {
+                        relatedMedia = document.createElement("video");
+                        relatedMedia.src = other.file_url;
+                        relatedMedia.muted = true;
+                        relatedMedia.playsInline = true;
+                        relatedMedia.autoplay = false;
                     } else {
-                        modalImage.src = post.file_url;
-                        modalImage.style.display = "block";
-                        modalVideo.style.display = "none";
+                        relatedMedia = document.createElement("img");
+                        relatedMedia.src = other.file_url;
                     }
 
-                    modalTitle.innerText = post.title || "";
-                    modal.classList.remove("hidden");
+                    relatedMedia.className = "relatedThumb";
+                    relatedMedia.style.width = "100px";
+                    relatedMedia.style.height = "100px";
+                    relatedMedia.style.objectFit = "cover";
 
-                    // Related videos
-                    relatedVideos.innerHTML = "";
-allPosts.forEach(other => {
-    if (other.id === post.id) return;
+                    wrap.appendChild(relatedMedia);
 
-    // wrapper
-    let wrap = document.createElement("div");
-    wrap.className = "relatedBox";
+                    wrap.addEventListener("click", () => {
+                        if (other.file_type.startsWith("video")) {
+                            modalVideo.src = other.file_url;
+                            modalVideo.style.display = "block";
+                            modalImage.style.display = "none";
+                        } else {
+                            modalImage.src = other.file_url;
+                            modalImage.style.display = "block";
+                            modalVideo.style.display = "none";
+                        }
 
-    // actual thumb
-    let related;
-    if (other.file_type.startsWith("video")) {
-        related = document.createElement("video");
-        related.src = other.file_url;
-        related.muted = true;
-        related.playsInline = true;
-        related.preload = "metadata";   // 🔥 autoplay बंद
-    } else {
-        related = document.createElement("img");
-        related.src = other.file_url;
-    }
+                        modalTitle.innerHTML = `
+                            ${other.title || ""}
+                            <div class="modalUploader">
+                                <img src="${other.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+                                <span>${other.uploader_name || 'Unknown'}</span>
+                            </div>
+                        `;
+                    });
 
-    related.className = "relatedThumb";
-
-    wrap.appendChild(related);
-
-    wrap.addEventListener("click", () => {
-        if (other.file_type.startsWith("video")) {
-            modalVideo.src = other.file_url;
-            modalVideo.style.display = "block";
-            modalImage.style.display = "none";
-        } else {
-            modalImage.src = other.file_url;
-            modalImage.style.display = "block";
-            modalVideo.style.display = "none";
-        }
-        modalTitle.innerText = other.title ?? "";
-    });
-
-    relatedVideos.appendChild(wrap);
-});
-
-
+                    relatedVideos.appendChild(wrap);
                 });
+            });
 
-                box.appendChild(media);
-                main.appendChild(box);
-            }
-        });
-    }
+            box.appendChild(media);
+            main.appendChild(box);
+        }
+    });
+}
+
+
+
 
     closeBtn.addEventListener("click", () => {
         modal.classList.add("hidden");

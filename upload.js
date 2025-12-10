@@ -41,82 +41,145 @@ document.addEventListener("DOMContentLoaded", () => {
     return name.replace(/[^\w\-\.]/g, '_').substring(0, 100);
   }
 
-  uploadForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  // 🔹 Firebase Auth check
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) {
+      alert("Please login first!");
+      if (uploadForm) uploadForm.querySelector("button[type='submit']").disabled = true;
+      return;
+    }
 
-    const title = document.getElementById("pinTitle").value;
-    const file = fileInput.files[0];
-    if (!file) return alert("Select file first!");
+    if (uploadForm) uploadForm.querySelector("button[type='submit']").disabled = false;
 
-    // Show popup
-    popup.classList.remove("hidden");
-    uploadStatus.innerText = "Uploading...";
-    progressFill.style.width = "0%";
+    // Upload handler
+    uploadForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const safeFileName = makeSafeFileName(file.name);
-    const filePath = `uploads/${Date.now()}-${safeFileName}`;
+      const userRef = firebase.database().ref("users/" + user.uid);
+      const userSnap = await userRef.once("value");
+      const userData = userSnap.val();
 
-    // ✅ Fake progress animation (Supabase JS doesn't give real progress)
-    let percent = 0;
-    const interval = setInterval(() => {
-      if (percent < 90) {
-        percent += 5;
-        progressFill.style.width = percent + "%";
+      const uploaderName = userData?.username || "Unknown";
+      const uploaderImg  = userData?.photoURL || "https://i.ibb.co/album/default.jpg";
+
+      const title = document.getElementById("pinTitle").value;
+      const file = fileInput.files[0];
+      if (!file) return alert("Select file first!");
+
+      popup.classList.remove("hidden");
+      uploadStatus.innerText = "Uploading...";
+      progressFill.style.width = "0%";
+
+      const safeFileName = makeSafeFileName(file.name);
+      const filePath = `uploads/${Date.now()}-${safeFileName}`;
+
+      let percent = 0;
+      const interval = setInterval(() => {
+        if (percent < 90) {
+          percent += 5;
+          progressFill.style.width = percent + "%";
+        }
+      }, 200);
+
+      // Upload main file
+      const { error: uploadError } = await supabaseClient
+        .storage.from("Zarvio")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        clearInterval(interval);
+        uploadStatus.innerText = "Upload failed!";
+        return;
       }
-    }, 200);
 
-    // Upload
-    const { error: uploadError } = await supabaseClient
-      .storage.from("Zarvio")
-      .upload(filePath, file);
+      const { data: publicURL } = supabaseClient.storage
+        .from("Zarvio")
+        .getPublicUrl(filePath);
 
-    if (uploadError) {
+      const fileUrl = publicURL.publicUrl;
+
+      // Generate thumbnail if video
+      let thumbUrl = null;
+      if (file.type.startsWith('video')) {
+        try {
+          const thumbBlob = await generateVideoThumbnail(file);
+          const thumbPath = `thumbnails/${Date.now()}-${safeFileName}.jpg`;
+
+          const { error: thumbError } = await supabaseClient
+            .storage.from("Zarvio")
+            .upload(thumbPath, thumbBlob);
+
+          if (!thumbError) {
+            const { data: thumbData } = supabaseClient.storage
+              .from("Zarvio")
+              .getPublicUrl(thumbPath);
+            thumbUrl = thumbData.publicUrl;
+          }
+        } catch(err) {
+          console.error("Thumbnail generation failed:", err);
+        }
+      }
+
+      // Save to database
+      const { error } = await supabaseClient
+        .from("pinora823")
+        .insert([{
+          title: title,
+          file_url: fileUrl,
+          thumb_url: thumbUrl,
+          file_type: file.type,
+          created_at: new Date().toISOString(),
+          uploader_uid: user.uid,
+          uploader_name: uploaderName,
+          uploader_image: uploaderImg
+        }]);
+
       clearInterval(interval);
-      uploadStatus.innerText = "Upload failed!";
-      return;
-    }
+      progressFill.style.width = "100%";
 
-    const { data: publicURL } = supabaseClient.storage
-      .from("Zarvio")
-      .getPublicUrl(filePath);
+      if (error) {
+        uploadStatus.innerText = "Database error!";
+        return;
+      }
 
-    const fileUrl = publicURL.publicUrl;
+      uploadStatus.innerText = "Uploaded Successfully ✔️";
+      uploadStatus.style.color = "black";
 
-    // Save to db
-    const { error } = await supabaseClient
-      .from("pinora823")
-      .insert([{
-        title: title,
-        file_url: fileUrl,
-        file_type: file.type,
-        created_at: new Date().toISOString()
-      }]);
-
-    clearInterval(interval);
-    progressFill.style.width = "100%";
-
-    if (error) {
-      uploadStatus.innerText = "Database error!";
-      return;
-    }
-
-    // Success
-   uploadStatus.innerText = "Video successfully uploaded ✅";
-uploadStatus.style.color = "black";
-
-
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 1500);
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1500);
+    });
   });
 
+  // Navigation
+  document.getElementById("btnHome")?.addEventListener("click", () => window.location.href = "index.html");
+  document.getElementById("btnSearch")?.addEventListener("click", () => window.location.href = "search.html");
+  document.getElementById("btnNotifs")?.addEventListener("click", () => window.location.href = "notification.html");
+  document.getElementById("btnProfile")?.addEventListener("click", () => window.location.href = "profile.html");
+  document.getElementById("btnUpload")?.addEventListener("click", () => window.location.href = "upload.html");
 
+  // Thumbnail generator function
+  async function generateVideoThumbnail(file) {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.src = URL.createObjectURL(file);
+      video.muted = true;
+      video.currentTime = 1;
 
+      video.onloadeddata = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          resolve(blob);
+        }, 'image/jpeg', 0.8);
+      };
 
-    // Navigation
-    document.getElementById("btnHome")?.addEventListener("click", () => window.location.href = "index.html");
-    document.getElementById("btnSearch")?.addEventListener("click", () => window.location.href = "search.html");
-    document.getElementById("btnNotifs")?.addEventListener("click", () => window.location.href = "notification.html");
-    document.getElementById("btnProfile")?.addEventListener("click", () => window.location.href = "profile.html");
-    document.getElementById("btnUpload")?.addEventListener("click", () => window.location.href = "upload.html");
+      video.onerror = (e) => reject(e);
+    });
+  }
+
 });

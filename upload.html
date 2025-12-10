@@ -52,5 +52,30 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="upload.js"></script>
+<!-- 1. Firebase Core -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<!-- 2. Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<!-- 3. Firebase Database -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<!-- 4. Firebase Initialize -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
+    authDomain: "inspire4ever-c60ad.firebaseapp.com",
+    databaseURL: "https://inspire4ever-c60ad-default-rtdb.firebaseio.com",
+    projectId: "inspire4ever-c60ad",
+    storageBucket: "inspire4ever-c60ad.appspot.com",
+    messagingSenderId: "771054326516",
+    appId: "1:771054326516:web:69fd1989229b25a8796380"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+
+
+
 </body>
 </html>

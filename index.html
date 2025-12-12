@@ -29,8 +29,55 @@
     <input type="text" id="searchVideoInput" name="user" placeholder="Search videos...">
 </div> 
 
-<!-- Main Content -->
+<!-- ========== VIDEO BOX TEMPLATE (MAIN PAGE) ========== -->
+<template id="videoBoxTemplate">
+    <div class="pin-box">
+
+        <div class="mediaContainer">
+            
+            <!-- Overlaid uploader info -->
+            <div class="uploaderOverlay">
+                <img class="uploaderDP">
+                <span class="uploaderName"></span>
+            </div>
+
+            <!-- Media (video/image) yahan JS se inject hoga -->
+        </div>
+
+    </div>
+</template>
+
+
+<!-- ========== SMALL UPLOADER TEMPLATE (RELATED VIDEOS) ========== -->
+<template id="uploaderSmallTemplate">
+    <div class="uploaderHeaderSmall">
+        <img class="smallDP">
+        <span class="smallName"></span>
+    </div>
+</template>
+
+
+<!-- ========== MAIN CONTENT AREA ========== -->
 <main class="main-content"></main>
+<!-- ========== RELATED VIDEOS CONTAINER ========== -->
+
+
+
+<!-- ========== SMALL UPLOADER TEMPLATE ========== -->
+<template id="relatedVideoTemplate">
+    <div class="relatedBox">
+
+        <!-- Small uploader header -->
+        <div class="uploaderHeaderSmall">
+            <img class="smallDP" src="">
+            <span class="smallName"></span>
+        </div>
+
+        <!-- Thumbnail -->
+        <img class="relatedThumb" src="">
+    </div>
+</template>
+
 
 <!-- Video Modal -->
 <div id="videoModal" class="modal hidden">

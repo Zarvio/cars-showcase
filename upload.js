@@ -121,18 +121,24 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Save to database
-      const { error } = await supabaseClient
-        .from("pinora823")
-        .insert([{
-          title: title,
-          file_url: fileUrl,
-          thumb_url: thumbUrl,
-          file_type: file.type,
-          created_at: new Date().toISOString(),
-          uploader_uid: user.uid,
-          uploader_name: uploaderName,
-          uploader_image: uploaderImg
-        }]);
+      // Determine verified flag from Firebase userData (handles string/number/boolean)
+const uploaderVerified = (userData && (userData.verified === true || userData.verified === 'true' || userData.verified === 1 || userData.verified === '1')) ? true : false;
+
+// Save to database (include uploader_verified)
+const { error } = await supabaseClient
+  .from("pinora823")
+  .insert([{
+    title: title,
+    file_url: fileUrl,
+    thumb_url: thumbUrl,
+    file_type: file.type,
+    created_at: new Date().toISOString(),
+    uploader_uid: user.uid,
+    uploader_name: uploaderName,
+    uploader_image: uploaderImg,
+    uploader_verified: uploaderVerified
+  }]);
+
 
       clearInterval(interval);
       progressFill.style.width = "100%";

@@ -420,65 +420,87 @@ body {
     opacity: 0.7;
 }
 
-/* Main uploader header */
-.uploaderHeader {
+.mediaContainer {
+    position: relative;
+    width: 100%;
+}
+
+.postMedia {
+    width: 100%;
+    max-height: 350px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* Overlay inside media */
+.uploaderOverlay {
+    position: absolute;
+    top: 8px;
+    left: 8px;
     display: flex;
     align-items: center;
-    gap: 10px; /* thoda kam gap */
-    margin-bottom: 8px;
-    padding: 2px 0;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(0,0,0,0.45);
+    border-radius: 20px;
+    backdrop-filter: blur(6px);
+    z-index: 20;
 }
 
 .uploaderDP {
-    width: 35px;   /* chhoti circle */
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+}
+
+.uploaderName {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+}
+/* Modal container */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Video inside modal */
+.modal video, .modal img {
+    max-width: 90%;
+    max-height: 80%;
+    border-radius: 8px;
+    position: relative;
+}
+
+/* Overlay uploader info */
+.modalUploader {
+    position: absolute; /* overlay on top of video */
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 8px;
+    border-radius: 20px;
+    color: #fff;
+    z-index: 1001;
+}
+
+.modalUploader img.modalUploaderDP {
+    width: 35px;
     height: 35px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    transition: transform 0.2s ease;
-}
-
-.uploaderDP:hover {
-    transform: scale(1.1);
-}
-
-.uploaderName {
-    font-size: 14px;
-    font-weight: 600;
-    color: #222;
-    white-space: normal; /* multiline allowed */
-    overflow: visible;   
-    text-overflow: clip;
-    max-width: calc(100% - 40px); /* DP ke liye space bachaye */
-}
-
-/* Small uploader for related videos / thumbnails */
-.uploaderHeaderSmall {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.smallDP {
-    width: 25px;  /* chhoti se chhoti circle */
-    height: 25px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1.5px solid #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-    transition: transform 0.2s ease;
-}
-
-.smallDP:hover {
-    transform: scale(1.1);
-}
-
-.smallName {
-    font-size: 12px;
-    font-weight: 500;
-    color: #333;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
 }

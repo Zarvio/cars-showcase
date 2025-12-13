@@ -34,7 +34,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let allPosts = [];
 
-    // Fetch posts
+    // ----------------
+    // FETCH POSTS
+    // ----------------
     try {
         const { data, error } = await supabaseClient
             .from("pinora823")
@@ -50,7 +52,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         main.innerHTML = "<p>Error loading posts.</p>";
     }
 
-    // Search
+    // ----------------
+    // SEARCH
+    // ----------------
     searchVideoInput.addEventListener("input", () => {
         const query = searchVideoInput.value.toLowerCase();
         if (!query) return displayVideos(allPosts);
@@ -61,189 +65,235 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayVideos(filtered);
     });
 
-    // Display Videos
-   function displayVideos(posts) {
-    main.innerHTML = "";
+    // ----------------
+    // DISPLAY VIDEOS
+    // ----------------
+    function displayVideos(posts) {
+        main.innerHTML = "";
 
-    if (!posts || posts.length === 0) {
-        main.innerHTML = "<p>No videos found.</p>";
-        return;
-    }
-
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    posts.forEach(post => {
-
-        // OUTER BOX
-        const box = document.createElement("div");
-        box.classList.add("pin-box");
-
-        // MEDIA CONTAINER (overlay yahin chalega)
-        const mediaContainer = document.createElement("div");
-        mediaContainer.className = "mediaContainer";
-
-        // OVERLAY (DP + Username)
-        const overlay = document.createElement("div");
-        overlay.className = "uploaderOverlay";
-        // Robust check for verified
-const verified = post.uploader_verified === true 
-                 || post.uploader_verified === 'true' 
-                 || post.uploader_verified === 1 
-                 || post.uploader_verified === '1';
-
-// Build badge HTML only if verified
-const badgeHTML = verified 
-                  ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" 
-                         style="width:16px; height:16px;">` 
-                  : '';
-
-// Overlay innerHTML
-overlay.innerHTML = `
-  <div style="display:flex; align-items:center; gap:8px; width:100%;">
-    <img src="${post.uploader_image || 'images/default.jpg'}" class="uploaderDP" alt="uploader">
-    <div style="display:flex; align-items:center; gap:6px;">
-      <span class="uploaderName">${post.uploader_name || 'Unknown'}</span>
-      ${badgeHTML}
-    </div>
-  </div>
-`;
-
-        mediaContainer.appendChild(overlay);
-
-        // MEDIA (image/video)
-        let media;
-        if (post.file_type.startsWith("video") && isMobile) {
-            media = document.createElement("img");
-            media.src = post.thumb_url || "images/default.jpg";
-        } else if (post.file_type.startsWith("video")) {
-            media = document.createElement("video");
-            media.src = post.file_url;
-            media.muted = true;
-            media.loop = true;
-            media.playsInline = true;
-            media.preload = "metadata";
-        } else {
-            media = document.createElement("img");
-            media.src = post.file_url;
+        if (!posts || posts.length === 0) {
+            main.innerHTML = "<p>No videos found.</p>";
+            return;
         }
 
-        media.className = "postMedia";
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-        // MEDIA CLICK → OPEN MODAL
-        media.addEventListener("click", () => {
-            if (post.file_type.startsWith("video")) {
-                modalVideo.src = post.file_url;
-                modalVideo.style.display = "block";
-                modalImage.style.display = "none";
+        posts.forEach(post => {
+
+            const box = document.createElement("div");
+            box.classList.add("pin-box");
+
+            const mediaContainer = document.createElement("div");
+            mediaContainer.className = "mediaContainer";
+
+            // OVERLAY
+            const overlay = document.createElement("div");
+            overlay.className = "uploaderOverlay";
+
+            const verified = post.uploader_verified === true 
+                || post.uploader_verified === 'true' 
+                || post.uploader_verified === 1 
+                || post.uploader_verified === '1';
+
+            const badgeHTML = verified 
+                ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px; height:16px;">` 
+                : '';
+
+            overlay.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px; width:100%;">
+                    <img src="${post.uploader_image || 'images/default.jpg'}" class="uploaderDP" alt="uploader">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="uploaderName">${post.uploader_name || 'Unknown'}</span>
+                        ${badgeHTML}
+                    </div>
+                </div>
+            `;
+            mediaContainer.appendChild(overlay);
+
+            // VIEWS
+            const viewsOverlay = document.createElement("div");
+            viewsOverlay.className = "viewsOverlay";
+            viewsOverlay.innerHTML = `
+                <i class="fa-regular fa-eye"></i>
+                <span class="viewCount">${post.views ? post.views.toLocaleString() : 0}</span>
+            `;
+            mediaContainer.appendChild(viewsOverlay);
+
+            // MEDIA
+            let media;
+            if (post.file_type.startsWith("video") && isMobile) {
+                media = document.createElement("img");
+                media.src = post.thumb_url || "images/default.jpg";
+            } else if (post.file_type.startsWith("video")) {
+                media = document.createElement("video");
+                media.src = post.file_url;
+                media.muted = true;
+                media.loop = true;
+                media.playsInline = true;
+                media.preload = "metadata";
             } else {
-                modalImage.src = post.file_url;
-                modalImage.style.display = "block";
-                modalVideo.style.display = "none";
+                media = document.createElement("img");
+                media.src = post.file_url;
             }
 
-            // Robust check for verified
-const verified = post.uploader_verified === true 
-                 || post.uploader_verified === 'true' 
-                 || post.uploader_verified === 1 
-                 || post.uploader_verified === '1';
+            media.className = "postMedia";
 
-// Build badge HTML only if verified
-const badgeHTML = verified 
-                  ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" 
-                         style="width:16px; height:16px;">` 
-                  : '';
+            // ----------------
+            // MEDIA CLICK → OPEN MODAL
+            // ----------------
+            media.addEventListener("click", () => {
+                if (post.file_type.startsWith("video")) {
+                    modalVideo.src = post.file_url;
+                    modalVideo.style.display = "block";
+                    modalImage.style.display = "none";
+                    modalVideo.controls = false; // hide browser controls
+                } else {
+                    modalImage.src = post.file_url;
+                    modalImage.style.display = "block";
+                    modalVideo.style.display = "none";
+                }
 
-// Update modalTitle
-modalTitle.innerHTML = `
-  ${post.title || ""}
-  <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-    <img src="${post.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
-    <span>${post.uploader_name || "Unknown"}</span>
-    ${badgeHTML}
-  </div>
-`;
-
-            modal.classList.remove("hidden");
-
-            // RELATED VIDEOS
-            relatedVideos.innerHTML = "";
-            allPosts.forEach(other => {
-                if (other.id === post.id) return;
-
-                const wrap = document.createElement("div");
-                wrap.className = "relatedBox";
-
-                wrap.innerHTML = `
-                    <div class="uploaderHeaderSmall">
-                        <img src="${other.uploader_image || 'images/default.jpg'}" class="smallDP">
-                        <span class="smallName">${other.uploader_name || "User"}</span>
+                // MODAL TITLE
+                modalTitle.innerHTML = `
+                    ${post.title || ""}
+                    <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
+                        <img src="${post.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+                        <span>${post.uploader_name || "Unknown"}</span>
+                        ${badgeHTML}
                     </div>
                 `;
 
-                let relatedMedia;
-                if (other.file_type.startsWith("video") && isMobile) {
-                    relatedMedia = document.createElement("img");
-                    relatedMedia.src = other.thumb_url || 'images/default.jpg';
-                } else if (other.file_type.startsWith("video")) {
-                    relatedMedia = document.createElement("video");
-                    relatedMedia.src = other.file_url;
-                    relatedMedia.muted = true;
-                    relatedMedia.playsInline = true;
-                    relatedMedia.autoplay = false;
-                } else {
-                    relatedMedia = document.createElement("img");
-                    relatedMedia.src = other.file_url;
-                }
+                modal.classList.remove("hidden");
 
-                relatedMedia.className = "relatedThumb";
-                relatedMedia.style.width = "100px";
-                relatedMedia.style.height = "100px";
-                relatedMedia.style.objectFit = "cover";
+                // ----------------
+                // RELATED VIDEOS
+                // ----------------
+                relatedVideos.innerHTML = "";
+                allPosts.forEach(other => {
+                    if (other.id === post.id) return;
 
-                wrap.appendChild(relatedMedia);
+                    const wrap = document.createElement("div");
+                    wrap.className = "relatedBox";
 
-                wrap.addEventListener("click", () => {
-                    if (other.file_type.startsWith("video")) {
-                        modalVideo.src = other.file_url;
-                        modalVideo.style.display = "block";
-                        modalImage.style.display = "none";
-                    } else {
-                        modalImage.src = other.file_url;
-                        modalImage.style.display = "block";
-                        modalVideo.style.display = "none";
-                    }
-
-                    modalTitle.innerHTML = `
-                        ${other.title || ""}
-                        <div class="modalUploader">
-                            <img src="${other.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
-                            <span>${other.uploader_name || "Unknown"}</span>
+                    wrap.innerHTML = `
+                        <div class="uploaderHeaderSmall">
+                            <img src="${other.uploader_image || 'images/default.jpg'}" class="smallDP">
+                            <span class="smallName">${other.uploader_name || "User"}</span>
                         </div>
                     `;
+
+                    let relatedMedia;
+                    if (other.file_type.startsWith("video") && isMobile) {
+                        relatedMedia = document.createElement("img");
+                        relatedMedia.src = other.thumb_url || 'images/default.jpg';
+                    } else if (other.file_type.startsWith("video")) {
+                        relatedMedia = document.createElement("video");
+                        relatedMedia.src = other.file_url;
+                        relatedMedia.muted = true;
+                        relatedMedia.playsInline = true;
+                        relatedMedia.autoplay = false;
+                    } else {
+                        relatedMedia = document.createElement("img");
+                        relatedMedia.src = other.file_url;
+                    }
+
+                    relatedMedia.className = "relatedThumb";
+                    relatedMedia.style.width = "100px";
+                    relatedMedia.style.height = "100px";
+                    relatedMedia.style.objectFit = "cover";
+
+                    wrap.appendChild(relatedMedia);
+
+                    wrap.addEventListener("click", () => {
+                        if (other.file_type.startsWith("video")) {
+                            modalVideo.src = other.file_url;
+                            modalVideo.style.display = "block";
+                            modalImage.style.display = "none";
+                        } else {
+                            modalImage.src = other.file_url;
+                            modalImage.style.display = "block";
+                            modalVideo.style.display = "none";
+                        }
+
+                        modalTitle.innerHTML = `
+                            ${other.title || ""}
+                            <div class="modalUploader">
+                                <img src="${other.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+                                <span>${other.uploader_name || "Unknown"}</span>
+                            </div>
+                        `;
+                    });
+
+                    relatedVideos.appendChild(wrap);
                 });
 
-                relatedVideos.appendChild(wrap);
+                // ----------------
+                // CUSTOM CONTROLS
+                // ----------------
+                if (!document.querySelector(".custom-controls")) {
+                    const customControls = document.createElement("div");
+                    customControls.className = "custom-controls";
+                    customControls.innerHTML = `
+                        <button id="playPauseBtn">Play</button>
+                        <input type="range" id="seekBar" value="0" min="0" max="100">
+                        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                    `;
+                    modal.querySelector(".modal-media-wrapper").appendChild(customControls);
+
+                    const playPauseBtn = document.getElementById("playPauseBtn");
+                    const seekBar = document.getElementById("seekBar");
+                    const currentTime = document.getElementById("currentTime");
+                    const duration = document.getElementById("duration");
+
+                    playPauseBtn.addEventListener("click", () => {
+                        if (modalVideo.paused) {
+                            modalVideo.play();
+                            playPauseBtn.textContent = "Pause";
+                        } else {
+                            modalVideo.pause();
+                            playPauseBtn.textContent = "Play";
+                        }
+                    });
+
+                    modalVideo.addEventListener("timeupdate", () => {
+                        const value = (modalVideo.currentTime / modalVideo.duration) * 100;
+                        seekBar.value = value;
+                        currentTime.textContent = formatTime(modalVideo.currentTime);
+                    });
+
+                    modalVideo.addEventListener("loadedmetadata", () => {
+                        duration.textContent = formatTime(modalVideo.duration);
+                    });
+
+                    seekBar.addEventListener("input", () => {
+                        modalVideo.currentTime = (seekBar.value / 100) * modalVideo.duration;
+                    });
+
+                    function formatTime(seconds) {
+                        const mins = Math.floor(seconds / 60);
+                        const secs = Math.floor(seconds % 60);
+                        return `${mins}:${secs < 10 ? "0" + secs : secs}`;
+                    }
+                }
+
             });
+
+            mediaContainer.appendChild(media);
+            box.appendChild(mediaContainer);
+            main.appendChild(box);
         });
+    }
 
-        // ADD MEDIA
-        mediaContainer.appendChild(media);
-
-        // ADD CONTAINER TO BOX
-        box.appendChild(mediaContainer);
-
-        // ADD BOX IN MAIN
-        main.appendChild(box);
-    });
-}
-
-
-
-
+    // ----------------
+    // CLOSE MODAL
+    // ----------------
     closeBtn.addEventListener("click", () => {
         modal.classList.add("hidden");
         modalVideo.pause();
     });
+
+
+
 
     // Navigation
     document.getElementById("btnHome")?.addEventListener("click", () => location.href = "index.html");
@@ -473,3 +523,5 @@ const fetchRelatedVideosSupabase = async (currentVideoId) => {
     console.error("Error fetching related videos:", err);
   }
 };
+document.getElementById("modalViewCount").textContent =
+    post.views ? post.views.toLocaleString() : "0";

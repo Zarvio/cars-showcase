@@ -357,32 +357,49 @@ body {
 /* RELATED VIDEOS – LONG THUMBNAILS & CENTER CROP */
 /* ---------------------- */
 /* RELATED VIDEOS LONG THUMBNAILS */
-/* ---------------------- */
-#relatedVideos {
+
+
+
+/* UPLOADER HEADER (TOP OVERLAY) */
+.uploaderHeaderSmall {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    z-index: 3;
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    max-height: 350px;   /* scrollable container */
-    overflow-y: auto;
-    padding: 5px;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,0,0,0.55);
+    padding: 4px 6px;
+    border-radius: 20px;
 }
 
-.relatedBox {
-    width: 48%;           /* 2 per row */
-    border-radius: 12px;
+
+/* SMALL DP */
+.smallDP {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* USERNAME */
+.smallName {
+    font-size: 12px;
+    color: #fff;
+    font-weight: 500;
+    white-space: nowrap;
     overflow: hidden;
-    background: #111;
-    position: relative;
+    text-overflow: ellipsis;
 }
 
-.relatedBox .relatedThumb {
-    width: 100%;
-    height: 220px;        /* लंबा thumbnail */
-    object-fit: cover;    /* center crop */
-    object-position: center;
-    border-radius: 12px;
-    display: block;
+/* OPTIONAL: HOVER EFFECT */
+.relatedBox:hover .relatedThumb {
+    transform: scale(1.03);
+    transition: transform 0.3s ease;
 }
+
 
 .closeBtn {
     position: absolute;
@@ -515,9 +532,6 @@ body {
     object-fit: cover;
     border: 2px solid #fff;
 }
-.mediaContainer {
-    position: relative;
-}
 
 .viewsOverlay {
     position: absolute;
@@ -548,7 +562,7 @@ body {
 .modalViewsOverlay {
     position: absolute;
     bottom: 30px;
-    right: 25px;
+    right: 210px;
     background: rgba(0,0,0,0.7);
     color: #fff;
     padding: 6px 12px;
@@ -562,32 +576,7 @@ body {
 
 
 /* Overlay uploader inside thumbnail */
-.relatedBox .uploaderHeaderSmall {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(0,0,0,0.5);
-    padding: 2px 6px;
-    border-radius: 20px;
-    z-index: 10;
-}
 
-.relatedBox .uploaderHeaderSmall .smallDP {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #fff;
-}
-
-.relatedBox .uploaderHeaderSmall .smallName {
-    color: #fff;
-    font-size: 13px;
-    font-weight: 500;
-}
 
 .modalUploader img.modalUploaderDP {
     width: 28px;   /* पहले 35px था, अब छोटा */
@@ -597,3 +586,160 @@ body {
     border: 2px solid #fff;
 }
 
+/* ========================================= */
+/* 🔥 RELATED VIDEOS – FORCE OVERRIDE FIX */
+/* ========================================= */
+/* ---------------------- */
+/* RELATED VIDEOS CONTAINER */
+/* ---------------------- */
+#relatedVideos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-height: 360px; /* scrollable container */
+    overflow-y: auto;
+    padding: 5px;
+    background: transparent;
+}
+
+/* ---------------------- */
+/* RELATED CARD BOX */
+/* ---------------------- */
+
+
+/* ---------------------- */
+/* IMAGE / THUMBNAIL FULL COVER */
+/* ---------------------- */
+#relatedVideos .relatedBox .relatedThumb {
+    position: absolute;
+    inset: 0;              /* top:0; right:0; bottom:0; left:0 */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ---------------------- */
+/* UPLOADER HEADER OVERLAY */
+/* ---------------------- */
+/* uploader header ko compact banao */
+#relatedVideos .uploaderHeaderSmall {
+    top: 6px;
+    left: 6px;
+    padding: 2px 6px;        /* kam padding */
+    gap: 4px;                /* gap kam */
+    max-width: 85%;          /* box video ke bahar na jaye */
+    border-radius: 16px;
+}
+
+/* profile image small */
+#relatedVideos .smallDP {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;          /* image squeeze na ho */
+}
+
+/* username aur chhota */
+#relatedVideos .smallName {
+    font-size: 11px;         /* pehle 12px tha */
+    max-width: 110px;         /* zyada lamba naam cut ho */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ---------------------- */
+/* REMOVE FLEX SIDE EFFECT */
+/* ---------------------- */
+#relatedVideos .relatedBox {
+    display: block !important;
+}
+
+/* OPTIONAL: SCROLLBAR STYLING */
+#relatedVideos::-webkit-scrollbar {
+    width: 6px;
+}
+
+#relatedVideos::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+#relatedVideos .relatedBox {
+    width: calc(50% - 5px);
+    height: 260px; /* fixed height */
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    background: none; /* black hataya */
+}
+
+#relatedVideos .relatedThumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.modal .backArrow {
+    top: 22px;
+    left: 14px;      /* left se thoda andar */
+}
+.modal .closeBtn {
+    top: 29px;
+    right: 39px;     /* right se thoda andar */
+}
+.modalUploader,
+.uploaderHeaderSmall {
+    top: 33px;
+    left: 39px;      /* video ke andar rahe */
+    max-width: 80%;  /* bahar na nikle */
+}
+.custom-controls {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.playPauseBtn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.playPauseBtn i {
+    margin-left: 3px;
+}
+
+
+
+/* bottom seek bar */
+#seekBar {
+    position: absolute;
+    bottom: 10px;  /* वीडियो के अंदर से नीचे की दूरी */
+    left: 25px;
+    right: 25px;
+}
+
+/* वीडियो टाइम / duration */
+.timeRow {
+    position: absolute;
+    bottom: 30px;   /* वीडियो के बिलकुल अंदर दिखे */
+    right: 25px;
+    font-size: 12px;
+    color: #fff;
+    background: rgba(0,0,0,0.4); /* optional, visibility बढ़ाने के लिए */
+    padding: 2px 6px;            /* थोड़ा padding दे दो */
+    border-radius: 4px;           /* optional */
+}

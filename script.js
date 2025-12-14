@@ -169,91 +169,140 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // RELATED VIDEOS
                 // ----------------
                 relatedVideos.innerHTML = "";
-                allPosts.forEach(other => {
-                    if (other.id === post.id) return;
+allPosts.forEach(other => {
+    if (other.id === post.id) return;
 
-                    const wrap = document.createElement("div");
-                    wrap.className = "relatedBox";
+    const wrap = document.createElement("div");
+    wrap.className = "relatedBox";
 
-                    wrap.innerHTML = `
-                        <div class="uploaderHeaderSmall">
-                            <img src="${other.uploader_image || 'images/default.jpg'}" class="smallDP">
-                            <span class="smallName">${other.uploader_name || "User"}</span>
-                        </div>
-                    `;
+    // uploader header
+    const relatedVerified =
+    other.uploader_verified === true ||
+    other.uploader_verified === 'true' ||
+    other.uploader_verified === 1 ||
+    other.uploader_verified === '1';
 
-                    let relatedMedia;
-                    if (other.file_type.startsWith("video") && isMobile) {
-                        relatedMedia = document.createElement("img");
-                        relatedMedia.src = other.thumb_url || 'images/default.jpg';
-                    } else if (other.file_type.startsWith("video")) {
-                        relatedMedia = document.createElement("video");
-                        relatedMedia.src = other.file_url;
-                        relatedMedia.muted = true;
-                        relatedMedia.playsInline = true;
-                        relatedMedia.autoplay = false;
-                    } else {
-                        relatedMedia = document.createElement("img");
-                        relatedMedia.src = other.file_url;
-                    }
+const relatedBadgeHTML = relatedVerified
+    ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg"
+        style="width:12px; height:12px;">`
+    : '';
+wrap.innerHTML = `
+    <div class="uploaderHeaderSmall">
+        <img src="${other.uploader_image || 'images/default.jpg'}" class="smallDP">
+        <span class="smallName">${other.uploader_name || "User"}</span>
+        ${relatedBadgeHTML}
+    </div>
+`;
 
-                    relatedMedia.className = "relatedThumb";
-                    relatedMedia.style.width = "100px";
-                    relatedMedia.style.height = "100px";
-                    relatedMedia.style.objectFit = "cover";
 
-                    wrap.appendChild(relatedMedia);
+    // ✅ RELATED MEDIA = IMAGE ONLY (LONG LOOK)
+    const relatedMedia = document.createElement("img");
+    relatedMedia.src = other.thumb_url || other.file_url || 'images/default.jpg';
+    relatedMedia.className = "relatedThumb";
+    relatedMedia.style.objectFit = "cover";
 
-                    wrap.addEventListener("click", () => {
-                        if (other.file_type.startsWith("video")) {
-                            modalVideo.src = other.file_url;
-                            modalVideo.style.display = "block";
-                            modalImage.style.display = "none";
-                        } else {
-                            modalImage.src = other.file_url;
-                            modalImage.style.display = "block";
-                            modalVideo.style.display = "none";
-                        }
+    wrap.appendChild(relatedMedia);
 
-                        modalTitle.innerHTML = `
-                            ${other.title || ""}
-                            <div class="modalUploader">
-                                <img src="${other.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
-                                <span>${other.uploader_name || "Unknown"}</span>
-                            </div>
-                        `;
-                    });
+    // ✅ CLICK → OPEN REAL MEDIA IN MODAL
+    wrap.addEventListener("click", () => {
+    if (other.file_type.startsWith("video")) {
+        modalVideo.src = other.file_url;
+        modalVideo.style.display = "block";
+        modalImage.style.display = "none";
+        modalVideo.controls = false;
+    } else {
+        modalImage.src = other.file_url;
+        modalImage.style.display = "block";
+        modalVideo.style.display = "none";
+    }
 
-                    relatedVideos.appendChild(wrap);
-                });
+    // ✅ VERIFIED BADGE FOR MODAL (RELATED)
+    const modalVerified =
+        other.uploader_verified === true ||
+        other.uploader_verified === 'true' ||
+        other.uploader_verified === 1 ||
+        other.uploader_verified === '1';
+
+    const modalBadgeHTML = modalVerified
+        ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg"
+            style="width:14px; height:14px;">`
+        : '';
+
+    modalTitle.innerHTML = `
+        ${other.title || ""}
+        <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
+            <img src="${other.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+            <span>${other.uploader_name || "Unknown"}</span>
+            ${modalBadgeHTML}
+        </div>
+    `;
+
+    // ✅ ENSURE MODAL VISIBLE
+    modal.classList.remove("hidden");
+});
+
+
+    relatedVideos.appendChild(wrap);
+});
+
 
                 // ----------------
                 // CUSTOM CONTROLS
                 // ----------------
-                if (!document.querySelector(".custom-controls")) {
-                    const customControls = document.createElement("div");
-                    customControls.className = "custom-controls";
-                    customControls.innerHTML = `
-                        <button id="playPauseBtn">Play</button>
-                        <input type="range" id="seekBar" value="0" min="0" max="100">
-                        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
-                    `;
-                    modal.querySelector(".modal-media-wrapper").appendChild(customControls);
+              if (!document.querySelector(".custom-controls")) {
 
-                    const playPauseBtn = document.getElementById("playPauseBtn");
-                    const seekBar = document.getElementById("seekBar");
-                    const currentTime = document.getElementById("currentTime");
-                    const duration = document.getElementById("duration");
+    const customControls = document.createElement("div");
+    customControls.className = "custom-controls";
+    customControls.innerHTML = `
+        <button id="playPauseBtn" class="playPauseBtn">
+            <i class="fa-solid fa-play"></i>
+        </button>
 
-                    playPauseBtn.addEventListener("click", () => {
-                        if (modalVideo.paused) {
-                            modalVideo.play();
-                            playPauseBtn.textContent = "Pause";
-                        } else {
-                            modalVideo.pause();
-                            playPauseBtn.textContent = "Play";
-                        }
-                    });
+        <input type="range" id="seekBar" value="0" min="0" max="100">
+
+        <div class="timeRow">
+            <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+        </div>
+    `;
+
+    modal.querySelector(".modal-media-wrapper").appendChild(customControls);
+
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const seekBar = document.getElementById("seekBar");
+    const currentTime = document.getElementById("currentTime");
+    const duration = document.getElementById("duration");
+    const playPauseIcon = playPauseBtn.querySelector("i");
+
+    // 🔁 TOGGLE FUNCTION
+    function togglePlayPause() {
+        if (modalVideo.paused) {
+            modalVideo.play();
+            playPauseIcon.className = "fa-solid fa-pause";
+        } else {
+            modalVideo.pause();
+            playPauseIcon.className = "fa-solid fa-play";
+        }
+    }
+
+    // ▶️⏸ BUTTON CLICK
+    playPauseBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // video click se conflict na ho
+        togglePlayPause();
+    });
+
+    // 👆 VIDEO CLICK ANYWHERE
+    modalVideo.addEventListener("click", togglePlayPause);
+
+    // 👁 ICON AUTO SHOW / HIDE
+    modalVideo.addEventListener("play", () => {
+        playPauseBtn.style.opacity = "0";
+    });
+
+    modalVideo.addEventListener("pause", () => {
+        playPauseBtn.style.opacity = "1";
+    });
+
+
 
                     modalVideo.addEventListener("timeupdate", () => {
                         const value = (modalVideo.currentTime / modalVideo.duration) * 100;

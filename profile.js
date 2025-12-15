@@ -40,6 +40,12 @@ let tempName = "";
 let tempSurname = "";
 let usernameAvailable = false;
 let usernameCheckTimeout = null;
+let videoToDelete = null;
+
+const deletePopup = document.getElementById("deletePopup");
+const confirmDeleteBtn = document.getElementById("confirmDelete");
+const cancelDeleteBtn = document.getElementById("cancelDelete");
+
 
 // --- Navigation redirects (same as your original) ---
 document.getElementById("btnHome").addEventListener("click", () => window.location.href = "index.html");
@@ -383,6 +389,16 @@ firebase.auth().onAuthStateChanged(async user => {
     return;
   }
 
+  // ✅ LOGGED IN USER
+  loginBox.style.display = "none";
+  profileContent.style.display = "block";
+  loaderOverlay.style.display = "none";
+
+  // 🔥 YAHAN CALL KARNA HAI
+  loadUserVideos(user.uid);
+
+
+
   currentUser = user;
 
   // Show loader, hide profile content
@@ -606,4 +622,119 @@ saveProfileBtn?.addEventListener("click", async () => {
 
 closeEditModal?.addEventListener("click", () => {
   editProfileModal.classList.add("hidden");
+});
+
+
+async function loadUserVideos(uid) {
+  const container = document.getElementById("userVideos");
+  container.innerHTML = "<p class='empty-text'>Loading...</p>";
+
+  const { data, error } = await supabaseClient
+    .from("pinora823")
+    .select("*")
+    .eq("uploader_uid", uid)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    container.innerHTML = "<p class='empty-text'>Error loading videos</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = "<p class='empty-text'>No videos uploaded yet</p>";
+    return;
+  }
+
+  container.innerHTML = "";
+
+  data.forEach(post => {
+    const card = document.createElement("div");
+    card.className = "video-card";
+
+    const thumb = document.createElement("img");
+    thumb.src = post.thumb_url || post.file_url;
+
+    const playIcon = document.createElement("div");
+    playIcon.className = "video-play-icon";
+    playIcon.innerHTML = `<i class="fa-solid fa-play"></i>`;
+
+    // 🗑 DELETE BUTTON
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete-video-btn";
+    deleteBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      videoToDelete = post;
+      deletePopup.classList.remove("hidden");
+    });
+
+    card.appendChild(thumb);
+    card.appendChild(playIcon);
+    card.appendChild(deleteBtn);
+
+    container.appendChild(card);
+  });
+}
+cancelDeleteBtn.addEventListener("click", () => {
+  videoToDelete = null;
+  deletePopup.classList.add("hidden");
+});
+confirmDeleteBtn.addEventListener("click", async () => {
+  if (!videoToDelete) return;
+
+  try {
+    // 🗑️ DELETE FROM STORAGE
+    const filesToDelete = [];
+
+    if (videoToDelete.file_path) {
+      filesToDelete.push(videoToDelete.file_path);
+    }
+
+    if (videoToDelete.thumb_path) {
+      filesToDelete.push(videoToDelete.thumb_path);
+    }
+
+    if (filesToDelete.length > 0) {
+      await supabaseClient
+        .storage
+        .from("Zarvio") // ⚠️ bucket name
+        .remove(filesToDelete);
+    }
+
+    // 🗑️ DELETE FROM TABLE
+    const { error } = await supabaseClient
+      .from("pinora823")
+      .delete()
+      .eq("id", videoToDelete.id);
+
+    if (error) throw error;
+
+    // ✅ RESET + REFRESH UI
+    deletePopup.classList.add("hidden");
+    videoToDelete = null;
+
+    loadUserVideos(firebase.auth().currentUser.uid);
+
+  } catch (err) {
+    console.error("Delete failed:", err);
+    alert("Failed to delete video");
+  }
+});
+
+
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+logoutBtn?.addEventListener("click", () => {
+  firebase.auth().signOut()
+    .then(() => {
+      // Logout successful → redirect to login page
+      window.location.href = "index.html";
+    })
+    .catch(err => {
+      console.error("Logout failed:", err);
+      alert("Logout failed. Try again.");
+    });
 });

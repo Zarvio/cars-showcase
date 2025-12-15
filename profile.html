@@ -19,7 +19,19 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 </head>
 <body>
+<!-- DELETE CONFIRM POPUP -->
+<div id="deletePopup" class="hidden">
+  <div class="popup-content">
+    <h3>Delete this video?</h3>
+    <p>This action cannot be undone.</p>
+    <div class="popup-buttons">
+      <button id="confirmDelete">Delete</button>
+      <button id="cancelDelete">Cancel</button>
+    </div>
+  </div>
+</div>
 
+<!-- Logout Popup -->
 <!-- Logout Popup -->
 <div id="logoutPopup" class="hidden">
   <div class="popup-content">
@@ -30,6 +42,7 @@
     </div>
   </div>
 </div>
+
   
   <div id="customPopup" class="custom-popup hidden">
   <span id="popupText">Profile Updated 🎉</span>
@@ -163,13 +176,14 @@
 
 
         <div class="tabs">
-         <!--   <button class="tab active">Created</button> -->
-          <button class="tab">Saved</button>
-        </div>
+  <button class="tab active">Videos</button>
+</div>
 
-        <div class="empty-state">
-          <p><strong>No Pins created yet</strong></p>
-        </div>
+<!-- USER VIDEOS -->
+<div id="userVideos" class="videos-grid">
+  <p class="empty-text">No videos uploaded yet</p>
+</div>
+
       </section>
 
     </main>

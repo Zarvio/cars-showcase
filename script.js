@@ -9,6 +9,25 @@ const firebaseConfig = {
   appId: "1:125014633127:web:d29e4c37628ab637f40982"
 };
 firebase.initializeApp(firebaseConfig);
+// ----------------------
+// 🌐 GUEST BROWSER ID
+// ----------------------
+function getBrowserId() {
+  let id = localStorage.getItem("browser_id");
+  if (!id) {
+    id = "browser_" + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem("browser_id", id);
+  }
+  return id;
+}
+function hasViewed(postId) {
+  return sessionStorage.getItem("viewed_" + postId) === "1";
+}
+
+function markViewed(postId) {
+  sessionStorage.setItem("viewed_" + postId, "1");
+}
+
 
 // ----------------------
 // MAIN DOM LOADED
@@ -51,6 +70,83 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Error fetching posts:", err);
         main.innerHTML = "<p>Error loading posts.</p>";
     }
+// ----------------------
+// 👁️ REAL VIEW COUNT LOGIC
+// ----------------------
+// ----------------------
+// 👁️ REAL VIEW COUNT
+// ----------------------
+async function countView(postId) {
+
+  // ❌ already viewed in this session → STOP
+  if (hasViewed(postId)) return;
+
+  const user = firebase.auth().currentUser;
+  const viewsRef = firebase.database().ref(`videoViews/${postId}`);
+
+  try {
+    if (user) {
+      const userRef = viewsRef.child(`users/${user.uid}`);
+      const snap = await userRef.get();
+
+      if (!snap.exists()) {
+        await userRef.set(true);
+        await incrementSupabaseViews(postId);
+        markViewed(postId); // ✅ mark
+      }
+
+    } else {
+      const browserId = getBrowserId();
+      const browserRef = viewsRef.child(`browsers/${browserId}`);
+      const snap = await browserRef.get();
+
+      if (!snap.exists()) {
+        await browserRef.set(true);
+        await incrementSupabaseViews(postId);
+        markViewed(postId); // ✅ mark
+      }
+    }
+  } catch (err) {
+    console.error("Count view error:", err);
+  }
+}
+
+// ----------------------
+// ➕ INCREMENT SUPABASE VIEWS
+// ----------------------
+async function incrementSupabaseViews(postId) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("pinora823")
+      .select("views")
+      .eq("id", postId)
+      .single();
+
+    console.log("CURRENT VIEWS:", data?.views);
+
+    if (error || !data) {
+      console.error("Fetch views error:", error);
+      return;
+    }
+
+    const newViews = Number(data.views || 0) + 1;
+
+    const { error: updateError } = await supabaseClient
+      .from("pinora823")
+      .update({ views: newViews })
+      .eq("id", postId);
+
+    if (updateError) {
+      console.error("UPDATE ERROR:", updateError);
+    } else {
+      console.log("VIEWS UPDATED TO:", newViews);
+    }
+
+  } catch (err) {
+    console.error("Increment views error:", err);
+  }
+}
+
 
     // ----------------
     // SEARCH
@@ -142,6 +238,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             // MEDIA CLICK → OPEN MODAL
             // ----------------
             media.addEventListener("click", () => {
+                // ✅ REAL VIEW COUNT
+    countView(post.id);
                 if (post.file_type.startsWith("video")) {
                     modalVideo.src = post.file_url;
                     modalVideo.style.display = "block";
@@ -162,6 +260,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                         ${badgeHTML}
                     </div>
                 `;
+// ✅ YAHAN ADD KARO VIEW COUNT
+    const modalViewCount = document.getElementById("modalViewCount");
+if (modalViewCount) {
+
+  modalViewCount.textContent = post.views.toLocaleString();
+}
 
                 modal.classList.remove("hidden");
 
@@ -572,5 +676,3 @@ const fetchRelatedVideosSupabase = async (currentVideoId) => {
     console.error("Error fetching related videos:", err);
   }
 };
-document.getElementById("modalViewCount").textContent =
-    post.views ? post.views.toLocaleString() : "0";

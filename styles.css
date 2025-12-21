@@ -743,3 +743,262 @@ body {
     padding: 2px 6px;            /* थोड़ा padding दे दो */
     border-radius: 4px;           /* optional */
 }
+/* =========================
+   ❤️ LIKE SECTION
+========================= */
+.like-section {
+    display: flex;
+    justify-content: center;
+    gap: 22px;   /* 👈 यही line add करो */
+    margin: 12px 0;
+}
+
+/* =========================
+   ❤️ LIKE BUTTON
+========================= */
+#likeBtn,
+#commentBtn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    transition: transform 0.15s ease;
+}
+
+/* ❤️ liked state */
+#likeBtn.liked i {
+    color: #ff2d55;
+}
+
+/* =========================
+   ❤️ HEART BOUNCE
+========================= */
+#likeBtn.bounce {
+    animation: heartBounce 0.35s ease;
+}
+
+@keyframes heartBounce {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.4); }
+    60%  { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
+/* =========================
+   ⏳ LOADING SHIMMER
+========================= */
+#likeBtn.loading {
+    pointer-events: none;
+    opacity: 0.65;
+    overflow: hidden;
+}
+
+#likeBtn.loading::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,0.6),
+        transparent
+    );
+    animation: shimmer 0.9s infinite;
+}
+
+@keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* =========================
+   ❤️ LIKE COUNT
+========================= */
+#likeCount,
+#commentCount {
+    font-size: 15px;
+    font-weight: 600;
+    color: #eee;
+    user-select: none;
+}
+
+/* =========================
+   💥 DOUBLE TAP HEART
+========================= */
+#doubleTapHeart {
+    position: absolute;
+    font-size: 80px;
+    opacity: 0;
+    pointer-events: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    z-index: 50;
+}
+
+#doubleTapHeart.show {
+    animation: bigHeart 0.8s ease forwards;
+}
+
+@keyframes bigHeart {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* =========================
+   📱 MOBILE TAP FEEL
+========================= */
+#likeBtn:active {
+    transform: scale(0.9);
+}
+/* COMMENT BUTTON ACTIVE FEEL */
+#commentBtn:active {
+    transform: scale(0.9);
+}
+.comment-section {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+#commentInput {
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    background: #222;
+    color: white;
+    outline: none;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+#commentList {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.comment-item {
+    padding: 6px 10px;
+    border-bottom: 1px solid #444;
+    font-size: 14px;
+    color: #eee;
+}
+/* Comment button spacing */
+#likeBtn + #commentBtn {
+    margin-left: 20px; /* like and comment ke beech gap */
+}
+
+/* Comment input box */
+.comment-input-box {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.comment-input-box input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+    background: #222;
+    color: white;
+}
+
+.comment-input-box button {
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: none;
+    background: #ff2d55;
+    color: white;
+    cursor: pointer;
+}
+
+/* Comment modal */
+.comment-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.comment-modal-content {
+    background: #111;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80%;
+    overflow-y: auto;
+    border-radius: 12px;
+    padding: 16px;
+    color: white;
+    position: relative;
+}
+
+.comment-modal-content .closeCommentModal {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.comment-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #333;
+}
+
+.comment-item img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comment-item span.username {
+    font-weight: bold;
+    color: #ff2d55;
+}
+
+.comment-item span.text {
+    color: #eee;
+}
+.hidden {
+    display: none;
+}
+.custom-alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff4d4f;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    z-index: 9999;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}

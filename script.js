@@ -238,7 +238,8 @@ async function incrementSupabaseViews(postId) {
             // MEDIA CLICK → OPEN MODAL
             // ----------------
             media.addEventListener("click", () => {
-                // ✅ REAL VIEW COUNT
+               loadLikes(post.id);
+              // ✅ REAL VIEW COUNT
     countView(post.id);
                 if (post.file_type.startsWith("video")) {
                     modalVideo.src = post.file_url;
@@ -266,6 +267,7 @@ if (modalViewCount) {
 
   modalViewCount.textContent = post.views.toLocaleString();
 }
+
 
                 modal.classList.remove("hidden");
 
@@ -309,6 +311,8 @@ wrap.innerHTML = `
 
     // ✅ CLICK → OPEN REAL MEDIA IN MODAL
     wrap.addEventListener("click", () => {
+      loadLikes(other.id);
+
     if (other.file_type.startsWith("video")) {
         modalVideo.src = other.file_url;
         modalVideo.style.display = "block";
@@ -608,11 +612,7 @@ btnMessage.onclick = () => {
     window.location.href = "message.html";
   });
 };
-// सबसे पहले modal element को select करो
-const modal = document.querySelector(".modal"); // या जो भी आपका actual modal class/id है
 
-// अगर modal के अंदर वीडियो है
-const modalVideo = document.querySelector(".modal video"); // या आपका वीडियो selector
 
 // फिर आपका click handler
 document.querySelector(".closeBtn").addEventListener("click", () => {
@@ -676,3 +676,259 @@ const fetchRelatedVideosSupabase = async (currentVideoId) => {
     console.error("Error fetching related videos:", err);
   }
 };
+
+let liked = false;
+
+// ⚠️ yahan direct element mat lo (modal ke bahar crash hota hai)
+let likeBtn = null;
+let likeCount = null;
+
+// 🔹 Load likes when modal opens
+async function loadLikes(postId) {
+  currentPostId = postId;
+  liked = false;
+
+  // 🔹 modal ke andar se elements lo (SAFE)
+  likeBtn = document.getElementById("likeBtn");
+  likeCount = document.getElementById("likeCount");
+
+  if (!likeBtn || !likeCount) return; // ⛔ safety
+
+  const user = firebase.auth().currentUser;
+  const browserId = getBrowserId();
+
+  const likeRef = firebase.database().ref(`videoLikes/${postId}`);
+  const snap = await likeRef.get();
+
+  let count = 0;
+
+  if (snap.exists()) {
+    const data = snap.val();
+    count = data.count || 0;
+
+    if (user && data.users?.[user.uid]) liked = true;
+    if (!user && data.users?.[browserId]) liked = true;
+  }
+
+  likeCount.textContent = count;
+  updateLikeUI();
+  attachLikeListener(); // 👈 listener yahin attach hoga
+}
+
+// 🔹 UI update
+function updateLikeUI() {
+  if (!likeBtn || !likeCount) return;
+
+  likeBtn.innerHTML = liked
+    ? `<i class="fa-solid fa-heart"></i> <span id="likeCount">${likeCount.textContent}</span>`
+    : `<i class="fa-regular fa-heart"></i> <span id="likeCount">${likeCount.textContent}</span>`;
+
+  likeBtn.classList.toggle("liked", liked);
+
+  // ❤️ bounce animation
+  likeBtn.classList.remove("bounce");
+  void likeBtn.offsetWidth; // reflow trick
+  likeBtn.classList.add("bounce");
+
+  likeCount = document.getElementById("likeCount");
+}
+
+
+// 🔹 Like / Unlike (SAFE attach)
+function attachLikeListener() {
+  if (!likeBtn) return;
+
+  likeBtn.onclick = async () => {
+    if (!currentPostId) return;
+
+    // ⏳ START shimmer
+    likeBtn.classList.add("loading");
+
+    const user = firebase.auth().currentUser;
+    const browserId = getBrowserId();
+    const userKey = user ? user.uid : browserId;
+
+    const postRef = firebase.database().ref(`videoLikes/${currentPostId}`);
+    const userLikeRef = postRef.child(`users/${userKey}`);
+    const countRef = postRef.child("count");
+
+    const prevLiked = liked;
+    const prevCount = Number(likeCount.textContent);
+
+    // ⚡ instant UI
+    liked = !prevLiked;
+    likeCount.textContent = Math.max(prevCount + (liked ? 1 : -1), 0);
+    updateLikeUI();
+
+    try {
+      if (!prevLiked) {
+        await userLikeRef.set(true);
+        await countRef.transaction(c => (c || 0) + 1);
+      } else {
+        await userLikeRef.remove();
+        await countRef.transaction(c => Math.max((c || 1) - 1, 0));
+      }
+    } catch (err) {
+      console.error(err);
+
+      // ❌ revert UI
+      liked = prevLiked;
+      likeCount.textContent = prevCount;
+      updateLikeUI();
+    } finally {
+      // ✅ STOP shimmer (YAHAN PROBLEM THI)
+      likeBtn.classList.remove("loading");
+    }
+  };
+}
+
+let lastTap = 0;
+const doubleTapHeart = document.getElementById("doubleTapHeart");
+
+modalVideo.addEventListener("click", () => {
+  const now = Date.now();
+
+  if (now - lastTap < 300) {
+    // 💥 DOUBLE TAP
+    if (!liked) {
+      likeBtn.click(); // ✅ safe way
+    }
+
+    // ❤️ heart animation
+    doubleTapHeart.classList.remove("show");
+    void doubleTapHeart.offsetWidth;
+    doubleTapHeart.classList.add("show");
+  }
+
+  lastTap = now;
+});
+// ----------------------
+// COMMENT ELEMENTS
+// ----------------------
+const commentBtn = document.getElementById("commentBtn");
+const commentInput = document.getElementById("commentInput");
+const sendCommentBtn = document.getElementById("sendCommentBtn");
+const commentCountEl = document.getElementById("commentCount");
+const commentModal = document.getElementById("commentModal");
+const closeCommentModal = document.querySelector(".closeCommentModal");
+const allCommentsList = document.getElementById("allCommentsList");
+
+let currentPostId = "sampleVideo123"; // example video id
+
+// ----------------------
+// CUSTOM ALERT
+// ----------------------
+function showCustomAlert(msg) {
+    const alertBox = document.createElement("div");
+    alertBox.classList.add("custom-alert");
+    alertBox.innerText = msg;
+    document.body.appendChild(alertBox);
+    setTimeout(() => alertBox.remove(), 2500);
+}
+
+// ----------------------
+// LOAD COMMENT COUNT FAST
+// ----------------------
+async function updateCommentCount() {
+    const snapshot = await firebase.database().ref(`videoComments/${currentPostId}`).once("value");
+    const comments = snapshot.val() || {};
+    commentCountEl.textContent = Object.keys(comments).length;
+}
+
+// ----------------------
+// LOAD ALL COMMENTS FOR MODAL
+// ----------------------
+async function loadAllComments() {
+    allCommentsList.innerHTML = "";
+    const snapshot = await firebase.database().ref(`videoComments/${currentPostId}`).once("value");
+    const comments = snapshot.val() || {};
+
+    Object.values(comments).forEach(c => {
+        const div = document.createElement("div");
+        div.classList.add("comment-item");
+        div.innerHTML = `
+            <img src="${c.profileImage}" alt="dp">
+            <span class="username">${c.username}:</span>
+            <span class="text">${c.text}</span>
+        `;
+        allCommentsList.appendChild(div);
+    });
+
+    // scroll to bottom
+    allCommentsList.scrollTop = allCommentsList.scrollHeight;
+
+    // Update count fast
+    commentCountEl.textContent = Object.keys(comments).length;
+}
+
+// ----------------------
+// COMMENT BUTTON CLICK
+// ----------------------
+commentBtn.addEventListener("click", async () => {
+    await loadAllComments();
+    commentModal.classList.remove("hidden");
+});
+
+// ----------------------
+// CLOSE MODAL
+// ----------------------
+closeCommentModal.addEventListener("click", () => {
+    commentModal.classList.add("hidden");
+});
+commentModal.addEventListener("click", (e) => {
+    if (e.target === commentModal) commentModal.classList.add("hidden");
+});
+
+// ----------------------
+// COMMENT INPUT CLICK (LOGIN CHECK)
+// ----------------------
+commentInput.addEventListener("focus", () => {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        commentInput.blur(); // prevent typing
+        showCustomAlert("Please login first to comment!");
+    }
+});
+
+// ----------------------
+// SEND COMMENT
+// ----------------------
+sendCommentBtn.addEventListener("click", sendComment);
+commentInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendComment();
+});
+
+async function sendComment() {
+    const text = commentInput.value.trim();
+    const user = firebase.auth().currentUser;
+
+    if (!user) {
+        showCustomAlert("Please login first to comment!");
+        return;
+    }
+
+    if (!text || !currentPostId) return;
+
+    const uid = user.uid;
+    const username = user.displayName || "Anonymous";
+    const profileImage = user.photoURL || "images/default.jpg";
+
+    const commentRef = firebase.database().ref(`videoComments/${currentPostId}`).push();
+    await commentRef.set({
+        uid,
+        username,
+        profileImage,
+        text,
+        timestamp: Date.now()
+    });
+
+    commentInput.value = "";
+    await loadAllComments(); // reload comments and update count
+}
+
+// ----------------------
+// INITIAL LOAD
+// ----------------------
+window.addEventListener("load", async () => {
+    await updateCommentCount(); // fast comment count on load
+});

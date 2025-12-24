@@ -9,6 +9,106 @@ const firebaseConfig = {
   appId: "1:125014633127:web:d29e4c37628ab637f40982"
 };
 firebase.initializeApp(firebaseConfig);
+window.sendLikeNotification = async function(postId) {
+  console.log("🔔 sendLikeNotification fired for:", postId);
+
+  try {
+    const { data: post, error } = await window.supabaseClient
+      .from("pinora823")
+      .select("uploader_uid, thumb_url")
+      .eq("id", postId)
+      .single();
+
+    if (error || !post) {
+      console.error("❌ Supabase post fetch failed", error);
+      return;
+    }
+
+    if (!post.uploader_uid) {
+      console.warn("⚠ uploader_uid missing in pinora823 table");
+      return;
+    }
+
+    const user = firebase.auth().currentUser;
+    const browserId = getBrowserId();
+
+    const fromName = user ? (user.displayName || "User") : "Guest";
+    const fromUid = user ? user.uid : browserId;
+
+    if (user && post.uploader_uid === user.uid) return;
+
+    const notifRef = firebase.database()
+      .ref(`notifications/${post.uploader_uid}`)
+      .push();
+
+    await notifRef.set({
+      from: fromName,
+      fromUid: fromUid,
+      postId: postId,
+      thumb: post.thumb_url || "default.jpg",
+      commentText: "",
+
+      text: `${fromName} liked your video`,
+      profileImage: user?.photoURL || "default.jpg",
+      verified: user?.emailVerified || false,
+      type: "like",
+      read: false,
+      timestamp: Date.now()
+    });
+
+    console.log("✅ Notification created");
+
+  } catch (err) {
+    console.error("🔥 sendLikeNotification error:", err);
+  }
+  
+};
+
+window.sendCommentNotification = async function(postId, commentText) {
+  console.log("💬 sendCommentNotification fired for:", postId);
+
+  try {
+    const { data: post, error } = await window.supabaseClient
+      .from("pinora823")
+      .select("uploader_uid, thumb_url")
+      .eq("id", postId)
+      .single();
+
+    if (error || !post || !post.uploader_uid) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    // ❌ apne hi video pe comment → no notification
+    if (post.uploader_uid === user.uid) return;
+
+    const notifRef = firebase.database()
+      .ref(`notifications/${post.uploader_uid}`)
+      .push();
+
+    await notifRef.set({
+      from: user.displayName || "User",
+      fromUid: user.uid,
+      postId: postId,
+      thumb: post.thumb_url || "default.jpg",
+      commentText: commentText,
+
+      text: `${user.displayName || "User"} commented on your video`,
+      profileImage: user.photoURL || "default.jpg",
+      verified: user.emailVerified || false,
+      type: "comment",
+      read: false,
+      timestamp: Date.now()
+    });
+
+    
+
+  } catch (err) {
+    console.error("🔥 sendCommentNotification error:", err);
+  }
+};
+
+
 // ----------------------
 // 🌐 GUEST BROWSER ID
 // ----------------------
@@ -36,7 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA";
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const main = document.querySelector(".main-content");
     const modal = document.getElementById("videoModal");
@@ -238,6 +338,8 @@ async function incrementSupabaseViews(postId) {
             // MEDIA CLICK → OPEN MODAL
             // ----------------
             media.addEventListener("click", () => {
+               currentPostId = post.id;   // 🔥 VERY IMPORTANT
+    updateCommentCount();      // 🔥 FIX
                loadLikes(post.id);
               // ✅ REAL VIEW COUNT
     countView(post.id);
@@ -311,6 +413,13 @@ wrap.innerHTML = `
 
     // ✅ CLICK → OPEN REAL MEDIA IN MODAL
     wrap.addEventListener("click", () => {
+        // 🔥🔥🔥 MOST IMPORTANT FIX
+  currentPostId = other.id;
+  updateCommentCount();
+
+  // optional: agar comment modal open hai to clear
+  allCommentsList.innerHTML = "";
+
       loadLikes(other.id);
 
     if (other.file_type.startsWith("video")) {
@@ -764,6 +873,7 @@ function attachLikeListener() {
       if (!prevLiked) {
         await userLikeRef.set(true);
         await countRef.transaction(c => (c || 0) + 1);
+         sendLikeNotification(currentPostId);
       } else {
         await userLikeRef.remove();
         await countRef.transaction(c => Math.max((c || 1) - 1, 0));
@@ -802,6 +912,9 @@ modalVideo.addEventListener("click", () => {
 
   lastTap = now;
 });
+
+
+
 // ----------------------
 // COMMENT ELEMENTS
 // ----------------------
@@ -921,7 +1034,8 @@ async function sendComment() {
         text,
         timestamp: Date.now()
     });
-
+ // 🔔 YAHI ADD KARNA HAI
+    sendCommentNotification(currentPostId, text);
     commentInput.value = "";
     await loadAllComments(); // reload comments and update count
 }

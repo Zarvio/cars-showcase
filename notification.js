@@ -32,11 +32,17 @@ firebase.auth().onAuthStateChanged(user => {
     // Sender data fetch
     const senderSnap = await firebase.database().ref(`users/${n.fromUid}`).once("value");
     const sender = senderSnap.val();
+    // 🔐 FALLBACK FOR GUEST / MISSING USER
+const fallbackName = n.from || "Guest";
+const fallbackImage = n.profileImage || "images/default.jpg";
+const fallbackVerified = n.verified || false;
 
-    const profileImg = sender?.photoURL || "default.jpg";
-    const senderName = (sender?.name || "") + (sender?.surname ? " " + sender.surname : "");
+
+    const profileImg = sender?.photoURL || fallbackImage;
+const senderName = ((sender?.name || "") + (sender?.surname ? " " + sender.surname : "")).trim() || fallbackName;
     const text = n.text || "New notification";
-    const isVerified = sender?.verified || false;
+   const isVerified = sender?.verified || fallbackVerified;
+
 
     let iconClass = "fa-solid fa-bell";
     if (n.type === "follow") iconClass = "fa-solid fa-user-plus";
@@ -54,17 +60,30 @@ firebase.auth().onAuthStateChanged(user => {
     div.style.borderRadius = "10px";
     div.style.background = "#111";
 
-    div.innerHTML = `
-      <img src="${profileImg}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-      <div style="display:flex; flex-direction:column; justify-content:center;">
-        <div style="display:flex; align-items:center; gap:4px; font-weight:500;">
-          <b>${senderName || "Someone"}</b>
-          ${isVerified ? '<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px; height:14px;">' : ''}
-        </div>
-        <span style="font-size:13px; opacity:0.8;">${text}</span>
-      </div>
-      <i class="${iconClass}" style="margin-left:auto;"></i>
-    `;
+    const videoThumb = n.thumb || "images/default.jpg";
+const commentText = n.commentText || "";
+
+const showVideoThumb = n.type !== "follow"; // ❌ follow pe image mat dikhao
+
+div.innerHTML = `
+  <img src="${profileImg}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+
+  <div style="display:flex; flex-direction:column; justify-content:center; flex:1;">
+    <div style="display:flex; align-items:center; gap:4px; font-weight:500;">
+      <b>${senderName || "Someone"}</b>
+      ${isVerified ? '<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px; height:14px;">' : ''}
+    </div>
+
+    <span style="font-size:13px; opacity:0.8;">
+      ${n.type === "comment" ? `commented: <i>${commentText}</i>` : text}
+    </span>
+  </div>
+
+  ${showVideoThumb ? `<img src="${videoThumb}" style="width:42px; height:42px; object-fit:cover; border-radius:6px;">` : ``}
+  <i class="${iconClass}"></i>
+`;
+
+
 
     div.addEventListener("click", () => {
       window.location.href = `user.html?uid=${n.fromUid}`;

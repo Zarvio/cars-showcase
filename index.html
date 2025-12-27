@@ -28,6 +28,24 @@
 <div class="search-header" id="userSearchBox">
     <input type="text" id="searchVideoInput" name="user" placeholder="Search videos...">
 </div> 
+<div class="filterBar">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="following">Following</button>
+  <button class="filter-btn" data-filter="verified">Verified</button>
+  <button class="filter-btn" data-filter="popular">Popular</button>
+</div>
+
+<!-- Circular progress overlay, initially hidden -->
+<div id="downloadProgressOverlay" style="display:none;">
+    <div id="downloadProgressContainer">
+        <svg id="progressCircle" width="80" height="80">
+            <circle cx="40" cy="40" r="36" stroke="#ddd" stroke-width="6" fill="none" />
+            <circle id="progressCircleFill" cx="40" cy="40" r="36" stroke="#4caf50" stroke-width="6" fill="none" stroke-linecap="round" 
+                stroke-dasharray="226.2" stroke-dashoffset="226.2" transform="rotate(-90 40 40)" />
+        </svg>
+        <div id="progressPercent">0%</div>
+    </div>
+</div>
 
 <!-- ========== VIDEO BOX TEMPLATE (MAIN PAGE) ========== -->
 <template id="videoBoxTemplate">
@@ -103,6 +121,7 @@
     </div>
 
 </div>
+
 <!-- Like + Comment Buttons -->
 <div class="like-section">
     <button id="likeBtn">
@@ -114,7 +133,17 @@
         <i class="fa-regular fa-comment"></i>
         <span id="commentCount">0</span>
     </button>
+    
+    <button id="shareBtn">
+        <i class="fa-solid fa-share"></i>
+    </button>
+   <button id="downloadBtn">
+    <i class="fa-solid fa-download"></i>
+</button>
+
+
 </div>
+
 
 <!-- Comment Input Box -->
 <div class="comment-input-box" id="commentInputBox">
@@ -128,8 +157,26 @@
         <h3>Comments</h3>
         <div id="allCommentsList"></div>
     </div>
+    
+
 </div>
 
+
+
+<div class="share-menu hidden" id="shareMenu">
+    <button class="shareOption" data-platform="whatsapp">
+        <img src="whatsapp.png" alt="WhatsApp" class="share-icon"> WhatsApp
+    </button>
+    <button class="shareOption" data-platform="telegram">
+        <img src="telegram.png" alt="Telegram" class="share-icon"> Telegram
+    </button>
+    <button class="shareOption" data-platform="copy">
+    <i class="fa-regular fa-copy share-icon"></i> Copy Link
+</button>
+</div>
+
+<!-- Link Copied Line -->
+<div id="linkCopied" class="link-copied hidden">Link copied!</div>
 
 
 <!-- Double Tap Heart -->

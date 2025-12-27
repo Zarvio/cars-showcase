@@ -724,7 +724,7 @@ body {
 .like-section {
     display: flex;
     justify-content: center;
-    gap: 22px;   /* 👈 यही line add करो */
+    gap: 12px;   /* 👈 यही line add करो */
     margin: 12px 0;
 }
 
@@ -876,7 +876,7 @@ body {
 }
 /* Comment button spacing */
 #likeBtn + #commentBtn {
-    margin-left: 20px; /* like and comment ke beech gap */
+    margin-left: 8px; /* like and comment ke beech gap */
 }
 
 /* Comment input box */
@@ -1061,3 +1061,216 @@ body {
     padding: 0 5px;
     z-index: 9999;
 }
+/* ------------------ FILTER BAR ------------------ */
+
+/* ------------------ FILTER BUTTONS ------------------ */
+/* Container style */
+.filterBar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: #070707f9; /* subtle background */
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Button style */
+.filter-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e0e0e0;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect */
+.filter-btn:hover {
+  background-color: #d4d4d4;
+  transform: translateY(-2px);
+}
+
+/* Active button */
+.filter-btn.active {
+  background-color: #181717f9; /* green for active */
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Optional: smaller screens */
+@media (max-width: 480px) {
+  .filterBar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+#shareBtn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    transition: transform 0.15s ease;
+    margin-left: 8px; /* 👈 thoda left shift */
+}
+/* =========================
+   Share Menu Centered
+========================= */
+.share-menu { 
+    position: absolute;
+    top: 50%;   
+    left: 50%;  
+    transform: translate(-50%, -50%);
+    background: #1c1c1c; /* darker, modern background */
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px; 
+    z-index: 100;
+    min-width: 200px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px); /* subtle frosted effect */
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* =========================
+   Share Buttons
+========================= */
+.share-menu button {
+    background: #2c2c2c;
+    color: #f0f0f0;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.share-menu button:hover {
+    background: #3a3a3a;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* =========================
+   Share Button Icons
+========================= */
+.share-menu button i {
+    font-size: 20px;
+    color: #1db954; /* accent color example */
+}
+/* WhatsApp icon thoda bada */
+.shareOption[data-platform="whatsapp"] .share-icon {
+    width: 28px;   /* adjust size as needed */
+    height: 28px;
+}
+
+/* Telegram icon thoda chhota */
+.shareOption[data-platform="telegram"] .share-icon {
+    width: 21px;   /* adjust size as needed */
+    height: 21px;
+}
+
+/* =========================
+   Copied Link Popup
+========================= */
+.link-copied {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 9999;
+}
+
+/* show animation */
+.link-copied.show {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+/* hide utility */
+.hidden {
+    display: none;
+}
+
+#downloadBtn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    transition: transform 0.15s ease;
+    margin-left: 8px; /* 👈 thoda left shift */
+}
+
+
+#downloadBtn i {
+    font-size: 16px;
+}
+
+/* Overlay full screen */
+#downloadProgressOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5); /* semi-transparent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Circular progress container */
+#downloadProgressContainer {
+    text-align: center;
+     background: none;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Percentage text */
+#progressPercent {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+}
+

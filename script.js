@@ -1,3 +1,8 @@
+let allPosts = [];
+let currentFilter = "all";
+let followingList = [];
+
+
 // ---------- Firebase Config ----------
 const firebaseConfig = {
   apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
@@ -146,12 +151,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     const relatedVideos = document.getElementById("relatedVideos");
     const closeBtn = document.querySelector(".closeBtn");
     const searchVideoInput = document.getElementById("searchVideoInput");
+    const filterBtns = document.querySelectorAll(".filter-btn");
+
+filterBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    filterBtns.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    currentFilter = btn.dataset.filter;
+    applyFilters();
+  });
+  
+});
+
 
     if (!main) return;
 
     main.innerHTML = "<h3>Loading...</h3>";
 
-    let allPosts = [];
+    
 
     // ----------------
     // FETCH POSTS
@@ -164,7 +183,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (error) throw error;
         allPosts = data || [];
-        displayVideos(allPosts);
+applyFilters();
+
 
     } catch (err) {
         console.error("Error fetching posts:", err);
@@ -681,6 +701,43 @@ finalRelated.forEach(other => {
     document.getElementById("btnProfile")?.addEventListener("click", () => location.href = "profile.html");
     document.getElementById("btnUpload")?.addEventListener("click", () => location.href = "upload.html");
      document.getElementById("btnmessage")?.addEventListener("click", () => location.href = "message.html");
+
+     function applyFilters() {
+
+  let filtered = [...allPosts];
+
+  if (currentFilter === "all") {
+    displayVideos(filtered);
+    return;
+  }
+
+  if (currentFilter === "following") {
+    filtered = filtered.filter(p =>
+      followingList.includes(p.uploader_uid)
+    );
+    displayVideos(filtered);
+    return;
+  }
+
+  if (currentFilter === "verified") {
+    filtered = filtered.filter(p =>
+      p.uploader_verified == true ||
+      p.uploader_verified == "true" ||
+      p.uploader_verified == 1 ||
+      p.uploader_verified == "1"
+    );
+    displayVideos(filtered);
+    return;
+  }
+
+  if (currentFilter === "popular") {
+    filtered = filtered
+      .sort((a,b) => (b.views||0) - (a.views||0))
+      .slice(0,40);
+    displayVideos(filtered);
+  }
+}
+
 });
 
 // ----------------------
@@ -710,6 +767,15 @@ firebase.auth().onAuthStateChanged(user => {
       notifDot.style.display = "none";  // 0 notifications → hide
       notifDot.innerText = "";           // ensure no 0 shows
     }
+      firebase.database()
+    .ref(`following/${user.uid}`)
+    .once("value")
+    .then(snap => {
+      if (snap.exists()) {
+        followingList = Object.keys(snap.val());
+      }
+    });
+
   });
 });
 
@@ -1166,4 +1232,312 @@ async function sendComment() {
 // ----------------------
 window.addEventListener("load", async () => {
     await updateCommentCount(); // fast comment count on load
+});
+// ----------------------
+// SHARE BUTTON
+// ----------------------
+const shareBtn = document.getElementById("shareBtn");
+const shareMenu = document.getElementById("shareMenu");
+const linkCopied = document.getElementById("linkCopied");
+
+shareBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // prevent menu close on button click
+    shareMenu.classList.toggle("hidden");
+});
+
+// Close menu when clicking outside
+document.addEventListener("click", () => {
+    shareMenu.classList.add("hidden");
+});
+
+// Share options click
+
+shareMenu.querySelectorAll(".shareOption").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const platform = btn.dataset.platform;
+        const uniqueLink = `${window.location.origin}/?video=${currentPostId}`;
+        const text = encodeURIComponent(uniqueLink);
+
+        if (platform === "whatsapp") {
+            window.open(`https://wa.me/?text=${text}`, "_blank");
+        } 
+        else if (platform === "telegram") {
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(uniqueLink)}&text=${text}`, "_blank");
+        } 
+        else if (platform === "copy") {
+            navigator.clipboard.writeText(uniqueLink).then(() => {
+
+                // Sirf show / hide – koi CSS positioning nahi
+                linkCopied.classList.remove("hidden");
+                linkCopied.classList.add("show");
+
+                setTimeout(() => {
+                    linkCopied.classList.remove("show");
+                    linkCopied.classList.add("hidden");
+                }, 1200);
+            });
+        }
+
+        shareMenu.classList.add("hidden");
+    });
+});
+
+
+
+
+// ----------------------
+// PAGE LOAD VIDEO MODAL FROM LINK
+// ----------------------
+window.addEventListener("DOMContentLoaded", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get("video");
+
+    if (!videoId) return;
+
+    currentPostId = videoId;
+
+    try {
+        const { data: post, error } = await supabaseClient
+            .from("pinora823")
+            .select("*")
+            .eq("id", videoId)
+            .single();
+        if (error || !post) return;
+
+        const modal = document.getElementById("videoModal");
+        const modalVideo = document.getElementById("modalVideo");
+        const modalImage = document.getElementById("modalImage");
+        const modalTitle = document.getElementById("modalTitle");
+        const relatedVideos = document.getElementById("relatedVideos");
+
+        // Show video or image
+        if (post.file_type.startsWith("video")) {
+            modalVideo.src = post.file_url;
+            modalVideo.style.display = "block";
+            modalImage.style.display = "none";
+
+            // ❌ Disable browser controls
+            modalVideo.controls = false;
+
+            // ✅ Custom controls
+            if (!document.querySelector(".custom-controls")) {
+                const customControls = document.createElement("div");
+                customControls.className = "custom-controls";
+                customControls.innerHTML = `
+                    <button id="playPauseBtn" class="playPauseBtn">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                    <input type="range" id="seekBar" value="0" min="0" max="100">
+                    <div class="timeRow">
+                        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                    </div>
+                `;
+                modal.querySelector(".modal-media-wrapper").appendChild(customControls);
+
+                const playPauseBtn = document.getElementById("playPauseBtn");
+                const seekBar = document.getElementById("seekBar");
+                const currentTime = document.getElementById("currentTime");
+                const duration = document.getElementById("duration");
+                const playPauseIcon = playPauseBtn.querySelector("i");
+
+                // Play/pause toggle
+                function togglePlayPause() {
+                    if (modalVideo.paused) {
+                        modalVideo.play();
+                        playPauseIcon.className = "fa-solid fa-pause";
+                    } else {
+                        modalVideo.pause();
+                        playPauseIcon.className = "fa-solid fa-play";
+                    }
+                }
+
+                playPauseBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    togglePlayPause();
+                });
+
+                modalVideo.addEventListener("click", togglePlayPause);
+
+                modalVideo.addEventListener("timeupdate", () => {
+                    const value = (modalVideo.currentTime / modalVideo.duration) * 100;
+                    seekBar.value = value;
+                    currentTime.textContent = formatTime(modalVideo.currentTime);
+                });
+
+                modalVideo.addEventListener("loadedmetadata", () => {
+                    duration.textContent = formatTime(modalVideo.duration);
+                });
+
+                seekBar.addEventListener("input", () => {
+                    modalVideo.currentTime = (seekBar.value / 100) * modalVideo.duration;
+                });
+
+                function formatTime(seconds) {
+                    const mins = Math.floor(seconds / 60);
+                    const secs = Math.floor(seconds % 60);
+                    return `${mins}:${secs < 10 ? "0"+secs : secs}`;
+                }
+            }
+        } else {
+            modalImage.src = post.file_url;
+            modalImage.style.display = "block";
+            modalVideo.style.display = "none";
+        }
+
+        // Modal title & uploader
+        const verified = post.uploader_verified == true || post.uploader_verified == "true" || post.uploader_verified == 1 || post.uploader_verified == "1";
+        const badgeHTML = verified ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px;height:16px;">` : '';
+        modalTitle.innerHTML = `
+            ${post.title || ""}
+            <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
+                <img src="${post.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+                <span>${post.uploader_name || "Unknown"}</span>
+                ${badgeHTML}
+            </div>
+        `;
+
+        modal.classList.remove("hidden");
+
+        // ✅ Count view properly (Supabase + Firebase)
+        if (typeof countView === "function") await countView(post.id);
+
+        // ✅ Load likes & comment count
+        await loadLikes(post.id);
+        await updateCommentCount();
+
+    } catch (err) {
+        console.error("Error loading video from link:", err);
+    }
+});
+window.addEventListener("DOMContentLoaded", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get("video");
+    if (!videoId) return;
+
+    currentPostId = videoId;
+
+    try {
+        // Fetch post data
+        const { data: post, error } = await supabaseClient
+            .from("pinora823")
+            .select("*")
+            .eq("id", videoId)
+            .single();
+
+        if (error || !post) return;
+
+        // Show video/image
+        if (post.file_type.startsWith("video")) {
+            modalVideo.src = post.file_url;
+            modalVideo.style.display = "block";
+            modalImage.style.display = "none";
+        } else {
+            modalImage.src = post.file_url;
+            modalImage.style.display = "block";
+            modalVideo.style.display = "none";
+        }
+
+        // Modal title/uploader
+        const verified = post.uploader_verified == true || post.uploader_verified == "true" || post.uploader_verified == 1 || post.uploader_verified == "1";
+        const badgeHTML = verified ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px;height:16px;">` : '';
+        modalTitle.innerHTML = `
+            ${post.title || ""}
+            <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
+                <img src="${post.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+                <span>${post.uploader_name || "Unknown"}</span>
+                ${badgeHTML}
+            </div>
+        `;
+
+        // ✅ SHOW VIEWS from Supabase
+        const modalViewCount = document.getElementById("modalViewCount");
+        if (modalViewCount) {
+            modalViewCount.textContent = post.views ? post.views.toLocaleString() : "0";
+        }
+
+        modal.classList.remove("hidden");
+
+        // ✅ OPTIONAL: increment view AFTER showing
+        countView(post.id);
+
+    } catch (err) {
+        console.error("Error loading video from link:", err);
+    }
+});
+
+
+
+
+const downloadBtn = document.getElementById("downloadBtn");
+const progressOverlay = document.getElementById("downloadProgressOverlay");
+const progressCircleFill = document.getElementById("progressCircleFill");
+const progressPercent = document.getElementById("progressPercent");
+
+downloadBtn.addEventListener("click", async () => {
+    if (!currentPostId) return;
+
+    try {
+        // Supabase se title & URL fetch
+        const { data: post, error } = await supabaseClient
+            .from("pinora823")
+            .select("title, file_url")
+            .eq("id", currentPostId)
+            .single();
+
+        if (error || !post) return;
+
+        const videoUrl = post.file_url;
+        let titleText = post.title || "Video";
+        titleText = titleText.replace(/[\\/:"*?<>|]+/g, '');
+        const fileName = `${titleText} - Pinora Web.mp4`;
+
+        // Show overlay
+        progressOverlay.style.display = "flex";
+        progressPercent.textContent = "0%";
+        progressCircleFill.style.strokeDashoffset = 226.2;
+
+        // Fetch video as stream
+        const response = await fetch(videoUrl);
+        const reader = response.body.getReader();
+        const contentLength = +response.headers.get("Content-Length");
+
+        let receivedLength = 0;
+        const chunks = [];
+
+        while(true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            chunks.push(value);
+            receivedLength += value.length;
+
+            // Update circular progress
+            const progress = (receivedLength / contentLength) * 100;
+            const offset = 226.2 * (1 - progress / 100);
+            progressCircleFill.style.strokeDashoffset = offset;
+            progressPercent.textContent = `${progress.toFixed(0)}%`;
+        }
+
+        // Create blob & trigger download
+        const blob = new Blob(chunks);
+        const blobUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(blobUrl);
+
+        // Hide overlay after short delay
+        setTimeout(() => {
+            progressOverlay.style.display = "none";
+        }, 800);
+
+    } catch (err) {
+        console.error("Download failed:", err);
+        progressOverlay.style.display = "none"; // hide on error
+    }
 });

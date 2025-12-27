@@ -12,6 +12,7 @@ firebase.initializeApp(firebaseConfig);
 
 const notifContainer = document.querySelector(".notif-container");
 const loader = document.querySelector(".notif-loader"); // loader select करें
+let firstLoad = true;
 
 firebase.auth().onAuthStateChanged(user => {
   if (!user) {
@@ -21,7 +22,10 @@ firebase.auth().onAuthStateChanged(user => {
   }
 
   const currentUid = user.uid;
-  const notifRef = firebase.database().ref(`notifications/${currentUid}`);
+  const notifRef = firebase.database()
+  .ref(`notifications/${currentUid}`)
+  .orderByChild("timestamp");
+
 
   loader.style.display = "flex"; // loader दिखाएँ
 
@@ -32,17 +36,30 @@ firebase.auth().onAuthStateChanged(user => {
     // Sender data fetch
     const senderSnap = await firebase.database().ref(`users/${n.fromUid}`).once("value");
     const sender = senderSnap.val();
+
+
     // 🔐 FALLBACK FOR GUEST / MISSING USER
+
+
 const fallbackName = n.from || "Guest";
 const fallbackImage = n.profileImage || "images/default.jpg";
-const fallbackVerified = n.verified || false;
 
+const profileImg = sender?.photoURL || fallbackImage;
+const senderName =
+  ((sender?.name || "") + (sender?.surname ? " " + sender.surname : "")).trim() || fallbackName;
 
-    const profileImg = sender?.photoURL || fallbackImage;
-const senderName = ((sender?.name || "") + (sender?.surname ? " " + sender.surname : "")).trim() || fallbackName;
+// 🔥 badge sirf tab dikhe jab DB me verified === true ho
+const isVerified = sender && sender.verified === true;
+
     const text = n.text || "New notification";
-   const isVerified = sender?.verified || fallbackVerified;
+   
 
+let actionText = "";
+
+if (n.type === "follow") actionText = "started following you";
+else if (n.type === "like") actionText = "liked your video";
+else if (n.type === "comment") actionText = `commented: "${n.commentText || ""}"`;
+else actionText = n.text || "sent you a notification";
 
     let iconClass = "fa-solid fa-bell";
     if (n.type === "follow") iconClass = "fa-solid fa-user-plus";
@@ -69,19 +86,20 @@ div.innerHTML = `
   <img src="${profileImg}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
 
   <div style="display:flex; flex-direction:column; justify-content:center; flex:1;">
-    <div style="display:flex; align-items:center; gap:4px; font-weight:500;">
-      <b>${senderName || "Someone"}</b>
+    <div style="display:flex; align-items:center; gap:4px; font-weight:600;">
+      ${senderName || "Someone"}
       ${isVerified ? '<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px; height:14px;">' : ''}
     </div>
 
-    <span style="font-size:13px; opacity:0.8;">
-      ${n.type === "comment" ? `commented: <i>${commentText}</i>` : text}
-    </span>
+    <div style="font-size:13px; opacity:0.75;">
+      ${actionText}
+    </div>
   </div>
 
   ${showVideoThumb ? `<img src="${videoThumb}" style="width:42px; height:42px; object-fit:cover; border-radius:6px;">` : ``}
   <i class="${iconClass}"></i>
 `;
+
 
 
 
@@ -91,7 +109,10 @@ div.innerHTML = `
 
     notifContainer.prepend(div);
 
-    notifRef.child(snapshot.key).update({ read: true });
+    firebase.database()
+  .ref(`notifications/${currentUid}/${snapshot.key}`)
+  .update({ read: true });
+
 
     loader.style.display = "none"; // नोटिफ़िकेशन आने के बाद loader hide करें
   });

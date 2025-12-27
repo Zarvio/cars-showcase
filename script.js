@@ -252,14 +252,106 @@ async function incrementSupabaseViews(postId) {
     // SEARCH
     // ----------------
     searchVideoInput.addEventListener("input", () => {
-        const query = searchVideoInput.value.toLowerCase();
-        if (!query) return displayVideos(allPosts);
+  const query = searchVideoInput.value.toLowerCase().trim();
+  if (!query) return displayVideos(allPosts);
 
-        const filtered = allPosts.filter(post =>
-            post.title && post.title.toLowerCase().includes(query)
-        );
-        displayVideos(filtered);
-    });
+  const aiResults = [];
+  const titleResults = [];
+  const added = new Set();
+
+  allPosts.forEach(post => {
+    const tags = normalizeTags(post.content_tags);
+    const aiMatch = tags.some(tag => tag.includes(query));
+
+    if (aiMatch) {
+      aiResults.push(post);
+      added.add(post.id);
+    }
+  });
+
+  allPosts.forEach(post => {
+    if (added.has(post.id)) return;
+
+    const titleMatch = post.title &&
+      post.title.toLowerCase().includes(query);
+
+    if (titleMatch) {
+      titleResults.push(post);
+    }
+  });
+
+  const finalResults = [...aiResults, ...titleResults];
+  displayVideos(finalResults);
+});
+
+function normalizeTags(tags) {
+  if (!tags) return [];
+
+  // agar string hai: "{bird,animal}"
+  if (typeof tags === "string") {
+    return tags
+      .replace(/[{}"]/g, "")
+      .split(",")
+      .map(t => t.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  // agar array hai
+  if (Array.isArray(tags)) {
+    return tags.map(t => String(t).toLowerCase().trim());
+  }
+
+  return [];
+}
+
+
+
+function getSmartRelated(currentPost, allPosts) {
+
+  const stopWords = ["the","is","are","of","to","a","an","and","or","in","on","for","with"];
+
+  const currentTags = normalizeTags(currentPost.content_tags);
+
+  const titleWords = currentPost.title
+    ? currentPost.title.toLowerCase()
+        .split(" ")
+        .filter(w => w.length > 2 && !stopWords.includes(w))
+    : [];
+
+  const aiMatches = [];
+  const titleMatches = [];
+  const added = new Set();
+
+  // 🥇 AI TAG MATCH FIRST
+  allPosts.forEach(post => {
+    if (post.id === currentPost.id) return;
+
+    const tags = normalizeTags(post.content_tags);
+    const matchScore = tags.filter(t => currentTags.includes(t)).length;
+
+    if (matchScore > 0) {
+      aiMatches.push({ ...post, score: matchScore });
+      added.add(post.id);
+    }
+  });
+
+  aiMatches.sort((a,b) => b.score - a.score); // best match first
+
+  // 🥈 TITLE MATCH SECOND
+  allPosts.forEach(post => {
+    if (post.id === currentPost.id || added.has(post.id)) return;
+    if (!post.title) return;
+
+    const postTitle = post.title.toLowerCase();
+    const match = titleWords.some(w => postTitle.includes(w));
+
+    if (match) titleMatches.push(post);
+  });
+
+  return [...aiMatches, ...titleMatches];
+}
+
+
 
     // ----------------
     // DISPLAY VIDEOS
@@ -377,90 +469,112 @@ if (modalViewCount) {
                 // RELATED VIDEOS
                 // ----------------
                 relatedVideos.innerHTML = "";
-allPosts.forEach(other => {
-    if (other.id === post.id) return;
+
+function getSmartRelated(currentPost, allPosts) {
+
+  const stopWords = ["the","is","are","of","to","a","an","and","or","in","on","for","with"];
+
+  const currentTags = normalizeTags(currentPost.content_tags);
+
+  const titleWords = currentPost.title
+    ? currentPost.title.toLowerCase()
+        .split(" ")
+        .filter(w => w.length > 2 && !stopWords.includes(w))
+    : [];
+
+  const aiMatches = [];
+  const titleMatches = [];
+  const added = new Set();
+
+  // 🥇 AI TAG MATCH FIRST
+  allPosts.forEach(post => {
+    if (post.id === currentPost.id) return;
+
+    const tags = normalizeTags(post.content_tags);
+    const matchScore = tags.filter(t => currentTags.includes(t)).length;
+
+    if (matchScore > 0) {
+      aiMatches.push({ ...post, score: matchScore });
+      added.add(post.id);
+    }
+  });
+
+  aiMatches.sort((a,b) => b.score - a.score); // best match first
+
+  // 🥈 TITLE MATCH SECOND
+  allPosts.forEach(post => {
+    if (post.id === currentPost.id || added.has(post.id)) return;
+    if (!post.title) return;
+
+    const postTitle = post.title.toLowerCase();
+    const match = titleWords.some(w => postTitle.includes(w));
+
+    if (match) titleMatches.push(post);
+  });
+
+  return [...aiMatches, ...titleMatches];
+}
+
+const finalRelated = getSmartRelated(post, allPosts);
+
+
+finalRelated.forEach(other => {
 
     const wrap = document.createElement("div");
     wrap.className = "relatedBox";
 
-    // uploader header
     const relatedVerified =
-    other.uploader_verified === true ||
-    other.uploader_verified === 'true' ||
-    other.uploader_verified === 1 ||
-    other.uploader_verified === '1';
+      other.uploader_verified === true ||
+      other.uploader_verified === 'true' ||
+      other.uploader_verified === 1 ||
+      other.uploader_verified === '1';
 
-const relatedBadgeHTML = relatedVerified
-    ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg"
-        style="width:12px; height:12px;">`
-    : '';
-wrap.innerHTML = `
-    <div class="uploaderHeaderSmall">
+    const relatedBadgeHTML = relatedVerified
+      ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg"
+          style="width:12px; height:12px;">`
+      : '';
+
+    wrap.innerHTML = `
+      <div class="uploaderHeaderSmall">
         <img src="${other.uploader_image || 'images/default.jpg'}" class="smallDP">
         <span class="smallName">${other.uploader_name || "User"}</span>
         ${relatedBadgeHTML}
-    </div>
-`;
-
-
-    // ✅ RELATED MEDIA = IMAGE ONLY (LONG LOOK)
-    const relatedMedia = document.createElement("img");
-    relatedMedia.src = other.thumb_url || other.file_url || 'images/default.jpg';
-    relatedMedia.className = "relatedThumb";
-    relatedMedia.style.objectFit = "cover";
-
-    wrap.appendChild(relatedMedia);
-
-    // ✅ CLICK → OPEN REAL MEDIA IN MODAL
-    wrap.addEventListener("click", () => {
-        // 🔥🔥🔥 MOST IMPORTANT FIX
-  currentPostId = other.id;
-  updateCommentCount();
-
-  // optional: agar comment modal open hai to clear
-  allCommentsList.innerHTML = "";
-
-      loadLikes(other.id);
-
-    if (other.file_type.startsWith("video")) {
-        modalVideo.src = other.file_url;
-        modalVideo.style.display = "block";
-        modalImage.style.display = "none";
-        modalVideo.controls = false;
-    } else {
-        modalImage.src = other.file_url;
-        modalImage.style.display = "block";
-        modalVideo.style.display = "none";
-    }
-
-    // ✅ VERIFIED BADGE FOR MODAL (RELATED)
-    const modalVerified =
-        other.uploader_verified === true ||
-        other.uploader_verified === 'true' ||
-        other.uploader_verified === 1 ||
-        other.uploader_verified === '1';
-
-    const modalBadgeHTML = modalVerified
-        ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg"
-            style="width:14px; height:14px;">`
-        : '';
-
-    modalTitle.innerHTML = `
-        ${other.title || ""}
-        <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-            <img src="${other.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
-            <span>${other.uploader_name || "Unknown"}</span>
-            ${modalBadgeHTML}
-        </div>
+      </div>
     `;
 
-    // ✅ ENSURE MODAL VISIBLE
-    modal.classList.remove("hidden");
-});
+    const relatedMedia = document.createElement("img");
+    relatedMedia.src = other.thumb_url || other.file_url;
+    relatedMedia.className = "relatedThumb";
+    wrap.appendChild(relatedMedia);
 
+    wrap.addEventListener("click", () => {
+        currentPostId = other.id;
+        updateCommentCount();
+        loadLikes(other.id);
+
+        if (other.file_type.startsWith("video")) {
+          modalVideo.src = other.file_url;
+          modalVideo.style.display = "block";
+          modalImage.style.display = "none";
+        } else {
+          modalImage.src = other.file_url;
+          modalImage.style.display = "block";
+          modalVideo.style.display = "none";
+        }
+
+        modalTitle.innerHTML = `
+          ${other.title || ""}
+          <div class="modalUploader">
+            <img src="${other.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+            <span>${other.uploader_name || "Unknown"}</span>
+            ${relatedBadgeHTML}
+          </div>
+        `;
+    });
 
     relatedVideos.appendChild(wrap);
 });
+
 
 
                 // ----------------
@@ -576,39 +690,46 @@ const notifDot = document.getElementById("notifDot");
 const notifBtn = document.getElementById("btnNotifs");
 
 firebase.auth().onAuthStateChanged(user => {
-    if (!user) return;
+  if (!user || !notifDot) return;
 
-    const uid = user.uid;
-    const ref = firebase.database().ref(`notifications/${uid}`);
+  const uid = user.uid;
+  const ref = firebase.database().ref(`notifications/${uid}`);
 
-    // Show dot only for new notifications
-    ref.on("child_added", snap => {
-        const n = snap.val();
-        if (n && n.read === false) {
-            notifDot.style.display = "inline-block";
-        }
+  ref.on("value", snap => {
+    let unread = 0;
+
+    snap.forEach(child => {
+      const n = child.val();
+      if (n && n.read === false) unread++;
     });
+
+    if (unread > 0) {
+      notifDot.style.display = "inline-block";
+      notifDot.innerText = unread > 99 ? "99+" : unread;
+    } else {
+      notifDot.style.display = "none";  // 0 notifications → hide
+      notifDot.innerText = "";           // ensure no 0 shows
+    }
+  });
 });
 
-// When clicking notification icon
 notifBtn.addEventListener("click", () => {
-    notifDot.style.display = "none";
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
-    const user = firebase.auth().currentUser;
-    if (!user) return;
+  const ref = firebase.database().ref(`notifications/${user.uid}`);
 
-    const ref = firebase.database().ref(`notifications/${user.uid}`);
-    ref.once("value", snapshot => {
-        snapshot.forEach(child => {
-            const data = child.val();
-            if (data && data.read === false) {
-                ref.child(child.key).update({ read: true });
-            }
-        });
+  ref.once("value", snap => {
+    snap.forEach(child => {
+      if (child.val().read === false) {
+        ref.child(child.key).update({ read:true });
+      }
     });
+  });
 
-    window.location.href = "notification.html";
+  window.location.href = "notification.html";
 });
+
 
 // ----------------------
 // 🔐 CTRL + P ADMIN LOGIN

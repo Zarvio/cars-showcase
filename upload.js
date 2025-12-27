@@ -16,9 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const uploadStatus = document.getElementById("uploadStatus");
 
   // Open file selector
-  selectBtn.addEventListener("click", () => {
-    fileInput.click();
-  });
+  selectBtn.addEventListener("click", () => fileInput.click());
 
   // Show name + preview
   fileInput.addEventListener("change", () => {
@@ -27,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!file) return;
 
     fileNameText.innerText = file.name;
-
     const url = URL.createObjectURL(file);
 
     if (file.type.startsWith("video")) {
@@ -41,17 +38,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return name.replace(/[^\w\-\.]/g, '_').substring(0, 100);
   }
 
-  // 🔹 Firebase Auth check
+  // Firebase Auth check
   firebase.auth().onAuthStateChanged(user => {
     if (!user) {
       alert("Please login first!");
       if (uploadForm) uploadForm.querySelector("button[type='submit']").disabled = true;
       return;
     }
-
     if (uploadForm) uploadForm.querySelector("button[type='submit']").disabled = false;
 
-    // Upload handler
     uploadForm?.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -60,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const userData = userSnap.val();
 
       const uploaderName = userData?.username || "Unknown";
-      const uploaderImg  = userData?.photoURL || "https://i.ibb.co/album/default.jpg";
+      const uploaderImg = userData?.photoURL || "https://i.ibb.co/album/default.jpg";
 
       const title = document.getElementById("pinTitle").value;
       const file = fileInput.files[0];
@@ -89,13 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (uploadError) {
         clearInterval(interval);
         uploadStatus.innerText = "Upload failed!";
+        console.error(uploadError);
         return;
       }
 
       const { data: publicURL } = supabaseClient.storage
         .from("Zarvio")
         .getPublicUrl(filePath);
-
       const fileUrl = publicURL.publicUrl;
 
       // Generate thumbnail if video
@@ -104,11 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           const thumbBlob = await generateVideoThumbnail(file);
           const thumbPath = `thumbnails/${Date.now()}-${safeFileName}.jpg`;
-
           const { error: thumbError } = await supabaseClient
             .storage.from("Zarvio")
             .upload(thumbPath, thumbBlob);
-
           if (!thumbError) {
             const { data: thumbData } = supabaseClient.storage
               .from("Zarvio")
@@ -120,40 +113,89 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Save to database
-      // Determine verified flag from Firebase userData (handles string/number/boolean)
-const uploaderVerified = (userData && (userData.verified === true || userData.verified === 'true' || userData.verified === 1 || userData.verified === '1')) ? true : false;
+      // Determine verified flag
+      const uploaderVerified = (userData && (userData.verified === true || userData.verified === 'true' || userData.verified === 1 || userData.verified === '1')) ? true : false;
+const detectedTagsP = document.getElementById("detectedTags"); // <-- add this at top
 
-// Save to database (include uploader_verified)
-const { error } = await supabaseClient
-  .from("pinora823")
-  .insert([{
-    title: title,
-    file_url: fileUrl,
-    thumb_url: thumbUrl,
-    file_type: file.type,
-    created_at: new Date().toISOString(),
-    uploader_uid: user.uid,
-    uploader_name: uploaderName,
-    uploader_image: uploaderImg,
-    uploader_verified: uploaderVerified
-  }]);
+// TensorFlow Object Detection (image or video)
+let contentTags = [];
 
+if (file.type.startsWith("video")) {
+    // Video detection (scan multiple frames)
+    try {
+        const model = await cocoSsd.load();
+        const tempVideo = document.createElement('video');
+        tempVideo.src = URL.createObjectURL(file);
+        tempVideo.muted = true;
+        await new Promise(resolve => tempVideo.onloadeddata = resolve);
+
+        const frames = [1,2,3]; // scan 1s, 2s, 3s
+        for(const time of frames){
+            tempVideo.currentTime = time;
+            await new Promise(resolve => tempVideo.onseeked = resolve);
+            const predictions = await model.detect(tempVideo);
+            predictions
+              .filter(p => p.score > 0.5)
+              .forEach(p => {
+                  if(!contentTags.includes(p.class)) contentTags.push(p.class);
+              });
+        }
+
+        console.log("Detected content tags:", contentTags);
+        detectedTagsP.innerText = "Detected Tags: " + contentTags.join(", "); // show on page
+
+    } catch(err) {
+        console.error("Object detection failed:", err);
+    }
+} else {
+    // Image detection
+    try {
+        const model = await cocoSsd.load();
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        await new Promise(resolve => img.onload = resolve);
+
+        const predictions = await model.detect(img);
+        contentTags = predictions.filter(p => p.score > 0.5).map(p => p.class);
+
+        console.log("Detected content tags:", contentTags);
+        detectedTagsP.innerText = "Detected Tags: " + contentTags.join(", ");
+    } catch(err) {
+        console.error("Object detection failed:", err);
+    }
+}
+
+
+
+      // Save to Supabase DB
+      const { error } = await supabaseClient
+        .from("pinora823")
+        .insert([{
+          title: title,
+          file_url: fileUrl,
+          thumb_url: thumbUrl,
+          file_type: file.type,
+          created_at: new Date().toISOString(),
+          uploader_uid: user.uid,
+          uploader_name: uploaderName,
+          uploader_image: uploaderImg,
+          uploader_verified: uploaderVerified,
+          content_tags: contentTags
+        }]);
 
       clearInterval(interval);
       progressFill.style.width = "100%";
 
       if (error) {
         uploadStatus.innerText = "Database error!";
+        console.error(error);
         return;
       }
 
       uploadStatus.innerText = "Uploaded Successfully ✔️";
       uploadStatus.style.color = "black";
 
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1500);
+      setTimeout(() => window.location.href = "index.html", 1500);
     });
   });
 
@@ -164,7 +206,7 @@ const { error } = await supabaseClient
   document.getElementById("btnProfile")?.addEventListener("click", () => window.location.href = "profile.html");
   document.getElementById("btnUpload")?.addEventListener("click", () => window.location.href = "upload.html");
 
-  // Thumbnail generator function
+  // Thumbnail generator
   async function generateVideoThumbnail(file) {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
@@ -179,9 +221,7 @@ const { error } = await supabaseClient
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => {
-          resolve(blob);
-        }, 'image/jpeg', 0.8);
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.8);
       };
 
       video.onerror = (e) => reject(e);

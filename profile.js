@@ -281,43 +281,93 @@ function loadUserProfile(data) {
 
 
 // --- Upload profile photo (edit photo only) ---
-uploadPhoto.onchange = async function(e) {
-    const file = uploadPhoto.files[0];
-    if (!file || !currentUser) return;
+// ---------- PROFILE PIC CROP SYSTEM ----------
+const cropModal = document.getElementById("cropModal");
+const cropCanvas = document.getElementById("cropCanvas");
+const zoomRange = document.getElementById("zoomRange");
+const ctx = cropCanvas.getContext("2d");
 
-    try {
-        // Safe file name
-        const safeFileName = file.name.replace(/[^\w\-\.]/g, '_').substring(0, 100);
-        const filePath = `profilePics/${currentUser.uid}_${safeFileName}`;
+let cropImg = new Image();
+let scale = 1;
+let posX = 0, posY = 0;
+let dragging = false;
+let startX = 0, startY = 0;
+let minScale = 1;
 
-        // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabaseClient
-            .storage
-            .from("Zarvio") // your Supabase bucket name
-            .upload(filePath, file, { upsert: true });
 
-        if (uploadError) throw uploadError;
 
-        // Get public URL
-        const { data: publicURL } = supabaseClient
-            .storage
-            .from("Zarvio")
-            .getPublicUrl(filePath);
+uploadPhoto.onchange = e => {
+  const file = e.target.files[0];
+  if (!file || !currentUser) return;
 
-        const profileUrl = publicURL.publicUrl;
+  const reader = new FileReader();
+  reader.onload = () => {
+    cropImg.src = reader.result;
+    
 
-        // ✅ Update Firebase user table photoURL
-        await firebase.database().ref("users/" + currentUser.uid + "/photoURL").set(profileUrl);
+cropImg.onload = () => {
+  minScale = Math.max(
+    300 / cropImg.width,
+    300 / cropImg.height
+  );
 
-        // Update front-end immediately
-        profilePic.src = profileUrl;
-        alert("Profile photo updated successfully!");
+  scale = minScale;
 
-    } catch (err) {
-        console.error(err);
-        alert("Profile photo upload failed!");
-    }
+  zoomRange.min = minScale;
+  zoomRange.max = minScale * 4;
+  zoomRange.value = scale;
+
+  posX = (300 - cropImg.width * scale) / 2;
+  posY = (300 - cropImg.height * scale) / 2;
+
+  cropModal.classList.remove("hidden");
+  drawCrop();
 };
+  };
+  reader.readAsDataURL(file);
+uploadPhoto.value = "";
+};
+
+
+function drawCrop() {
+  ctx.clearRect(0, 0, 300, 300);
+  ctx.drawImage(cropImg, posX, posY, cropImg.width * scale, cropImg.height * scale);
+}
+
+cropCanvas.onmousedown = e => {
+  dragging = true;
+  startX = e.offsetX - posX;
+  startY = e.offsetY - posY;
+};
+
+cropCanvas.onmousemove = e => {
+  if (!dragging) return;
+  posX = e.offsetX - startX;
+  posY = e.offsetY - startY;
+  drawCrop();
+};
+
+window.onmouseup = () => dragging = false;
+
+function setScale(newScale){
+  const prevScale = scale;
+  scale = Math.min(minScale * 4, Math.max(minScale, newScale));
+
+  const centerX = 150;
+  const centerY = 150;
+
+  posX = centerX - (centerX - posX) * (scale / prevScale);
+  posY = centerY - (centerY - posY) * (scale / prevScale);
+
+  zoomRange.value = scale;
+  drawCrop();
+}
+
+zoomRange.oninput = () => {
+  setScale(parseFloat(zoomRange.value));
+};
+
+
 
 
 // --- Utility to show only one area at a time ---
@@ -737,4 +787,194 @@ logoutBtn?.addEventListener("click", () => {
       console.error("Logout failed:", err);
       alert("Logout failed. Try again.");
     });
+});
+document.getElementById("saveCrop").onclick = async () => {
+  const out = document.createElement("canvas");
+  out.width = 300;
+  out.height = 300;
+  const octx = out.getContext("2d");
+
+  octx.beginPath();
+  octx.arc(150,150,150,0,Math.PI*2);
+  octx.closePath();
+  octx.clip();
+
+  octx.drawImage(cropCanvas,0,0);
+
+  out.toBlob(async blob => {
+    const filePath = `profilePics/${currentUser.uid}_${Date.now()}.png`;
+
+
+    await supabaseClient.storage.from("Zarvio").upload(filePath, blob, { upsert:true });
+
+    const { data } = supabaseClient.storage.from("Zarvio").getPublicUrl(filePath);
+    const url = data.publicUrl;
+
+    await firebase.database().ref("users/"+currentUser.uid+"/photoURL").set(url);
+    // 🔥 UPDATE ALL USER POSTS PROFILE IMAGE
+await supabaseClient
+  .from("pinora823")
+  .update({ uploader_image: url })
+  .eq("uploader_uid", currentUser.uid);
+
+
+    profilePic.src = url + "?t=" + Date.now();
+
+    cropModal.classList.add("hidden");
+  });
+};
+
+document.getElementById("cancelCrop").onclick = () => {
+  cropModal.classList.add("hidden");
+};
+let lastTouchDist = 0;
+
+cropCanvas.addEventListener("touchstart", e => {
+  if(e.touches.length === 1){
+    dragging = true;
+    startX = e.touches[0].clientX - posX;
+    startY = e.touches[0].clientY - posY;
+  }
+  if(e.touches.length === 2){
+    lastTouchDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+});
+
+cropCanvas.addEventListener("touchmove", e => {
+  e.preventDefault();
+
+  if(e.touches.length === 1 && dragging){
+    posX = e.touches[0].clientX - startX;
+    posY = e.touches[0].clientY - startY;
+    drawCrop();
+  }
+
+  if(e.touches.length === 2){
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    const delta = (dist - lastTouchDist) / 200;
+setScale(scale + delta);
+lastTouchDist = dist;
+
+  }
+},{ passive:false });
+
+cropCanvas.addEventListener("touchend", ()=> dragging=false);
+ const followersModal = document.getElementById("followersModal");
+const followersList  = document.getElementById("followersList");
+const closeFollowers = document.getElementById("closeFollowers");
+
+// Followers count pe click
+const followersBtn = document.getElementById("followersBtn");
+
+followersBtn.addEventListener("click", async () => {
+  const uid = profileUid || currentUser.uid;
+
+  followersModal.classList.remove("hidden");
+  document.querySelector("#followersModal h3").innerText = "Followers";
+  followersList.innerHTML = "<p class='empty-text'>Loading...</p>";
+
+  const snap = await firebase.database().ref("followers/" + uid).once("value");
+
+  if (!snap.exists()) {
+    followersList.innerHTML = "<p class='empty-text'>No followers yet</p>";
+    return;
+  }
+
+  followersList.innerHTML = "";
+  const followerUids = Object.keys(snap.val());
+
+  for (let fuid of followerUids) {
+    const userSnap = await firebase.database().ref("users/" + fuid).once("value");
+    if (!userSnap.exists()) continue;
+
+    const user = userSnap.val();
+    const verified = user.verified === true;
+
+    const badgeHTML = verified
+      ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px; height:14px;">`
+      : '';
+
+    const div = document.createElement("div");
+    div.className = "follower-item";
+    div.innerHTML = `
+      <img src="${user.photoURL || 'default.jpg'}">
+      <div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          ${user.name || ""} ${user.surname || ""}
+          ${badgeHTML}
+        </div>
+        <small>@${user.username || ""}</small>
+      </div>
+    `;
+
+    div.onclick = () => {
+      window.location.href = "user.html?uid=" + fuid;
+    };
+
+    followersList.appendChild(div);
+  }
+});
+
+
+
+// Close modal
+closeFollowers.addEventListener("click", () => {
+  followersModal.classList.add("hidden");
+});
+const followingBtn = document.getElementById("followingBtn");
+
+// FOLLOWING LIST OPEN
+followingBtn.addEventListener("click", async () => {
+  const uid = profileUid || currentUser.uid;
+
+  followersModal.classList.remove("hidden");
+  document.querySelector("#followersModal h3").innerText = "Following";
+  followersList.innerHTML = "<p class='empty-text'>Loading...</p>";
+
+  const snap = await firebase.database().ref("following/" + uid).once("value");
+
+  if (!snap.exists()) {
+    followersList.innerHTML = "<p class='empty-text'>Not following anyone yet</p>";
+    return;
+  }
+
+  followersList.innerHTML = "";
+  const followingUids = Object.keys(snap.val());
+
+  for (let fuid of followingUids) {
+    const userSnap = await firebase.database().ref("users/" + fuid).once("value");
+    if (!userSnap.exists()) continue;
+
+    const user = userSnap.val();
+    const verified = user.verified === true;
+
+    const badgeHTML = verified
+      ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px; height:14px;">`
+      : '';
+
+    const div = document.createElement("div");
+    div.className = "follower-item";
+    div.innerHTML = `
+      <img src="${user.photoURL || 'default.jpg'}">
+      <div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          ${user.name || ""} ${user.surname || ""}
+          ${badgeHTML}
+        </div>
+        <small>@${user.username || ""}</small>
+      </div>
+    `;
+
+    div.onclick = () => {
+      window.location.href = "user.html?uid=" + fuid;
+    };
+
+    followersList.appendChild(div);
+  }
 });

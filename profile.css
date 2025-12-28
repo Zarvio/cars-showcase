@@ -188,14 +188,14 @@ body {
     align-items: center;
     justify-content: center;
 }
-
 .avatar {
     width: 110px;
     height: 110px;
     border-radius: 50%;
     object-fit: cover;
-    background: #fff;
+    background: transparent; /* change from #fff to transparent */
 }
+
 
 .edit-photo {
     position: absolute;
@@ -289,6 +289,7 @@ body {
     background: #07070700;
     backdrop-filter: blur(8px);
     padding: 10px 0;
+    cursor: pointer;
     display: flex;
     justify-content: space-around;
 }
@@ -880,3 +881,102 @@ body {
 
 #logoutYes:hover { background: #00e680; }
 #logoutNo:hover { background: #ff4d33; }
+.crop-modal{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.crop-box{
+  background: #0d0d0d;
+  padding: 15px;
+  border-radius: 20px;
+  width: 340px;
+  max-width: 90vw;
+  text-align: center;
+}
+
+#cropCanvas{
+  border-radius: 50%;
+  background: black;
+  touch-action: none;
+  width: 300px;
+  height: 300px;
+}
+
+#zoomRange{
+  width: 100%;
+  margin-top: 10px;
+}
+
+.crop-actions{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.crop-actions button{
+  background: #1da1f2;
+  border: none;
+  color: white;
+  padding: 7px 18px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+.modal.hidden{ display:none; }
+
+.modal-box{
+  background:#0f0f0f;
+  width:90%;
+  max-width:400px;
+  max-height:80vh;
+  overflow-y:auto;
+  border-radius:15px;
+  padding:10px;
+}
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #333;
+  padding-bottom:8px;
+}
+.followers-list{
+  margin-top:10px;
+}
+.follower-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px;
+  cursor:pointer;
+}
+.follower-item img{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  object-fit:cover;
+}
+.follower-item:hover{
+  background:#1a1a1a;
+  border-radius:10px;
+}
+.count-btn{
+  cursor:pointer;
+}
+.count-btn:hover{
+  opacity:0.8;
+}

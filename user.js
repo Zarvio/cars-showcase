@@ -9,6 +9,9 @@ const firebaseConfig = {
   appId: "1:125014633127:web:d29e4c37628ab637f40982"
 };
 firebase.initializeApp(firebaseConfig);
+const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Elements
 const profilePic = document.getElementById("profilePic");
@@ -21,6 +24,12 @@ const profileContent = document.getElementById("profileView");
 const followBtn = document.getElementById("followBtn");
 const displayBio = document.getElementById("displayBio");
 const messageBtn = document.getElementById("messageBtn");
+
+
+const followersModal = document.getElementById("followersModal");
+const followersList = document.getElementById("followersList");
+const closeFollowers = document.getElementById("closeFollowers");
+
 
 // UID from URL
 const params = new URLSearchParams(window.location.search);
@@ -51,8 +60,10 @@ firebase.auth().onAuthStateChanged(async user => {
   }
 
   const currentUid = user.uid;
-  loaderOverlay.style.display = "flex";
-  profileContent.style.display = "none";
+loaderOverlay.style.display = "flex";
+profileContent.style.display = "none";
+document.getElementById("userVideosSection").style.display = "none";
+
 
   try {
     // Load target profile data
@@ -171,7 +182,181 @@ firebase.auth().onAuthStateChanged(async user => {
   } catch (err) {
     console.error(err);
     alert("Error loading profile");
-  } finally {
-    loaderOverlay.style.display = "none";
+  } 
+  finally {
+  loaderOverlay.style.display = "none";
+  profileContent.style.display = "block";
+
+  const videosSection = document.getElementById("userVideosSection");
+  videosSection.style.display = "block";
+
+  loadUserVideos(profileUid);
+}
+
+});
+// Select parent spans
+const followersSpan = followersCount.parentElement;
+const followingSpan = followingCount.parentElement;
+
+// Followers click
+followersSpan.addEventListener("click", async () => {
+  followersModal.classList.add("show");
+  document.querySelector("#followersModal h3").innerText = "Followers";
+  followersList.innerHTML = "<p>Loading...</p>";
+
+  const snap = await firebase.database().ref("followers/" + profileUid).once("value");
+  if (!snap.exists()) {
+    followersList.innerHTML = "<p>No followers yet</p>";
+    return;
+  }
+
+  followersList.innerHTML = "";
+  const followerUids = Object.keys(snap.val());
+
+  for (let uid of followerUids) {
+    const userSnap = await firebase.database().ref("users/" + uid).once("value");
+    if (!userSnap.exists()) continue;
+
+    const user = userSnap.val();
+    const verified = user.verified === true;
+    const badgeHTML = verified
+      ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px; height:14px;">`
+      : '';
+
+    const div = document.createElement("div");
+    div.className = "follower-item";
+    div.innerHTML = `
+      <img src="${user.photoURL || 'default.jpg'}">
+      <div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          ${user.name || ''} ${user.surname || ''} ${badgeHTML}
+        </div>
+        <small>@${user.username || ''}</small>
+      </div>
+    `;
+    div.onclick = () => window.location.href = "user.html?uid=" + uid;
+    followersList.appendChild(div);
   }
 });
+
+// Following click
+followingSpan.addEventListener("click", async () => {
+  followersModal.classList.add("show");
+  document.querySelector("#followersModal h3").innerText = "Following";
+  followersList.innerHTML = "<p>Loading...</p>";
+
+  const snap = await firebase.database().ref("following/" + profileUid).once("value");
+  if (!snap.exists()) {
+    followersList.innerHTML = "<p>Not following anyone yet</p>";
+    return;
+  }
+
+  followersList.innerHTML = "";
+  const followingUids = Object.keys(snap.val());
+
+  for (let uid of followingUids) {
+    const userSnap = await firebase.database().ref("users/" + uid).once("value");
+    if (!userSnap.exists()) continue;
+
+    const user = userSnap.val();
+    const verified = user.verified === true;
+    const badgeHTML = verified
+      ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px; height:14px;">`
+      : '';
+
+    const div = document.createElement("div");
+    div.className = "follower-item";
+    div.innerHTML = `
+      <img src="${user.photoURL || 'default.jpg'}">
+      <div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          ${user.name || ''} ${user.surname || ''} ${badgeHTML}
+        </div>
+        <small>@${user.username || ''}</small>
+      </div>
+    `;
+    div.onclick = () => window.location.href = "user.html?uid=" + uid;
+    followersList.appendChild(div);
+  }
+});
+
+// Close modal
+closeFollowers.addEventListener("click", () => {
+  followersModal.classList.remove("show");
+});
+
+
+async function loadUserVideos(uid) {
+  const container = document.getElementById("userVideos");
+
+  container.innerHTML = "";                 // remove old junk
+        // ensure visible
+  container.innerHTML = "<p class='empty-text'>Loading...</p>";
+
+
+  const { data, error } = await supabaseClient
+    .from("pinora823")
+    .select("*")
+    .eq("uploader_uid", uid)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    container.innerHTML = "<p class='empty-text'>Error loading videos</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = "<p class='empty-text'>No videos uploaded yet</p>";
+    return;
+  }
+
+  container.innerHTML = "";
+
+  data.forEach(post => {
+    const card = document.createElement("div");
+    card.className = "video-card";
+
+    const thumb = document.createElement("img");
+    thumb.src = post.thumb_url || post.file_url;
+    thumb.alt = "Video Thumbnail";
+
+    const playIcon = document.createElement("div");
+    playIcon.className = "video-play-icon";
+    playIcon.innerHTML = `<i class="fa-solid fa-play"></i>`;
+
+    // Delete button only if it's own profile
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete-video-btn";
+    deleteBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+    if (uid !== firebase.auth().currentUser.uid) deleteBtn.style.display = "none";
+
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      alert("Delete functionality can be added here");
+    });
+
+    card.appendChild(thumb);
+    card.appendChild(playIcon);
+    card.appendChild(deleteBtn);
+
+    card.addEventListener("click", () => {
+      window.location.href = `index.html?id=${post.id}`;
+    });
+
+    container.appendChild(card);
+  });
+}
+const card = document.createElement("div");
+card.className = "video-card";
+
+const thumb = document.createElement("img");
+thumb.src = post.thumb_url || post.file_url;
+
+const playIcon = document.createElement("div");
+playIcon.className = "video-play-icon";
+playIcon.innerHTML = `<i class="fa-solid fa-play"></i>`;
+
+card.appendChild(thumb);
+card.appendChild(playIcon);
+container.appendChild(card);

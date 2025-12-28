@@ -1597,3 +1597,32 @@ downloadBtn.addEventListener("click", async () => {
         progressOverlay.style.display = "none"; // hide on error
     }
 });
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) return;
+
+  const uid = user.uid;
+  const ref = firebase.database().ref(`deletedNotifications/${uid}`);
+
+  ref.once("value", snap => {
+    if (!snap.exists()) return;
+
+    snap.forEach(child => {
+      const data = child.val();
+
+      // 🚩 sirf ek baar
+      if (data.shown === false) {
+        showFlagPopup();
+        ref.child(child.key).update({ shown: true });
+        return true;
+      }
+    });
+  });
+});
+
+function showFlagPopup() {
+  document.getElementById("flagPopup").classList.remove("hidden");
+}
+
+function closeFlagPopup() {
+  document.getElementById("flagPopup").classList.add("hidden");
+}

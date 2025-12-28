@@ -1275,3 +1275,40 @@ body {
     color: white;
 }
 
+/* 🚩 DELETE FLAG POPUP */
+.flag-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+}
+
+.flag-popup-box {
+  background: #1c1c1c;
+  color: #fff;
+  padding: 22px;
+  width: 280px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.flag-popup-box h3 {
+  margin-bottom: 8px;
+}
+
+.flag-popup-box button {
+  margin-top: 12px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  background: red;
+  color: white;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}

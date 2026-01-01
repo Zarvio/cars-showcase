@@ -195,7 +195,17 @@ function openChat(otherUid, userData) {
   selectedUserId = otherUid;
 
   // Username
-  chatUserName.innerText = userData.username || "Chat";
+  // Username + Verified Badge
+chatUserName.innerHTML = `
+  <span style="display:flex;align-items:center;gap:5px;">
+    @${userData.username || "Chat"}
+    ${userData.verified ? `
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg"
+           style="width:16px;height:16px;">
+    ` : ""}
+  </span>
+`;
+
 
   // Profile Image
   const chatUserImg = document.getElementById("chatUserImg");

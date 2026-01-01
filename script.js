@@ -750,6 +750,7 @@ finalRelated.forEach(r => createRelatedVideoBox(r));
     document.getElementById("btnProfile")?.addEventListener("click", () => location.href = "profile.html");
     document.getElementById("btnUpload")?.addEventListener("click", () => location.href = "upload.html");
      document.getElementById("btnmessage")?.addEventListener("click", () => location.href = "message.html");
+      document.getElementById("btnNotifs")?.addEventListener("click", () => location.href = "notification.html");
 
      function applyFilters() {
 
@@ -1523,10 +1524,29 @@ const progressCircleFill = document.getElementById("progressCircleFill");
 const progressPercent = document.getElementById("progressPercent");
 
 downloadBtn.addEventListener("click", async () => {
+
     if (!currentPostId) return;
 
+    const user = firebase.auth().currentUser;
+
+    // ❌ Guest user
+    if (!user) {
+        document.getElementById("loginPopup").classList.remove("hidden");
+        return;
+    }
+
+    const coins = await getUserCoins();
+
+    // ❌ Not enough coins
+    if (coins < 5) {
+        document.getElementById("noCoinsPopup").classList.remove("hidden");
+        return;
+    }
+
+    // 🪙 Cut 5 coins first
+    await updateUserCoins(-5);
+
     try {
-        // Supabase se title & URL fetch
         const { data: post, error } = await supabaseClient
             .from("pinora823")
             .select("title, file_url")
@@ -1540,12 +1560,10 @@ downloadBtn.addEventListener("click", async () => {
         titleText = titleText.replace(/[\\/:"*?<>|]+/g, '');
         const fileName = `${titleText} - Pinora Web.mp4`;
 
-        // Show overlay
         progressOverlay.style.display = "flex";
         progressPercent.textContent = "0%";
         progressCircleFill.style.strokeDashoffset = 226.2;
 
-        // Fetch video as stream
         const response = await fetch(videoUrl);
         const reader = response.body.getReader();
         const contentLength = +response.headers.get("Content-Length");
@@ -1553,21 +1571,19 @@ downloadBtn.addEventListener("click", async () => {
         let receivedLength = 0;
         const chunks = [];
 
-        while(true) {
+        while(true){
             const { done, value } = await reader.read();
-            if (done) break;
+            if(done) break;
 
             chunks.push(value);
             receivedLength += value.length;
 
-            // Update circular progress
             const progress = (receivedLength / contentLength) * 100;
             const offset = 226.2 * (1 - progress / 100);
             progressCircleFill.style.strokeDashoffset = offset;
             progressPercent.textContent = `${progress.toFixed(0)}%`;
         }
 
-        // Create blob & trigger download
         const blob = new Blob(chunks);
         const blobUrl = URL.createObjectURL(blob);
 
@@ -1580,16 +1596,16 @@ downloadBtn.addEventListener("click", async () => {
 
         URL.revokeObjectURL(blobUrl);
 
-        // Hide overlay after short delay
         setTimeout(() => {
             progressOverlay.style.display = "none";
         }, 800);
 
-    } catch (err) {
+    } catch(err){
         console.error("Download failed:", err);
-        progressOverlay.style.display = "none"; // hide on error
+        progressOverlay.style.display = "none";
     }
 });
+
 firebase.auth().onAuthStateChanged(user => {
   if (!user) return;
 
@@ -1618,4 +1634,99 @@ function showFlagPopup() {
 
 function closeFlagPopup() {
   document.getElementById("flagPopup").classList.add("hidden");
+}
+// ===============================
+// 🪙 LOGIN BASED COIN SYSTEM (WITH LOADING ...)
+// ===============================
+const creditText = document.getElementById("creditText");
+const creditBox = document.getElementById("creditBox");
+
+// default loading
+if (creditText) creditText.innerText = "...";
+
+function userCoinRef(uid){
+    return firebase.database().ref(`userCoins/${uid}`);
+}
+
+firebase.auth().onAuthStateChanged(async user => {
+
+    if (!creditText || !creditBox) return;
+
+    // ⏳ jab tak auth check ho raha hai – keep "..."
+    creditText.innerText = "...";
+
+    // thoda delay smooth feel ke liye
+    setTimeout(async () => {
+
+        if (!user) {
+            creditText.innerText = "Please login";
+            creditBox.classList.add("guest");
+            return;
+        }
+
+        creditBox.classList.remove("guest");
+
+        const ref = userCoinRef(user.uid);
+        const snap = await ref.once("value");
+
+        // 🆕 first time login
+        if (!snap.exists()) {
+            await ref.set(40);
+            creditText.innerText = "40";
+        } else {
+            creditText.innerText = snap.val();
+        }
+
+        // 🔁 realtime update
+        ref.on("value", s => {
+            if (s.exists()) creditText.innerText = s.val();
+        });
+
+    }, 600); // smooth loading dots time
+});
+
+// update coins function
+async function updateUserCoins(amount){
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const ref = userCoinRef(user.uid);
+
+    await ref.transaction(c => {
+        c = Number(c || 0);
+        c += amount;
+        if (c < 0) c = 0;
+        return c;
+    });
+}
+// 🎉 Show reward popup after upload
+window.addEventListener("load", () => {
+    const reward = localStorage.getItem("uploadReward");
+
+    if (reward) {
+        const popup = document.getElementById("rewardPopup");
+        const closeBtn = document.getElementById("closeRewardPopup");
+
+        popup.classList.remove("hidden");
+
+        closeBtn.onclick = () => {
+            popup.classList.add("hidden");
+            localStorage.removeItem("uploadReward");
+        };
+    }
+});
+function closeLoginPopup(){
+  document.getElementById("loginPopup").classList.add("hidden");
+}
+
+function closeNoCoinsPopup(){
+  document.getElementById("noCoinsPopup").classList.add("hidden");
+  window.location.href = "upload.html";
+}
+async function getUserCoins(){
+  const user = firebase.auth().currentUser;
+  if (!user) return null;
+
+  const snap = await firebase.database().ref(`userCoins/${user.uid}`).once("value");
+  return Number(snap.val() || 0);
 }

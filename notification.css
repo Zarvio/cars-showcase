@@ -75,8 +75,8 @@ body {
 /* Bottom Navigation */
 .bottom-nav {
     position: fixed;
-    bottom: 0;
     
+    bottom: 0;
     width: 100%;
     background: #07070700;
     backdrop-filter: blur(8px);

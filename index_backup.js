@@ -443,7 +443,7 @@ if (uploaderDiv) {
             let media;
             if (post.file_type.startsWith("video") && isMobile) {
                 media = document.createElement("img");
-                media.src = post.thumb_url || "default.jpg";
+                media.src = post.thumb_url || "images/default.jpg";
             } else if (post.file_type.startsWith("video")) {
                 media = document.createElement("video");
                 media.src = post.file_url;
@@ -559,89 +559,96 @@ function getSmartRelated(currentPost, allPosts) {
   return [...aiMatches, ...titleMatches];
 }
 
-// ----------------------
-// Related video box create karne ka function
-// ----------------------
-function createRelatedVideoBox(post) {
+const finalRelated = getSmartRelated(post, allPosts);
+
+
+// CLEAR RELATED VIDEOS CONTAINER
+relatedVideos.innerHTML = "";
+
+// LOOP THROUGH finalRelated
+finalRelated.forEach(other => {
+
+    // CREATE WRAP DIV
     const wrap = document.createElement("div");
     wrap.className = "relatedBox";
 
-    const verified = post.uploader_verified === true ||
-                     post.uploader_verified === "true" ||
-                     post.uploader_verified === 1 ||
-                     post.uploader_verified === "1";
+    // CHECK VERIFIED
+    const relatedVerified =
+        other.uploader_verified === true ||
+        other.uploader_verified === 'true' ||
+        other.uploader_verified === 1 ||
+        other.uploader_verified === '1';
 
-    const badgeHTML = verified
+    const relatedBadgeHTML = relatedVerified
         ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg"
-               style="width:12px; height:12px; margin-left:4px;">`
+             style="width:12px; height:12px; margin-left:4px;">`
         : '';
 
+    // INNER HTML
     wrap.innerHTML = `
         <div class="relatedThumb">
-            <img src="${post.thumb_url || post.file_url || 'default_thumb.jpg'}" class="relatedVideoThumb">
+            <img src="${other.thumb_url || other.file_url || 'default_thumb.jpg'}" class="relatedVideoThumb">
             <div class="uploaderHeaderSmall">
-                <img src="${post.uploader_image || 'default.jpg'}" class="smallDP">
-                <span class="smallName">${post.uploader_name || "User"}</span>
-                ${badgeHTML}
+                <img src="${other.uploader_image ? other.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="smallDP">
+                <span class="smallName">${other.uploader_name || "User"}</span>
+                ${relatedBadgeHTML}
             </div>
         </div>
     `;
 
-    // Uploader click → user page
+    // UPLOADER CLICK → USER PAGE
     const uploaderSmall = wrap.querySelector(".uploaderHeaderSmall");
     if (uploaderSmall) {
         uploaderSmall.style.cursor = "pointer";
         uploaderSmall.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (post.uploader_uid) {
-                window.location.href = `user.html?uid=${post.uploader_uid}`;
+            e.stopPropagation(); // Prevent modal open
+            if (other.uploader_uid) {
+                window.location.href = `user.html?uid=${other.uploader_uid}`;
             }
         });
     }
 
-    // Video click → modal update
+    // WRAP CLICK → OPEN MODAL
     wrap.addEventListener("click", () => {
-        currentPostId = post.id;
+        currentPostId = other.id;
         updateCommentCount();
-        loadLikes(post.id);
+        loadLikes(other.id);
 
-        if (post.file_type.startsWith("video")) {
-            modalVideo.src = post.file_url;
+        if (other.file_type.startsWith("video")) {
+            modalVideo.src = other.file_url;
             modalVideo.style.display = "block";
             modalImage.style.display = "none";
         } else {
-            modalImage.src = post.file_url;
+            modalImage.src = other.file_url;
             modalImage.style.display = "block";
             modalVideo.style.display = "none";
         }
 
-        // Modal title
         modalTitle.innerHTML = `
-            ${post.title || ""}
+            ${other.title || ""}
             <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                <img src="${post.uploader_image || 'default.jpg'}" class="modalUploaderDP">
-                <span>${post.uploader_name || "Unknown"}</span>
-                ${badgeHTML}
+                <img src="${other.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
+                <span>${other.uploader_name || "Unknown"}</span>
+                ${relatedBadgeHTML}
             </div>
         `;
-
-        // ✅ Naya related videos calculate karo
-        const newRelated = getSmartRelated(post, allPosts);
-        relatedVideos.innerHTML = ""; // purane clear karo
-        newRelated.forEach(r => createRelatedVideoBox(r)); // nayi related videos add karo
+const modalUploader = modalTitle.querySelector(".modalUploader");
+if (modalUploader) {
+    modalUploader.style.cursor = "pointer";
+    modalUploader.addEventListener("click", (e) => {
+        e.stopPropagation();   // ❗ modal click se conflict na ho
+        if (other.uploader_uid) {
+            window.location.href = `user.html?uid=${other.uploader_uid}`;
+        }
+    });
+}
 
         modal.classList.remove("hidden");
     });
 
+    // APPEND WRAP ONCE
     relatedVideos.appendChild(wrap);
-}
-
-// ----------------------
-// Main video click ya first modal open ke liye related videos
-// ----------------------
-const finalRelated = getSmartRelated(post, allPosts);
-relatedVideos.innerHTML = ""; // purane clear karo
-finalRelated.forEach(r => createRelatedVideoBox(r));
+});
 
 
 
@@ -745,7 +752,7 @@ finalRelated.forEach(r => createRelatedVideoBox(r));
 
 
     // Navigation
-    document.getElementById("btnHome")?.addEventListener("click", () => location.href = "main.html");
+    document.getElementById("btnHome")?.addEventListener("click", () => location.href = "index.html");
     document.getElementById("btnSearch")?.addEventListener("click", () => location.href = "search.html");
     document.getElementById("btnProfile")?.addEventListener("click", () => location.href = "profile.html");
     document.getElementById("btnUpload")?.addEventListener("click", () => location.href = "upload.html");
@@ -988,7 +995,7 @@ const fetchRelatedVideosSupabase = async (currentVideoId) => {
       if (video.id === currentVideoId) return; // skip current
 
       const card = template.content.cloneNode(true);
-      card.querySelector(".smallDP").src = video.uploader_image || "default.jpg";
+      card.querySelector(".smallDP").src = video.uploader_image || "images/default.jpg";
       card.querySelector(".smallName").textContent = video.uploader_name || "Unknown";
       card.querySelector(".relatedThumb").src = video.thumb_url || video.file_url;
 
@@ -1007,7 +1014,7 @@ const fetchRelatedVideosSupabase = async (currentVideoId) => {
         modalTitle.innerHTML = `
           ${video.title || ""}
           <div class="modalUploader">
-            <img src="${video.uploader_image || 'default.jpg'}" class="modalUploaderDP">
+            <img src="${video.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
             <span>${video.uploader_name || "Unknown"}</span>
           </div>
         `;
@@ -1260,7 +1267,7 @@ async function sendComment() {
 
     const uid = user.uid;
     const username = user.displayName || "Anonymous";
-    const profileImage = user.photoURL || "default.jpg";
+    const profileImage = user.photoURL || "images/default.jpg";
 
     const commentRef = firebase.database().ref(`videoComments/${currentPostId}`).push();
     await commentRef.set({
@@ -1439,7 +1446,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         modalTitle.innerHTML = `
             ${post.title || ""}
             <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                <img src="${post.uploader_image || 'default.jpg'}" class="modalUploaderDP">
+                <img src="${post.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
                 <span>${post.uploader_name || "Unknown"}</span>
                 ${badgeHTML}
             </div>
@@ -1492,7 +1499,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         modalTitle.innerHTML = `
             ${post.title || ""}
             <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                <img src="${post.uploader_image || 'default.jpg'}" class="modalUploaderDP">
+                <img src="${post.uploader_image || 'images/default.jpg'}" class="modalUploaderDP">
                 <span>${post.uploader_name || "Unknown"}</span>
                 ${badgeHTML}
             </div>

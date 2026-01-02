@@ -9,6 +9,7 @@ const firebaseConfig = {
   appId: "1:125014633127:web:d29e4c37628ab637f40982"
 };
 firebase.initializeApp(firebaseConfig);
+const skeleton = document.querySelector(".notif-skeleton-container");
 
 function renderNotifications() {
 
@@ -73,21 +74,24 @@ const notifYesterday = document.getElementById("notifYesterday");
 const notifOlder = document.getElementById("notifOlder");
 const noNotifText = document.getElementById("noNotifText");
 
-const loader = document.querySelector(".notif-loader"); // loader select करें
+
 const notifContainer = document.querySelector(".notif-container");
 
 let firstLoad = true;
 let notifBuffer = [];
 
 firebase.auth().onAuthStateChanged(user => {
+  
   updateSectionVisibility();
 
   notifContainer.style.display = "none";
-loader.style.display = "flex";
+skeleton.style.display = "flex";
+
 
   if (!user) {
-    loader.style.display = "none";
+    skeleton.style.display = "none";
 notifContainer.style.display = "block";
+
 
     notifContainer.innerHTML = "<p>Please login to see notifications.</p>";
     return;
@@ -100,7 +104,7 @@ notifContainer.style.display = "block";
   .limitToLast(50);
 notifRef.once("value", snap => {
 
-  loader.style.display = "none";
+  
   notifContainer.style.display = "block";
 
   if (!snap.exists()) {
@@ -112,7 +116,7 @@ notifRef.once("value", snap => {
 });
 
 
-  loader.style.display = "flex"; // loader दिखाएँ
+
 
   notifRef.on("child_added", async snapshot => {
     noNotifText.style.display = "none";
@@ -207,8 +211,9 @@ renderNotifications();
   .update({ read: true });
 
 
-    loader.style.display = "none";
+    skeleton.style.display = "none";
 notifContainer.style.display = "block";
+
 
   });
 });

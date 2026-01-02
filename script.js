@@ -1,6 +1,33 @@
+// ==============================
+// 🎬 SKELETON LOADER FUNCTIONS
+// ==============================
+const main = document.querySelector(".main-content");
+
+function showSkeletons(count = 6) {
+  if (!main) return;
+
+  main.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const box = document.createElement("div");
+    box.className = "pin-box";
+
+    box.innerHTML = `
+  <div style="display:flex;align-items:center;gap:8px;padding:8px;">
+    <div class="skeleton skeleton-dp"></div>
+    <div class="skeleton skeleton-name"></div>
+  </div>
+  <div class="mediaContainer skeleton skeleton-video"></div>
+`;
+
+    main.appendChild(box);
+  }
+}
+let dataReady = false;   // ⬅️ NEW FLAG
+
 let allPosts = [];
 let currentFilter = "all";
 let followingList = [];
+let isLoading = true;
 
 
 // ---------- Firebase Config ----------
@@ -168,7 +195,6 @@ filterBtns.forEach(btn => {
 
     if (!main) return;
 
-    main.innerHTML = "<h3>Loading...</h3>";
 
     
 
@@ -176,20 +202,34 @@ filterBtns.forEach(btn => {
     // FETCH POSTS
     // ----------------
     try {
-        const { data, error } = await supabaseClient
-            .from("pinora823")
-            .select("*")
-            .order("created_at", { ascending: false });
+        isLoading = true;
+dataReady = false;
+showSkeletons(8);
 
-        if (error) throw error;
-        allPosts = data || [];
-applyFilters();
+const { data, error } = await supabaseClient
+  .from("pinora823")
+  .select("*")
+  .order("created_at", { ascending: false });
+
+if (error) throw error;
+
+allPosts = data || [];
+
+if(allPosts.length > 0){
+  dataReady = true;
+  isLoading = false;
+  applyFilters(); // 🔥 yahin se render start
+}
 
 
-    } catch (err) {
-        console.error("Error fetching posts:", err);
-        main.innerHTML = "<p>Error loading posts.</p>";
-    }
+
+    } 
+    catch (err) {
+  console.error("Error fetching posts:", err);
+  isLoading = true;
+  showSkeletons(6);
+}
+
 // ----------------------
 // 👁️ REAL VIEW COUNT LOGIC
 // ----------------------
@@ -272,6 +312,11 @@ async function incrementSupabaseViews(postId) {
     // SEARCH
     // ----------------
     searchVideoInput.addEventListener("input", () => {
+      if(!dataReady){
+  showSkeletons(8);
+  return;
+}
+
   const query = searchVideoInput.value.toLowerCase().trim();
   if (!query) return displayVideos(allPosts);
 
@@ -377,137 +422,185 @@ function getSmartRelated(currentPost, allPosts) {
     // DISPLAY VIDEOS
     // ----------------
     function displayVideos(posts) {
-        main.innerHTML = "";
 
-        if (!posts || posts.length === 0) {
-            main.innerHTML = "<p>No videos found.</p>";
-            return;
-        }
-
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        posts.forEach(post => {
-
-            const box = document.createElement("div");
-            box.classList.add("pin-box");
-
-            const mediaContainer = document.createElement("div");
-            mediaContainer.className = "mediaContainer";
-
-            // OVERLAY
-            const overlay = document.createElement("div");
-            overlay.className = "uploaderOverlay";
-
-            const verified = post.uploader_verified === true 
-                || post.uploader_verified === 'true' 
-                || post.uploader_verified === 1 
-                || post.uploader_verified === '1';
-
-            const badgeHTML = verified 
-                ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px; height:16px;">` 
-                : '';
-
-            overlay.innerHTML = `
-                <div style="display:flex; align-items:center; gap:8px; width:100%;">
-                    <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="uploaderDP" alt="uploader">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span class="uploaderName">${post.uploader_name || 'Unknown'}</span>
-                        ${badgeHTML}
-                    </div>
-                </div>
-            `;
-            // overlay ke andar div ko select karo
-const uploaderDiv = overlay.querySelector('div');
-if (uploaderDiv) {
-    uploaderDiv.style.cursor = "pointer";
-    uploaderDiv.addEventListener("click", (e) => {
-        e.stopPropagation(); // video click se conflict na ho
-        if (post.uploader_uid) {
-            window.location.href = `user.html?uid=${post.uploader_uid}`;
-        }
-    });
+  if(!dataReady){
+  showSkeletons(8);
+  return;
 }
 
-            mediaContainer.appendChild(overlay);
 
-            // VIEWS
-            const viewsOverlay = document.createElement("div");
-            viewsOverlay.className = "viewsOverlay";
-            viewsOverlay.innerHTML = `
-                <i class="fa-regular fa-eye"></i>
-                <span class="viewCount">${post.views ? post.views.toLocaleString() : 0}</span>
-            `;
-            mediaContainer.appendChild(viewsOverlay);
+  main.innerHTML = "";
 
-            // MEDIA
-            let media;
-            if (post.file_type.startsWith("video") && isMobile) {
-                media = document.createElement("img");
-                media.src = post.thumb_url || "default.jpg";
-            } else if (post.file_type.startsWith("video")) {
-                media = document.createElement("video");
-                media.src = post.file_url;
-                media.muted = true;
-                media.loop = true;
-                media.playsInline = true;
-                media.preload = "metadata";
-            } else {
-                media = document.createElement("img");
-                media.src = post.file_url;
+if (!posts || posts.length === 0) {
+    main.innerHTML = "<p>No videos found.</p>";
+    return;
+}
+
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+posts.forEach(post => {
+
+    const box = document.createElement("div");
+    box.classList.add("pin-box");
+
+    const mediaContainer = document.createElement("div");
+    mediaContainer.className = "mediaContainer";
+
+    // SKELETON FIRST
+    const skeleton = document.createElement("div");
+    skeleton.className = "skeleton skeleton-video";
+    mediaContainer.appendChild(skeleton);
+
+    // OVERLAY
+    const overlay = document.createElement("div");
+    overlay.className = "uploaderOverlay";
+    overlay.style.display = "none"; // hide overlay until media loads
+
+    const verified = post.uploader_verified === true 
+        || post.uploader_verified === 'true' 
+        || post.uploader_verified === 1 
+        || post.uploader_verified === '1';
+
+    const badgeHTML = verified 
+        ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px; height:16px;">` 
+        : '';
+
+    overlay.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; width:100%;">
+            <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="uploaderDP" alt="uploader">
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span class="uploaderName">${post.uploader_name || 'Unknown'}</span>
+                ${badgeHTML}
+            </div>
+        </div>
+    `;
+const uploaderImg = overlay.querySelector(".uploaderDP");
+uploaderImg.addEventListener("load", () => {
+    uploaderImg.classList.add("loaded");  // fade-in effect ke liye
+});
+    const uploaderDiv = overlay.querySelector('div');
+    if (uploaderDiv) {
+        uploaderDiv.style.cursor = "pointer";
+        uploaderDiv.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (post.uploader_uid) {
+                window.location.href = `user.html?uid=${post.uploader_uid}`;
             }
+        });
+    }
 
-            media.className = "postMedia";
+    mediaContainer.appendChild(overlay);
 
-            // ----------------
-            // MEDIA CLICK → OPEN MODAL
-            // ----------------
-            media.addEventListener("click", () => {
-               currentPostId = post.id;   // 🔥 VERY IMPORTANT
-    updateCommentCount();      // 🔥 FIX
-               loadLikes(post.id);
-              // ✅ REAL VIEW COUNT
-    countView(post.id);
-                if (post.file_type.startsWith("video")) {
-                    modalVideo.src = post.file_url;
-                    modalVideo.style.display = "block";
-                    modalImage.style.display = "none";
-                    modalVideo.controls = false; // hide browser controls
-                } else {
-                    modalImage.src = post.file_url;
-                    modalImage.style.display = "block";
-                    modalVideo.style.display = "none";
-                }
+    // VIEWS
+    const viewsOverlay = document.createElement("div");
+    viewsOverlay.className = "viewsOverlay";
+    viewsOverlay.innerHTML = `
+        <i class="fa-regular fa-eye"></i>
+        <span class="viewCount">${post.views ? post.views.toLocaleString() : 0}</span>
+    `;
+    mediaContainer.appendChild(viewsOverlay);
 
-                // MODAL TITLE
-                modalTitle.innerHTML = `
-                    ${post.title || ""}
-                    <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                        <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="modalUploaderDP">
-                        <span>${post.uploader_name || "Unknown"}</span>
-                        ${badgeHTML}
-                    </div>
-                `;
-                // ✅ UPLOADER CLICK → USER PAGE
-const modalUploader = modalTitle.querySelector(".modalUploader");
-if (modalUploader) {
-    modalUploader.style.cursor = "pointer"; // pointer dikhe
-    modalUploader.addEventListener("click", () => {
-        const uploaderUid = post.uploader_uid;
-        if (uploaderUid) {
-            window.location.href = `user.html?uid=${uploaderUid}`;
-        }
+    // MEDIA
+    let media;
+    if (post.file_type.startsWith("video") && isMobile) {
+        media = document.createElement("img");
+        media.src = post.thumb_url || "default.jpg";
+    } else if (post.file_type.startsWith("video")) {
+        media = document.createElement("video");
+        media.src = post.file_url;
+        media.muted = true;
+        media.loop = true;
+        media.playsInline = true;
+        media.preload = "metadata";
+    } else {
+        media = document.createElement("img");
+        media.src = post.file_url;
+    }
+
+    media.className = "postMedia";
+
+    // ✅ Wait for media to load before removing skeleton and showing overlay
+    media.addEventListener("loadeddata", () => {
+        skeleton.remove();       // remove skeleton
+        overlay.style.display = "flex"; // show overlay/profile image
     });
-}
 
-// ✅ YAHAN ADD KARO VIEW COUNT
-    const modalViewCount = document.getElementById("modalViewCount");
-if (modalViewCount) {
+    media.addEventListener("load", () => {
+        skeleton.remove();
+        overlay.style.display = "flex";
+    });
 
-  modalViewCount.textContent = post.views.toLocaleString();
-}
+    // MEDIA CLICK → OPEN MODAL
+    media.addEventListener("click", () => {
+      // hide media first
+modalVideo.style.display = "none";
+modalImage.style.display = "none";
 
+// remove old skeleton if exists
+const oldSkeleton = document.querySelector(".modal-skeleton-overlay");
+if (oldSkeleton) oldSkeleton.remove();
 
-                modal.classList.remove("hidden");
+// create modal skeleton
+const modalSkeleton = document.createElement("div");
+modalSkeleton.className = "modal-skeleton-overlay";
+modalSkeleton.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div class="skeleton-dp"></div>
+        <div class="skeleton-name"></div>
+    </div>
+    <div class="modal-skeleton-video"></div>
+`;
+
+document.querySelector(".modal-media-wrapper").appendChild(modalSkeleton);
+
+        currentPostId = post.id;
+        updateCommentCount();
+        loadLikes(post.id);
+        countView(post.id);
+
+        if (post.file_type.startsWith("video")) {
+            modalVideo.src = post.file_url;
+            modalVideo.addEventListener("loadeddata", () => {
+    const s = document.querySelector(".modal-skeleton-overlay");
+    if (s) s.remove();
+    modalVideo.style.display = "block";
+}, { once: true });
+
+            modalVideo.style.display = "block";
+            modalImage.style.display = "none";
+            modalVideo.controls = false;
+        } else {
+            modalImage.src = post.file_url;
+            modalImage.style.display = "block";
+            modalVideo.style.display = "none";
+        }
+
+        // MODAL TITLE
+        modalTitle.innerHTML = `
+            ${post.title || ""}
+            <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
+                <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="modalUploaderDP">
+                <span>${post.uploader_name || "Unknown"}</span>
+                ${badgeHTML}
+            </div>
+        `;
+
+        const modalUploader = modalTitle.querySelector(".modalUploader");
+        if (modalUploader) {
+            modalUploader.style.cursor = "pointer";
+            modalUploader.addEventListener("click", () => {
+                const uploaderUid = post.uploader_uid;
+                if (uploaderUid) {
+                    window.location.href = `user.html?uid=${uploaderUid}`;
+                }
+            });
+        }
+
+        const modalViewCount = document.getElementById("modalViewCount");
+        if (modalViewCount) modalViewCount.textContent = post.views.toLocaleString();
+
+        modal.classList.remove("hidden");
+    
 
                 // ----------------
                 // RELATED VIDEOS
@@ -606,14 +699,28 @@ function createRelatedVideoBox(post) {
         loadLikes(post.id);
 
         if (post.file_type.startsWith("video")) {
-            modalVideo.src = post.file_url;
-            modalVideo.style.display = "block";
-            modalImage.style.display = "none";
-        } else {
-            modalImage.src = post.file_url;
-            modalImage.style.display = "block";
-            modalVideo.style.display = "none";
-        }
+    modalVideo.src = post.file_url;
+
+    modalVideo.addEventListener("loadeddata", () => {
+        const s = document.querySelector(".modal-skeleton-overlay");
+        if (s) s.remove();
+        modalVideo.style.display = "block";
+    }, { once: true });
+
+    modalImage.style.display = "none";
+    modalVideo.controls = false;
+} else {
+    modalImage.src = post.file_url;
+
+    modalImage.addEventListener("load", () => {
+        const s = document.querySelector(".modal-skeleton-overlay");
+        if (s) s.remove();
+        modalImage.style.display = "block";
+    }, { once: true });
+
+    modalVideo.style.display = "none";
+}
+
 
         // Modal title
         modalTitle.innerHTML = `
@@ -629,8 +736,11 @@ function createRelatedVideoBox(post) {
         const newRelated = getSmartRelated(post, allPosts);
         relatedVideos.innerHTML = ""; // purane clear karo
         newRelated.forEach(r => createRelatedVideoBox(r)); // nayi related videos add karo
+const modalContent = modal.querySelector(".modal-content"); // modal-content आपका scrollable div
+if(modalContent) modalContent.scrollTop = 0;
 
         modal.classList.remove("hidden");
+        
     });
 
     relatedVideos.appendChild(wrap);
@@ -753,8 +863,18 @@ finalRelated.forEach(r => createRelatedVideoBox(r));
       document.getElementById("btnNotifs")?.addEventListener("click", () => location.href = "notification.html");
 
      function applyFilters() {
+if(!dataReady || isLoading) return;
+
+  if(!dataReady){
+    showSkeletons(8);
+    return;
+  }
+
+
+  if(isLoading) return;   // ⛔ jab tak loading true, filter mat chalao
 
   let filtered = [...allPosts];
+
 
   if (currentFilter === "all") {
     displayVideos(filtered);
@@ -1338,182 +1458,7 @@ shareMenu.querySelectorAll(".shareOption").forEach(btn => {
 // ----------------------
 // PAGE LOAD VIDEO MODAL FROM LINK
 // ----------------------
-window.addEventListener("DOMContentLoaded", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get("video");
 
-    if (!videoId) return;
-
-    currentPostId = videoId;
-
-    try {
-        const { data: post, error } = await supabaseClient
-            .from("pinora823")
-            .select("*")
-            .eq("id", videoId)
-            .single();
-        if (error || !post) return;
-
-        const modal = document.getElementById("videoModal");
-        const modalVideo = document.getElementById("modalVideo");
-        const modalImage = document.getElementById("modalImage");
-        const modalTitle = document.getElementById("modalTitle");
-        const relatedVideos = document.getElementById("relatedVideos");
-
-        // Show video or image
-        if (post.file_type.startsWith("video")) {
-            modalVideo.src = post.file_url;
-            modalVideo.style.display = "block";
-            modalImage.style.display = "none";
-
-            // ❌ Disable browser controls
-            modalVideo.controls = false;
-
-            // ✅ Custom controls
-            if (!document.querySelector(".custom-controls")) {
-                const customControls = document.createElement("div");
-                customControls.className = "custom-controls";
-                customControls.innerHTML = `
-                    <button id="playPauseBtn" class="playPauseBtn">
-                        <i class="fa-solid fa-play"></i>
-                    </button>
-                    <input type="range" id="seekBar" value="0" min="0" max="100">
-                    <div class="timeRow">
-                        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
-                    </div>
-                `;
-                modal.querySelector(".modal-media-wrapper").appendChild(customControls);
-
-                const playPauseBtn = document.getElementById("playPauseBtn");
-                const seekBar = document.getElementById("seekBar");
-                const currentTime = document.getElementById("currentTime");
-                const duration = document.getElementById("duration");
-                const playPauseIcon = playPauseBtn.querySelector("i");
-
-                // Play/pause toggle
-                function togglePlayPause() {
-                    if (modalVideo.paused) {
-                        modalVideo.play();
-                        playPauseIcon.className = "fa-solid fa-pause";
-                    } else {
-                        modalVideo.pause();
-                        playPauseIcon.className = "fa-solid fa-play";
-                    }
-                }
-
-                playPauseBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    togglePlayPause();
-                });
-
-                modalVideo.addEventListener("click", togglePlayPause);
-
-                modalVideo.addEventListener("timeupdate", () => {
-                    const value = (modalVideo.currentTime / modalVideo.duration) * 100;
-                    seekBar.value = value;
-                    currentTime.textContent = formatTime(modalVideo.currentTime);
-                });
-
-                modalVideo.addEventListener("loadedmetadata", () => {
-                    duration.textContent = formatTime(modalVideo.duration);
-                });
-
-                seekBar.addEventListener("input", () => {
-                    modalVideo.currentTime = (seekBar.value / 100) * modalVideo.duration;
-                });
-
-                function formatTime(seconds) {
-                    const mins = Math.floor(seconds / 60);
-                    const secs = Math.floor(seconds % 60);
-                    return `${mins}:${secs < 10 ? "0"+secs : secs}`;
-                }
-            }
-        } else {
-            modalImage.src = post.file_url;
-            modalImage.style.display = "block";
-            modalVideo.style.display = "none";
-        }
-
-        // Modal title & uploader
-        const verified = post.uploader_verified == true || post.uploader_verified == "true" || post.uploader_verified == 1 || post.uploader_verified == "1";
-        const badgeHTML = verified ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px;height:16px;">` : '';
-        modalTitle.innerHTML = `
-            ${post.title || ""}
-            <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                <img src="${post.uploader_image || 'default.jpg'}" class="modalUploaderDP">
-                <span>${post.uploader_name || "Unknown"}</span>
-                ${badgeHTML}
-            </div>
-        `;
-
-        modal.classList.remove("hidden");
-
-        // ✅ Count view properly (Supabase + Firebase)
-        if (typeof countView === "function") await countView(post.id);
-
-        // ✅ Load likes & comment count
-        await loadLikes(post.id);
-        await updateCommentCount();
-
-    } catch (err) {
-        console.error("Error loading video from link:", err);
-    }
-});
-window.addEventListener("DOMContentLoaded", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get("video");
-    if (!videoId) return;
-
-    currentPostId = videoId;
-
-    try {
-        // Fetch post data
-        const { data: post, error } = await supabaseClient
-            .from("pinora823")
-            .select("*")
-            .eq("id", videoId)
-            .single();
-
-        if (error || !post) return;
-
-        // Show video/image
-        if (post.file_type.startsWith("video")) {
-            modalVideo.src = post.file_url;
-            modalVideo.style.display = "block";
-            modalImage.style.display = "none";
-        } else {
-            modalImage.src = post.file_url;
-            modalImage.style.display = "block";
-            modalVideo.style.display = "none";
-        }
-
-        // Modal title/uploader
-        const verified = post.uploader_verified == true || post.uploader_verified == "true" || post.uploader_verified == 1 || post.uploader_verified == "1";
-        const badgeHTML = verified ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px;height:16px;">` : '';
-        modalTitle.innerHTML = `
-            ${post.title || ""}
-            <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                <img src="${post.uploader_image || 'default.jpg'}" class="modalUploaderDP">
-                <span>${post.uploader_name || "Unknown"}</span>
-                ${badgeHTML}
-            </div>
-        `;
-
-        // ✅ SHOW VIEWS from Supabase
-        const modalViewCount = document.getElementById("modalViewCount");
-        if (modalViewCount) {
-            modalViewCount.textContent = post.views ? post.views.toLocaleString() : "0";
-        }
-
-        modal.classList.remove("hidden");
-
-        // ✅ OPTIONAL: increment view AFTER showing
-        countView(post.id);
-
-    } catch (err) {
-        console.error("Error loading video from link:", err);
-    }
-});
 
 
 
@@ -1729,4 +1674,25 @@ async function getUserCoins(){
 
   const snap = await firebase.database().ref(`userCoins/${user.uid}`).once("value");
   return Number(snap.val() || 0);
+}
+firebase.auth().onAuthStateChanged(user=>{
+  const creditBox = document.getElementById("creditBox");
+
+  const oldBtn = document.querySelector(".addCoinBtn");
+  if(oldBtn) oldBtn.remove();
+
+  if(user){
+    const plus = document.createElement("i");
+    plus.className = "fa-solid fa-plus addCoinBtn";
+    creditBox.appendChild(plus);
+
+    plus.addEventListener("click",()=>{
+      document.getElementById("coinPurchasePopup").classList.remove("hidden");
+    });
+  }
+});
+
+
+function closeCoinPopup(){
+  document.getElementById("coinPurchasePopup").classList.add("hidden");
 }

@@ -1006,13 +1006,9 @@ body {
 .modal-media-wrapper {
     position: relative;
     width: 100%;
-
-    /* new */
-    max-height: 65vh;
-    overflow: hidden;
-    border-radius: 14px;
-    background: black;
+    height: 100%;
 }
+
 
 /* video / image fix */
 #modalVideo,
@@ -1365,3 +1361,138 @@ body {
     font-size:1rem;
     cursor:pointer;
 }
+#creditBox .addCoinBtn{
+    margin-left:8px;
+    background:#ffc107;
+    color:#000;
+    padding:4px 6px;
+    border-radius:6px;
+    font-size:12px;
+    cursor:pointer;
+}
+
+.coin-plan{
+    background:#222;
+    padding:12px;
+    margin:10px 0;
+    border-radius:8px;
+    cursor:pointer;
+    color:#fff;
+}
+.coin-plan:hover{
+    background:#4caf50;
+}
+/* ===============================
+   YouTube Style Skeleton Loader
+================================*/
+.skeleton {
+  background: #111;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150px;
+  width: 150px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  100% { left: 100%; }
+}
+
+.skeleton-video {
+  width: 100%;
+  height: 300px;
+}
+
+.skeleton-dp {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.skeleton-name {
+  width: 90px;
+  height: 10px;
+  border-radius: 6px;
+}
+.profile-img {
+  width: 40px;       /* fixed width */
+  height: 40px;      /* fixed height */
+  border-radius: 50%; /* circle */
+  object-fit: cover;  /* image crop properly */
+  background-color: #ddd; /* placeholder background */
+}
+.uploaderDP {
+    border-radius: 50%;
+    background-color: #ccc; /* placeholder color */
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0; /* initially invisible */
+}
+.uploaderDP.loaded {
+    opacity: 1; /* fade in after load */
+}
+/* ===== MODAL SKELETON OVERLAY ===== */
+.modal-skeleton-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 180%;
+    background: #171414;
+    display: flex;
+    flex-direction: column;
+    padding: 14px;
+    gap: 12px;
+    z-index: 50;
+    overflow: hidden;
+}
+
+
+/* shimmer animation */
+.modal-skeleton-overlay::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.6) 50%,
+        rgba(255,255,255,0) 100%
+    );
+    animation: modalShimmer 1.4s infinite;
+}
+
+@keyframes modalShimmer {
+    0%   { left: -150%; }
+    100% { left: 150%; }
+}
+
+/* DP skeleton */
+.modal-skeleton-overlay .skeleton-dp {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #171414;
+}
+
+/* Name skeleton */
+.modal-skeleton-overlay .skeleton-name {
+    width: 120px;
+    height: 14px;
+    border-radius: 6px;
+    background: #171414;
+}
+

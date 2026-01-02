@@ -13,6 +13,15 @@
 </head>
 
 <body>
+<template id="skeletonTemplate">
+  <div class="pin-box">
+    <div class="mediaContainer skeleton skeleton-video"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:8px;">
+      <div class="skeleton skeleton-dp"></div>
+      <div class="skeleton skeleton-name"></div>
+    </div>
+  </div>
+</template>
 
 <!-- Welcome Popup -->
 <div id="welcomePopup" class="welcome-popup hidden">
@@ -44,6 +53,17 @@
     <h2>❌ No Coins</h2>
     <p>You don’t have enough coins.<br><b>Upload video & get 15 coins!</b></p>
     <button onclick="closeNoCoinsPopup()">Upload Now</button>
+  </div>
+</div>
+<div id="coinPurchasePopup" class="reward-popup hidden">
+  <div class="reward-box">
+    <h2>💰 Buy Coins</h2>
+
+    <div class="coin-plan" data-coins="70">70 Coins – ₹29</div>
+    <div class="coin-plan" data-coins="150">150 Coins – ₹49</div>
+    <div class="coin-plan" data-coins="200">200 Coins – ₹59</div>
+
+    <button onclick="closeCoinPopup()">Cancel</button>
   </div>
 </div>
 
@@ -139,6 +159,7 @@ document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
     <i class="fa-solid fa-coins"></i>
     <span id="creditText">...</span>
 </div>
+
 
 </header>
 

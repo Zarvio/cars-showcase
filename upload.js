@@ -14,6 +14,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const popup = document.getElementById("uploadPopup");
   const progressFill = document.getElementById("progressFill");
   const uploadStatus = document.getElementById("uploadStatus");
+const customPopup = document.getElementById("customPopup");
+const popupMessage = document.getElementById("popupMessage");
+const popupClose = document.getElementById("popupClose");
+function makeSafeFileName(filename) {
+  return filename
+    .toLowerCase()
+    .replace(/\s+/g, "-")        // spaces → dash
+    .replace(/[^a-z0-9.\-_]/g, "") // special chars remove
+    .replace(/-+/g, "-");        // multiple dashes fix
+}
+
+function showPopup(message) {
+  popupMessage.innerText = message;
+  customPopup.classList.remove("hidden");
+}
+
+popupClose.addEventListener("click", () => {
+  customPopup.classList.add("hidden");
+});
 
 
   async function addUploadCoins() {
@@ -33,23 +52,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Show name + preview
   fileInput.addEventListener("change", () => {
-    previewBox.innerHTML = "";
-    const file = fileInput.files[0];
-    if (!file) return;
 
-    fileNameText.innerText = file.name;
-    const url = URL.createObjectURL(file);
+  // preview box clear
+  previewBox.innerHTML = "";
 
-    if (file.type.startsWith("video")) {
-      previewBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:12px;"></video>`;
-    } else {
-      previewBox.innerHTML = `<img src="${url}" style="width:100%;border-radius:12px;">`;
-    }
-  });
+  // user ne jo file select ki
+  const file = fileInput.files[0];
+  if (!file) return;
 
-  function makeSafeFileName(name) {
-    return name.replace(/[^\w\-\.]/g, '_').substring(0, 100);
+  /* ===============================
+     1️⃣ CHECK: Sirf VIDEO allowed
+  =============================== */
+  if (!file.type.startsWith("video/")) {
+   showPopup("Only video files are allowed.");
+
+    fileInput.value = "";              // file remove
+    fileNameText.innerText = "No file selected";
+    return;
   }
+
+  /* ===============================
+     2️⃣ CHECK: Max size 70MB
+  =============================== */
+  const maxSizeMB = 70;
+  const fileSizeMB = file.size / (1024 * 1024);
+
+  if (fileSizeMB > maxSizeMB) {
+    showPopup("Video size must be under 70 MB.");
+
+    fileInput.value = "";              // file remove
+    fileNameText.innerText = "No file selected";
+    return;
+  }
+
+  /* ===============================
+     3️⃣ Sab OK → preview dikhao
+  =============================== */
+  fileNameText.innerText = file.name;
+
+  const videoURL = URL.createObjectURL(file);
+  previewBox.innerHTML = `
+    <video src="${videoURL}" controls
+      style="width:100%; border-radius:12px;">
+    </video>
+  `;
+});
+
 
   // Firebase Auth check
   firebase.auth().onAuthStateChanged(user => {

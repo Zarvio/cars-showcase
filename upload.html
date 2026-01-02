@@ -22,6 +22,13 @@
     </div>
   </div>
 </div>
+<div id="customPopup" class="popup hidden">
+  <div class="popup-box">
+    <h3 id="popupTitle">Error</h3>
+    <p id="popupMessage"></p>
+    <button id="popupClose">OK</button>
+  </div>
+</div>
 
 
 
@@ -33,10 +40,10 @@
     <h2 class="welcome">Upload your Pins here</h2>
     <form id="uploadForm">
         
-  <input type="file" id="pinFile" accept="image/*,video/*" hidden>
+  <input type="file" id="pinFile" accept="video/*" hidden>
 
 <button type="button" id="selectFileBtn" class="select-btn">
-  Select Image / Video
+  <i class="fa-solid fa-video"></i>  Select Video 
 </button>
 
 <p id="fileName" style="font-size:12px;color:#555;"></p>

@@ -104,16 +104,17 @@ notifContainer.style.display = "block";
   .limitToLast(50);
 notifRef.once("value", snap => {
 
-  
+  skeleton.style.display = "none";      // 🔥 ALWAYS STOP SKELETON
   notifContainer.style.display = "block";
 
   if (!snap.exists()) {
-    noNotifText.style.display = "block";
+    noNotifText.style.display = "block";   // "No notification yet"
   } else {
     noNotifText.style.display = "none";
   }
 
 });
+
 
 
 
@@ -211,8 +212,7 @@ renderNotifications();
   .update({ read: true });
 
 
-    skeleton.style.display = "none";
-notifContainer.style.display = "block";
+    
 
 
   });

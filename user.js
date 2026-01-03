@@ -52,17 +52,21 @@ document.getElementById("btnUpload").addEventListener("click", () => { window.lo
 // LOAD PROFILE DATA
 // ----------------------
 firebase.auth().onAuthStateChanged(async user => {
+ document.getElementById("skeletonProfile").style.display = "block";
+profileContent.style.display = "none";
+
   if (!user) {
-    loaderOverlay.style.display = "none";
+    
     profileContent.style.display = "none";
     alert("Please login first.");
     return;
   }
 
   const currentUid = user.uid;
-loaderOverlay.style.display = "flex";
+
 profileContent.style.display = "none";
 document.getElementById("userVideosSection").style.display = "none";
+
 
 
   try {
@@ -183,15 +187,15 @@ document.getElementById("userVideosSection").style.display = "none";
     console.error(err);
     alert("Error loading profile");
   } 
-  finally {
-  loaderOverlay.style.display = "none";
-  profileContent.style.display = "block";
+finally {
+  document.getElementById("skeletonProfile").style.display = "none";
 
-  const videosSection = document.getElementById("userVideosSection");
-  videosSection.style.display = "block";
+  profileContent.style.display = "block";
+  document.getElementById("userVideosSection").style.display = "block";
 
   loadUserVideos(profileUid);
 }
+
 
 });
 // Select parent spans
@@ -347,16 +351,3 @@ async function loadUserVideos(uid) {
     container.appendChild(card);
   });
 }
-const card = document.createElement("div");
-card.className = "video-card";
-
-const thumb = document.createElement("img");
-thumb.src = post.thumb_url || post.file_url;
-
-const playIcon = document.createElement("div");
-playIcon.className = "video-play-icon";
-playIcon.innerHTML = `<i class="fa-solid fa-play"></i>`;
-
-card.appendChild(thumb);
-card.appendChild(playIcon);
-container.appendChild(card);

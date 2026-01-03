@@ -387,3 +387,99 @@ p {
   font-weight: 600;
   letter-spacing: 0.5px;
 }
+/* ===== PROFILE SKELETON ===== */
+
+#skeletonProfile {
+  padding: 20px;
+  text-align: center;
+}
+
+.sk-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  margin: 20px auto;
+}
+
+.sk-name {
+  width: 60%;
+  height: 16px;
+  margin: 12px auto;
+  border-radius: 6px;
+}
+
+.sk-username {
+  width: 40%;
+  height: 14px;
+  margin: 8px auto 16px;
+  border-radius: 6px;
+}
+
+.sk-btn {
+  width: 80%;
+  height: 38px;
+  margin: 10px auto;
+  border-radius: 20px;
+}
+
+.sk-heading {
+  width: 120px;
+  height: 16px;
+  margin: 25px auto 15px;
+  border-radius: 6px;
+}
+
+.sk-video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.sk-video {
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+}
+
+/* shimmer */
+.sk-avatar,
+.sk-name,
+.sk-username,
+.sk-btn,
+.sk-heading,
+.sk-video {
+  background: linear-gradient(
+    90deg,
+    #1f2a36 25%,
+    #2f3f50 37%,
+    #1f2a36 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+/* followers / following skeleton */
+.sk-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin: 12px 0 18px;
+}
+
+.sk-stat {
+  width: 70px;
+  height: 14px;
+  border-radius: 6px;
+
+  background: linear-gradient(
+    90deg,
+    #1f2a36 25%,
+    #2f3f50 37%,
+    #1f2a36 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s infinite;
+}

@@ -540,18 +540,19 @@ modalImage.style.display = "none";
 const oldSkeleton = document.querySelector(".modal-skeleton-overlay");
 if (oldSkeleton) oldSkeleton.remove();
 
-// create modal skeleton
+// 🔹 MODAL 9:16 SKELETON
 const modalSkeleton = document.createElement("div");
 modalSkeleton.className = "modal-skeleton-overlay";
-modalSkeleton.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;">
-        <div class="skeleton-dp"></div>
-        <div class="skeleton-name"></div>
-    </div>
-    <div class="modal-skeleton-video"></div>
-`;
+modalSkeleton.style.width = "100%";
+modalSkeleton.style.aspectRatio = "9/16";  // 9:16 ratio
+modalSkeleton.style.background = "#111";
+modalSkeleton.style.borderRadius = "12px";
+modalSkeleton.style.marginBottom = "10px";
 
-document.querySelector(".modal-media-wrapper").appendChild(modalSkeleton);
+// append to modal media wrapper
+modal.querySelector(".modal-media-wrapper").appendChild(modalSkeleton);
+
+
 
         currentPostId = post.id;
         updateCommentCount();
@@ -559,6 +560,22 @@ document.querySelector(".modal-media-wrapper").appendChild(modalSkeleton);
         countView(post.id);
 
         if (post.file_type.startsWith("video")) {
+          // remove old skeleton if exists
+const oldSkeleton = document.querySelector(".modal-skeleton-overlay");
+if (oldSkeleton) oldSkeleton.remove();
+
+// 🔹 MODAL 9:16 SKELETON
+const modalSkeleton = document.createElement("div");
+modalSkeleton.className = "modal-skeleton-overlay";
+modalSkeleton.style.width = "100%";
+modalSkeleton.style.aspectRatio = "9/16";  // 9:16 ratio
+modalSkeleton.style.background = "#111";
+modalSkeleton.style.borderRadius = "12px";
+modalSkeleton.style.marginBottom = "10px";
+
+// append to modal media wrapper
+modal.querySelector(".modal-media-wrapper").appendChild(modalSkeleton);
+
             modalVideo.src = post.file_url;
             modalVideo.addEventListener("loadeddata", () => {
     const s = document.querySelector(".modal-skeleton-overlay");
@@ -699,6 +716,7 @@ function createRelatedVideoBox(post) {
         loadLikes(post.id);
 
         if (post.file_type.startsWith("video")) {
+          
     modalVideo.src = post.file_url;
 
     modalVideo.addEventListener("loadeddata", () => {

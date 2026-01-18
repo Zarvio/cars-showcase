@@ -117,7 +117,7 @@ document.getElementById("userVideosSection").style.display = "none";
     }
 
     messageBtn.onclick = () => {
-      window.location.href = `message.html?uid=${profileUid}`;
+      window.location.href = `chat.html?uid=${profileUid}`;
     };
 
     // followers / following count

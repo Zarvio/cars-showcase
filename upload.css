@@ -238,3 +238,232 @@ form button {
 #customAlertBtn:hover {
   background: #0056b3;
 }
+.with-pet {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Pet container */
+.teddy-pet {
+  position: relative;
+}
+
+/* Bubble */
+.teddy-bubble {
+  position: absolute;
+  top: -42px;
+  left: -20px;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  animation: bubbleFloat 3s infinite;
+  white-space: nowrap;
+}
+
+/* Teddy body */
+.teddy {
+  width: 40px;
+  height: 40px;
+  background: #c98b59;
+  border-radius: 50%;
+  position: relative;
+  animation: idleFloat 3s ease-in-out infinite;
+}
+
+/* Ears */
+.ears::before,
+.ears::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #c98b59;
+  border-radius: 50%;
+  top: -6px;
+}
+.ears::before { left: -6px; }
+.ears::after { right: -6px; }
+
+/* Face perfectly center */
+.face {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  text-align: center;
+}
+
+/* Eyes row */
+.eyes {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Eyes */
+.eye {
+  width: 4px;
+  height: 6px;
+  background: #000;
+  border-radius: 50%;
+  animation: blink 5s infinite;
+}
+
+/* Mouth just below eyes */
+.mouth {
+  width: 10px;
+  height: 5px;
+  border-bottom: 2px solid #000;
+  border-radius: 50%;
+  margin: 3px auto 0;
+}
+
+
+/* Hands */
+.hands {
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+.hand {
+  width: 8px;
+  height: 12px;
+  background: #c98b59;
+  border-radius: 10px;
+}
+
+/* Animations */
+@keyframes idleFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes blink {
+  0%, 95%, 100% { height: 6px; }
+  96%, 99% { height: 1px; }
+}
+
+@keyframes bubbleFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+/* Jump */
+.jump {
+  animation: jump 0.6s;
+}
+@keyframes jump {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0); }
+}
+
+/* Clap */
+.clap .left {
+  animation: clapLeft 0.4s infinite;
+}
+.clap .right {
+  animation: clapRight 0.4s infinite;
+}
+@keyframes clapLeft {
+  0% { transform: rotate(0); }
+  50% { transform: rotate(20deg); }
+}
+@keyframes clapRight {
+  0% { transform: rotate(0); }
+  50% { transform: rotate(-20deg); }
+}
+/* Center teddy */
+.center-pet {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* Bubble text black */
+.teddy-bubble {
+  color: #000;
+  font-weight: 500;
+}
+/* Sad face */
+.sad .mouth {
+  border-bottom: none;
+  border-top: 2px solid #000;
+}
+
+.sad {
+  animation: none;
+}
+/* Sleep mode */
+.sleep {
+  animation: none;
+  opacity: 0.9;
+}
+
+.sleep .eye {
+  height: 2px;
+}
+
+.sleep .mouth {
+  display: none;
+}
+/* Zzz text (ONLY in sleep) */
+.sleep .teddy::after {
+  content: "Zzz";
+  position: absolute;
+  top: -20px;
+  right: -18px;
+  font-size: 10px;
+  opacity: 1;
+  animation: zzzFloat 2s infinite;
+}
+
+.teddy::after {
+  content: "";
+  opacity: 0;
+}
+
+
+@keyframes zzzFloat {
+  0% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-6px); opacity: 1; }
+  100% { transform: translateY(-12px); opacity: 0; }
+}
+/* Tears */
+.sad .eye::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 1px;
+  width: 2px;
+  height: 6px;
+  background: #00aaff;
+  border-radius: 2px;
+  animation: tearDrop 1s infinite;
+}
+
+@keyframes tearDrop {
+  0% { opacity: 0; transform: translateY(0); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(6px); }
+}
+/* Dance animation */
+.dance {
+  animation: danceMove 0.6s infinite alternate;
+}
+
+@keyframes danceMove {
+  0% { transform: rotate(-5deg) translateY(0); }
+  100% { transform: rotate(5deg) translateY(-4px); }
+}

@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-
+// 🔊 Play hello sound on page load
+  const helloAudio = document.getElementById("helloSound");
+  helloAudio.volume = 0.5; // optional, halka sound
+  helloAudio.play();
   const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -28,19 +31,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 }
 
+
   // Open file selector
   selectBtn.addEventListener("click", () => fileInput.click());
 
   // Show name + preview
   fileInput.addEventListener("change", () => {
+    fileSelected = true; // 🟢 ab teddy sleep nahi karega
+wakeUpTeddy(); // teddy ko jagao agar wo sleep me ho
+
+
     previewBox.innerHTML = "";
     const file = fileInput.files[0];
-    
     if (!file) return;
-const maxSize = 70 * 1024 * 1024; // 70MB in bytes
+    bubble.innerText = "Video selected 😊";
+
+const maxSize = 50 * 1024 * 1024; // 70MB in bytes
 if (file.size > maxSize) {
     // alert("File too large! Maximum allowed size is 70MB."); // 👈 ye hata do
-    showCustomAlert("File too large! Maximum allowed size is 70MB."); // 👈 ye use karo
+    showCustomAlert("File too large! Maximum allowed size is 50MB."); // 👈 ye use karo
+     bubble.innerText = "File too big 😢";
+    teddy.classList.add("sad");
+    const cryingAudio = document.getElementById("cryingSound");
+cryingAudio.volume = 0.5;
+cryingAudio.currentTime = 0;
+cryingAudio.play();
+
+    startIdleTimer();
     fileInput.value = ""; // फाइल रीसेट कर दो
     fileNameText.innerText = "";
     previewBox.innerHTML = "";
@@ -86,6 +103,8 @@ if (file.size > maxSize) {
       if (!file) return alert("Select file first!");
 
       popup.classList.remove("hidden");
+      onUploadStart();
+
       uploadStatus.innerText = "Uploading...";
       progressFill.style.width = "0%";
 
@@ -148,6 +167,8 @@ if (file.type.startsWith("video")) {
     // Video detection (scan multiple frames)
     try {
         const model = await cocoSsd.load();
+        onAIDetect();
+
         const tempVideo = document.createElement('video');
         tempVideo.src = URL.createObjectURL(file);
         tempVideo.muted = true;
@@ -175,6 +196,8 @@ if (file.type.startsWith("video")) {
     // Image detection
     try {
         const model = await cocoSsd.load();
+        onAIDetect();
+
         const img = document.createElement('img');
         img.src = URL.createObjectURL(file);
         await new Promise(resolve => img.onload = resolve);
@@ -218,6 +241,8 @@ if (file.type.startsWith("video")) {
 
       uploadStatus.innerText = "Uploaded Successfully ✔️";
       uploadStatus.style.color = "black";
+      onUploadDone();
+
       await addUploadCoins(); // 🪙 +15 coins on upload
       localStorage.setItem("uploadReward", "15");
 
@@ -270,3 +295,105 @@ function showCustomAlert(message) {
     alertOverlay.style.display = "none";
   }
 }
+const teddy = document.getElementById("teddy");
+const bubble = document.getElementById("teddyBubble");
+let idleTimer;
+let fileSelected = false; // 🟢 track if user selected a file
+
+
+/* Start idle sleep timer */
+function startIdleTimer() {
+  // 🛑 Agar file select ho chuki hai → teddy ko sleep mat bhejo
+if(fileSelected) return;
+
+  clearTimeout(idleTimer);
+
+  // agar teddy already kisi action me hai → sleep mat bhejo
+  if (
+    teddy.classList.contains("clap") ||
+    teddy.classList.contains("jump") ||
+    teddy.classList.contains("dance")
+  ) return;
+
+  idleTimer = setTimeout(() => {
+    teddy.classList.remove("sad", "dance", "clap");
+    teddy.classList.add("sleep");
+    bubble.innerText = "Sleeping 😴";
+
+    // 🔊 Play sleep sound in loop
+    const sleepAudio = document.getElementById("sleepSound");
+    sleepAudio.volume = 0.5; // optional, halka sound
+    sleepAudio.currentTime = 0;
+    sleepAudio.play();
+}, 5000);
+
+}
+
+
+/* Wake up teddy */
+function wakeUpTeddy() {
+  clearTimeout(idleTimer);
+
+  teddy.classList.remove("sleep", "sad", "dance", "clap", "jump");
+  bubble.innerText = "Hi! Upload your video 😊";
+
+  // 🔊 Stop sleep sound
+  const sleepAudio = document.getElementById("sleepSound");
+  sleepAudio.pause();
+  sleepAudio.currentTime = 0;
+
+  startIdleTimer();
+}
+
+
+
+
+/* Start idle on page load */
+startIdleTimer();
+
+
+
+/* 🤖 AI detect hone pe */
+function onAIDetect() {
+  clearTimeout(idleTimer);
+
+  bubble.innerText = "AI detected something 🤖";
+  teddy.classList.add("jump");
+  setTimeout(() => teddy.classList.remove("jump"), 600);
+}
+
+/* 🎥 Upload start */
+function onUploadStart() {
+  clearTimeout(idleTimer);
+
+  wakeUpTeddy();
+  bubble.innerText = "Uploading... Good luck 🍀";
+  teddy.classList.add("clap");
+  // 🔊 Play upload sound
+  const uploadAudio = document.getElementById("uploadSound");
+  uploadAudio.volume = 0.5; // optional
+  uploadAudio.currentTime = 0;
+  uploadAudio.play();
+}
+
+
+/* Upload complete */
+function onUploadDone() {
+  clearTimeout(idleTimer);
+
+  teddy.classList.remove("clap", "sad", "sleep");
+  teddy.classList.add("dance");
+  bubble.innerText = "Upload done 🎉";
+
+  setTimeout(() => {
+    teddy.classList.remove("dance");
+    startIdleTimer();
+  }, 3000);
+}
+// Teddy click event
+teddy.addEventListener("click", () => {
+    // Agar teddy sleep me hai
+    if (teddy.classList.contains("sleep")) {
+        wakeUpTeddy(); // wake up
+    }
+});

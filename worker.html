@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Worker Tag Panel</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body{font-family:sans-serif;background:#0f0f0f;color:white;padding:10px;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+    .card{background:#1c1c1c;padding:6px;border-radius:8px}
+    img{width:100%;border-radius:6px}
+    input{width:100%;padding:6px;margin-top:5px;border-radius:5px;border:none}
+    button{margin-top:5px;width:100%;background:#00c853;border:none;color:black;padding:6px;border-radius:6px;font-weight:bold}
+    .saved{color:#00ff7f;font-size:12px}
+  </style>
+</head>
+<body>
+
+<h2>🧠 Manual AI Tagging Panel</h2>
+<div class="grid" id="grid"></div>
+
+<script>
+    function normalizeTags(tags){
+  if(!tags) return "";
+
+  // agar string hai aur ["soap","dining"] jaisa dikhta hai
+  if(typeof tags === "string"){
+    try{
+      const parsed = JSON.parse(tags);
+      if(Array.isArray(parsed)) return parsed.join(", ");
+      return tags;
+    }catch(e){
+      return tags;
+    }
+  }
+
+  // agar array hai
+  if(Array.isArray(tags)){
+    return tags.join(", ");
+  }
+
+  return "";
+}
+
+const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA";
+
+const workerSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function loadVideos(){
+  const { data, error } = await workerSupabase
+    .from("pinora823")
+    .select("id,title,thumb_url,content_tags")
+    .order("created_at",{ascending:false});
+
+  if(error){
+    alert("Supabase Load Error");
+    console.error(error);
+    return;
+  }
+
+  const grid = document.getElementById("grid");
+  grid.innerHTML="";
+
+  data.forEach(v=>{
+    const div = document.createElement("div");
+    div.className="card";
+
+div.innerHTML = `
+  <img src="${v.thumb_url}">
+  <div style="font-size:13px">${v.title || ""}</div>
+  <input placeholder="Enter tags comma separated" value="${normalizeTags(v.content_tags)}">
+  <button>Save Tags</button>
+  <div class="saved"></div>
+`;
+
+    const input = div.querySelector("input");
+    const btn = div.querySelector("button");
+    const saved = div.querySelector(".saved");
+
+    btn.onclick = async ()=>{
+      const tags = input.value.trim();
+      if(!tags) return;
+
+      const { error } = await workerSupabase
+        .from("pinora823")
+        .update({ content_tags: tags.split(",").map(t=>t.trim()).filter(t=>t) })
+
+        .eq("id", v.id);
+
+      if(error){
+        saved.innerText="❌ Error";
+        console.error(error);
+        return;
+      }
+
+      saved.innerText="✔ Saved";
+      setTimeout(()=>saved.innerText="",1500);
+    };
+
+    grid.appendChild(div);
+  });
+}
+
+loadVideos();
+</script>
+
+
+</body>
+</html>

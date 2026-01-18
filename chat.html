@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chats</title>
+
+<link rel="stylesheet" href="chat.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- CHAT LIST -->
+  <div id="chatListScreen">
+    
+    <div class="header"><button id="FirstbackBtn"><i class="fa-solid fa-arrow-left"></i></button>Messages</div>
+
+    <!-- Skeleton -->
+  <div id="chatSkeleton">
+  <!-- Skeleton Item 1 -->
+  <div class="chat-item skeleton-item">
+    <div class="skeleton-circle"></div>
+    <div class="skeleton-lines">
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line long"></div>
+    </div>
+  </div>
+
+  <!-- Skeleton Item 2 -->
+  <div class="chat-item skeleton-item">
+    <div class="skeleton-circle"></div>
+    <div class="skeleton-lines">
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line long"></div>
+    </div>
+  </div>
+
+  <!-- Skeleton Item 3 -->
+  <div class="chat-item skeleton-item">
+    <div class="skeleton-circle"></div>
+    <div class="skeleton-lines">
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line long"></div>
+    </div>
+  </div>
+   <div class="chat-item skeleton-item">
+    <div class="skeleton-circle"></div>
+    <div class="skeleton-lines">
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line long"></div>
+    </div>
+  </div>
+   <div class="chat-item skeleton-item">
+    <div class="skeleton-circle"></div>
+    <div class="skeleton-lines">
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line long"></div>
+    </div>
+  </div>
+</div>
+
+
+    <div id="chatList"></div>
+  </div>
+
+  <!-- CHAT SCREEN -->
+  <div id="chatScreen" class="hidden">
+
+    <div class="chat-header">
+      <button id="backBtn"><i class="fa-solid fa-arrow-left"></i></button>
+
+      <div id="chatUserInfo">
+        <img id="chatUserImg">
+        <span id="chatUserName"></span>
+      </div>
+    </div>
+
+    <div id="chatBox"></div>
+
+    
+
+    <div id="replyBox" class="hidden"></div>
+
+    <div class="chat-input">
+      <input id="msgInput" placeholder="Message...">
+      <button id="sendBtn">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="chat.js"></script>
+</body>
+</html>

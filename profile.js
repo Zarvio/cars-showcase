@@ -21,10 +21,14 @@ const profileView = document.getElementById("profileView");
 const googleLoginBtn = document.getElementById("googleLoginBtn");
 const saveNameBtn = document.getElementById("saveNameBtn");
 const saveUsernameBtn = document.getElementById("saveUsernameBtn");
+const editFirstName = document.getElementById("editFirstName");
+const editLastName  = document.getElementById("editLastName");
 
 const firstName = document.getElementById("firstName");
 const lastName = document.getElementById("lastName");
 const usernameInput = document.getElementById("username");
+const signupPassword = document.getElementById("signupPassword");
+
 const errorMsg = document.getElementById("errorMsg");
 const usernameIcon = document.getElementById("usernameIcon");
 
@@ -200,50 +204,104 @@ function setSaveButtonState(enabled) {
     saveUsernameBtn.disabled = true;
   }
 }
-
 // --- Save Username (finalize profile) ---
 saveUsernameBtn.onclick = () => {
-  if (!currentUser) { 
-    alert("User not logged in."); 
-    return; 
-  }
 
   const username = usernameInput.value.trim().toLowerCase();
-  if (!usernameAvailable) { 
-    alert("Choose a valid username first."); 
-    return; 
+  const password = signupPassword.value.trim();
+  const fakeEmail = username + "@pinora.app";
+
+  if (!usernameAvailable) {
+    alert("Choose a valid username first.");
+    return;
   }
 
-  // Data update
-  const updates = {};
-  updates["/users/" + currentUser.uid] = {
-    name: tempName,
-    surname: tempSurname,
-    email: currentUser.email,
-    username: username,
-    photoURL: currentUser.photoURL || null,
-    createdAt: Date.now()
-  };
-  updates["/usernames/" + username] = currentUser.uid;
+  if (!currentUser) {
+    alert("User not logged in.");
+    return;
+  }
 
-  // ⭐ Only ONE update call (correct)
-  firebase.database().ref().update(updates)
-    .then(() => {
+  // 🔐 PASSWORD VALIDATION (sirf password signup ke liye)
+const passwordError = document.getElementById("passwordError");
 
-      // 👉 SHOW POPUP
-      document.getElementById("profilePopup").classList.remove("hidden");
+passwordError.innerText = "";
+signupPassword.classList.remove("error");
 
-      // 👉 BUTTON CLICK → REFRESH TO PROFILE
-      document.getElementById("popupBtn").onclick = () => {
-        window.location.href = "profile.html";
-      };
+if (!currentUser.email.endsWith("@pinora.app")) {
 
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Could not save profile. Try again.");
-    });
+  if (!password) {
+    passwordError.innerText = "Enter password";
+    signupPassword.classList.add("error");
+    return;
+  }
+
+  if (password.length < 6) {
+    passwordError.innerText = "Password must be at least 6 characters";
+    signupPassword.classList.add("error");
+    return;
+  }
+}
+
+
+  // 🟢 CASE 1: USERNAME + PASSWORD SIGNUP
+  if (!currentUser.email.endsWith("@pinora.app")) {
+
+    firebase.auth()
+      .createUserWithEmailAndPassword(fakeEmail, password)
+      .then(res => {
+
+        currentUser = res.user;
+
+        const updates = {};
+        updates["/users/" + currentUser.uid] = {
+          name: tempName,
+          surname: tempSurname,
+          email: fakeEmail,
+          username: username,
+          photoURL: null,
+          createdAt: Date.now()
+        };
+
+        updates["/usernames/" + username] = currentUser.uid;
+
+        return firebase.database().ref().update(updates);
+      })
+      .then(showSuccess)
+      .catch(err => alert(err.message));
+
+  } 
+  // 🔵 CASE 2: GOOGLE USER (OLD FLOW — UNCHANGED)
+  else {
+
+    const updates = {};
+    updates["/users/" + currentUser.uid] = {
+      name: tempName,
+      surname: tempSurname,
+      email: currentUser.email,
+      username: username,
+      photoURL: currentUser.photoURL || null,
+      createdAt: Date.now()
+    };
+
+    updates["/usernames/" + username] = currentUser.uid;
+
+    firebase.database().ref().update(updates)
+      .then(showSuccess)
+      .catch(err => {
+        console.error(err);
+        alert("Could not save profile. Try again.");
+      });
+  }
 };
+
+// ✅ COMMON SUCCESS UI (OLD SAME)
+function showSuccess() {
+  document.getElementById("profilePopup").classList.remove("hidden");
+  document.getElementById("popupBtn").onclick = () => {
+    window.location.href = "profile.html";
+  };
+}
+
 
 
 // --- Load profile UI from DB object ---
@@ -523,9 +581,13 @@ editProfileBtn?.addEventListener("click", async () => {
   bioInput.value = data.bio || "";
   newUsernameInput.value = originalUsername;
 
+  editFirstName.value = data.name || "";
+  editLastName.value  = data.surname || "";
+
   usernameOk = true;
   saveProfileBtn.disabled = false;
 });
+
 
 // ------ Live Username Check ------
 newUsernameInput?.addEventListener("input", async () => {
@@ -594,36 +656,7 @@ function setUsernameStatus(type) {
   statusDiv.innerText = msg;
 }
 
-// ------ Save Profile ------
-saveProfileBtn?.addEventListener("click", async () => {
-  const bio = bioInput.value.trim();
-  const newUsername = newUsernameInput.value.trim().toLowerCase();
 
-  if (bio.length > 150) return alert("Bio too long!");
-
-  const updates = {};
-
-  // ✅ Always save bio if changed
-  updates[`users/${currentUser.uid}/bio`] = bio;
-
-  // ✅ If username changed and valid
-  if (newUsername !== originalUsername && usernameOk) {
-    // remove old username
-    updates[`usernames/${originalUsername}`] = null;
-
-    // save new
-    updates[`usernames/${newUsername}`] = currentUser.uid;
-    updates[`users/${currentUser.uid}/username`] = newUsername;
-  }
-
-  await firebase.database().ref().update(updates);
-
-  // UI Update
-  displayBio.innerText = bio;
-  editProfileModal.classList.add("hidden");
-
-  
-});
 // Close / cancel modal
 const closeEditModal = document.getElementById("closeEditModal");
 
@@ -648,9 +681,19 @@ function showPopup(message) {
 saveProfileBtn?.addEventListener("click", async () => {
   const bio = bioInput.value.trim();
   const newUsername = newUsernameInput.value.trim().toLowerCase();
+  const firstName = editFirstName.value.trim();
+  const lastName  = editLastName.value.trim();
+
+  if (!firstName || !lastName) {
+    showPopup("First name & Last name required");
+    return;
+  }
 
   const updates = {};
   updates[`users/${currentUser.uid}/bio`] = bio;
+  updates[`users/${currentUser.uid}/name`] = firstName;
+  updates[`users/${currentUser.uid}/surname`] = lastName;
+
 
   if (newUsername !== originalUsername && usernameOk) {
     updates[`usernames/${originalUsername}`] = null;
@@ -660,13 +703,29 @@ saveProfileBtn?.addEventListener("click", async () => {
 
   await firebase.database().ref().update(updates);
 
+  // 🔥 SUPABASE – UPDATE ALL USER POSTS USERNAME
+  if (newUsername !== originalUsername && usernameOk) {
+    const { error } = await supabaseClient
+      .from("pinora823")
+      .update({ uploader_name: newUsername })
+      .eq("uploader_uid", currentUser.uid);
+
+    if (error) console.error("Supabase username update failed:", error);
+  }
+
   // ✅ UI update
   displayBio.innerText = bio;
+  displayName.innerText = firstName + " " + lastName;
+
   editProfileModal.classList.add("hidden");
 
   // ✅ show custom popup
   showPopup("Profile Updated 🎉");
+
+  // reset
+  originalUsername = newUsername;
 });
+
 
 // ✅ Close / cancel modal
 
@@ -1062,3 +1121,96 @@ closeInfoPopup.addEventListener("click", () => {
 settingsLink.addEventListener("click", () => {
   alert("Settings page / modal will open here.");
 });
+const emailInput = document.getElementById("emailInput");
+const passwordInput = document.getElementById("passwordInput");
+const emailLoginBtn = document.getElementById("emailLoginBtn");
+const showGoogleSignup = document.getElementById("showGoogleSignup");
+
+// EMAIL LOGIN
+const usernameError = document.getElementById("usernameError");
+const passwordError = document.getElementById("passwordError");
+
+emailInput.oninput = () => {
+  usernameError.innerText = "";
+  emailInput.classList.remove("error");
+};
+
+passwordInput.oninput = () => {
+  passwordError.innerText = "";
+  passwordInput.classList.remove("error");
+};
+
+emailLoginBtn.onclick = async () => {
+
+  const username = emailInput.value.trim().toLowerCase();
+  const password = passwordInput.value.trim();
+
+  // reset
+  usernameError.innerText = "";
+  passwordError.innerText = "";
+  emailInput.classList.remove("error");
+  passwordInput.classList.remove("error");
+
+  // EMPTY CHECKS
+  if (!username && !password) {
+    usernameError.innerText = "Enter username";
+    passwordError.innerText = "Enter password";
+    emailInput.classList.add("error");
+    passwordInput.classList.add("error");
+    return;
+  }
+
+  if (!username) {
+    usernameError.innerText = "Enter username";
+    emailInput.classList.add("error");
+    return;
+  }
+
+  if (!password) {
+    passwordError.innerText = "Enter password";
+    passwordInput.classList.add("error");
+    return;
+  }
+
+  try {
+    // check username
+    const snap = await firebase.database()
+      .ref("usernames/" + username)
+      .once("value");
+
+    if (!snap.exists()) {
+      usernameError.innerText = "Wrong username";
+      emailInput.classList.add("error");
+      return;
+    }
+
+    const email = username + "@pinora.app";
+    const res = await firebase.auth()
+      .signInWithEmailAndPassword(email, password);
+
+    currentUser = res.user;
+    checkUserSetup();
+
+  } catch (err) {
+
+    if (
+      err.code === "auth/wrong-password" ||
+      err.code === "auth/invalid-credential"
+    ) {
+      passwordError.innerText = "Wrong password";
+      passwordInput.classList.add("error");
+    } 
+    else if (err.code === "auth/user-not-found") {
+      usernameError.innerText = "Wrong username";
+      emailInput.classList.add("error");
+    } 
+    else {
+      passwordError.innerText = "Wrong password";
+      passwordInput.classList.add("error");
+    }
+  }
+};
+
+showGoogleSignup.onclick = () => {
+  document.getElementById("googleLoginBtn").classList.remove("hidden");
+};

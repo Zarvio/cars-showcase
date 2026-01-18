@@ -60,6 +60,7 @@
     <button class="panel-btn" id="verifyBtn">Verify BAdge </button>
     <button class="panel-btn" id="checkinBtn">Delete User</button>
     <button class="panel-btn" id="reportsBtn">Delte Video</button>
+    <button class="panel-btn" id="coinsBtn">Coins</button>
 </div>
 
 <script>
@@ -67,6 +68,7 @@
     const verifyBtn = document.getElementById("verifyBtn");
     const checkinBtn = document.getElementById("checkinBtn");
     const reportsBtn = document.getElementById("reportsBtn");
+    const coinsBtn = document.getElementById("coinsBtn");
 
     // ---------------- Click Events ----------------
     verifyBtn.addEventListener("click", () => {
@@ -79,6 +81,9 @@
 
     reportsBtn.addEventListener("click", () => {
         window.location.href = "vd.html";
+    });
+    coinsBtn.addEventListener("click", () => {
+        window.location.href = "coins.html";
     });
 </script>
 

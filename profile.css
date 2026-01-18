@@ -1076,3 +1076,96 @@ body {
   font-size: 18px;
   cursor: pointer;
 }
+.input{
+  width:100%;
+  padding:12px;
+  margin:4px 0; /* gap kam kar diya */
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+
+.google{
+  background:#fff;
+  color:#000;
+  border:1px solid #ddd;
+}
+
+.hidden{
+  display:none;
+}
+.error-text{
+  color:#ed4956;
+  font-size:13px;
+  margin-top:4px;
+  min-height:16px;
+}
+.password-field {
+  width: 250px;
+  display: flex;
+  align-items: center;
+  background: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 8px 12px;
+    margin: 0 0 35px 23px; /* left side se 23px space */
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+.password-field input {
+  flex: none;               /* <-- flex: 1 hatao */
+  width: 200px;             /* desired width set karo */
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+}
+
+
+.password-field:hover {
+  border-color: #888;
+}
+
+.password-field:focus-within {
+  border-color: #4CAF50;     /* green highlight on focus */
+  box-shadow: 0 0 5px #4CAF50;
+}
+
+
+
+.password-field .lock-icon {
+  margin-right: 8px;
+  color: #888;
+}
+
+.status-icon {
+  margin-left: 8px;
+  color: #4CAF50;           /* check mark color */
+}
+
+
+input.error {
+  border: 1px solid red;
+}
+/* First & Last Name inputs (Edit Profile) */
+#editFirstName,
+#editLastName {
+  width: 100%;
+  height: 42px;
+  border-radius: 25px;
+  border: none;
+  padding: 0 15px;
+  background: #111;
+  color: white;
+  margin-bottom: 8px;
+}
+
+/* focus effect same feel ke liye */
+#editFirstName:focus,
+#editLastName:focus,
+#newUsernameInput:focus,
+#bioInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,255,204,0.4);
+}

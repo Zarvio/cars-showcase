@@ -49,8 +49,36 @@
     <h1 class="logo">Pinora</h1>
 </header>
 
-<main class="main-content">
-    <h2 class="welcome">Upload your Pins here</h2>
+<h2 class="welcome with-pet center-pet">
+  <div class="teddy-pet" id="teddy">
+    <div class="teddy-bubble" id="teddyBubble">
+      Hi! Upload your video 😊
+    </div>
+
+    <div class="teddy">
+      <div class="ears"></div>
+      <div class="face">
+        <div class="eyes">
+          <span class="eye left"></span>
+          <span class="eye right"></span>
+        </div>
+        <div class="mouth"></div>
+      </div>
+      <div class="hands">
+        <span class="hand left"></span>
+        <span class="hand right"></span>
+      </div>
+    </div>
+  </div>
+</h2>
+<audio id="helloSound" src="hello.mp3"></audio>
+
+<audio id="sleepSound" src="sleep.mp3" loop></audio>
+
+<audio id="cryingSound" src="crying.mp3"></audio>
+
+<audio id="uploadSound" src="yee.mp3"></audio>
+
     <form id="uploadForm">
         
   <input type="file" id="pinFile" accept="video/*" hidden>

@@ -76,14 +76,38 @@
     <main class="container">
 
       <!-- LOGIN CARD -->
-      <div id="loginBox" class="card center">
-        <img src="default.jpg" alt="avatar" class="login-avatar">
-        <h2>Continue with Google</h2>
-        <button id="googleLoginBtn" class="btn primary">
-          <i class="fa-brands fa-google"></i> Continue with Google
-        </button>
-        <p class="muted">Only needed to upload or follow. You can still browse without login.</p>
-      </div>
+     <!-- LOGIN CARD -->
+<div id="loginBox" class="card center">
+
+  <img src="default.jpg" class="login-avatar">
+
+  <h2>Login</h2>
+
+<!-- USERNAME -->
+<input type="email" id="emailInput" placeholder="Enter Your Username" class="input">
+<div id="usernameError" class="error-text"></div>
+
+<!-- PASSWORD -->
+<input type="password" id="passwordInput" placeholder="Enter Your Password" class="input">
+<div id="passwordError" class="error-text"></div>
+
+
+  <button id="emailLoginBtn" class="btn primary">Log In</button>
+
+  <p class="muted">
+    Don’t have an account?
+    <span id="showGoogleSignup" style="color:#3897f0; cursor:pointer;">
+      Sign up with Google
+    </span>
+  </p>
+
+  <button id="googleLoginBtn" class="btn google hidden">
+    <i class="fa-brands fa-google"></i> Continue with Google
+  </button>
+
+</div>
+
+
 
       <!-- NAME FORM -->
       <div id="nameBox" class="card hidden">
@@ -95,17 +119,33 @@
         <button id="saveNameBtn" class="btn">Continue</button>
       </div>
 
-      <!-- USERNAME FORM -->
-      <div id="usernameBox" class="card hidden">
-        <h2>Choose a username</h2>
-        <div class="username-field">
-          <div class="at">@</div>
-          <input id="username" placeholder="username (min 4 chars)" />
-          <div id="usernameIcon" class="status-icon"></div>
-        </div>
-        <p id="errorMsg" class="error"></p>
-        <button id="saveUsernameBtn" class="btn disabled" disabled>Save</button>
-      </div>
+     <!-- USERNAME FORM -->
+<div id="usernameBox" class="card hidden">
+  <h2>Choose a username and password</h2>
+
+  <!-- Username field -->
+  <div class="username-field">
+    <div class="at">@</div>
+    <input id="username" placeholder="username (min 4 chars)" />
+    <div id="usernameIcon" class="status-icon"></div>
+  </div>
+
+  <!-- Password field -->
+<!-- Password field -->
+<div class="password-field">
+  <div class="lock-icon">🔒</div>
+  <input 
+    type="password" 
+    id="signupPassword" 
+    placeholder="Password (min 6 chars)">
+  <div id="passwordIcon" class="status-icon"></div>
+</div>
+
+
+  <p id="errorMsg" class="error"></p>
+  <button id="saveUsernameBtn" class="btn disabled" disabled>Save</button>
+</div>
+
 
 <!-- Profile Complete Popup -->
 <div id="profilePopup" class="popup hidden">
@@ -210,6 +250,8 @@
   />
 
   <div id="usernameStatus"></div>
+<input type="text" id="editFirstName" placeholder="First Name">
+<input type="text" id="editLastName" placeholder="Last Name">
 
   <button id="saveProfileBtn" class="save-profile-btn">
     Save Changes

@@ -242,6 +242,10 @@ if (file.type.startsWith("video")) {
       uploadStatus.innerText = "Uploaded Successfully ✔️";
       uploadStatus.style.color = "black";
       onUploadDone();
+// 🔓 upload ke baad chat unlock check
+if (typeof checkChatButtonLock === "function") {
+  checkChatButtonLock();
+}
 
       await addUploadCoins(); // 🪙 +15 coins on upload
       localStorage.setItem("uploadReward", "15");

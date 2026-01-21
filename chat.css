@@ -436,3 +436,29 @@ body{background:#000;color:#fff}
     font-weight: 500;
 }
 
+.msg-row{
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
+  margin:6px 0;
+}
+
+.msg-row.sent{
+  justify-content:flex-end;
+}
+
+.msg-row.received{
+  justify-content:flex-start;
+}
+
+.msg-avatar{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.msg-avatar-space{
+  width:34px;
+  height:34px;
+}

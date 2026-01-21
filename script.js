@@ -879,7 +879,7 @@ finalRelated.forEach(r => createRelatedVideoBox(r));
     document.getElementById("btnSearch")?.addEventListener("click", () => location.href = "search.html");
     document.getElementById("btnProfile")?.addEventListener("click", () => location.href = "profile.html");
     document.getElementById("btnUpload")?.addEventListener("click", () => location.href = "upload.html");
-     document.getElementById("btnmessage")?.addEventListener("click", () => location.href = "chat.html");
+     
       document.getElementById("btnNotifs")?.addEventListener("click", () => location.href = "notification.html");
 
      function applyFilters() {
@@ -1019,6 +1019,31 @@ document.addEventListener("keydown", function (e) {
 });
 
 const btnMessage = document.getElementById("btnmessage");
+// =======================
+// 🔐 CHAT BUTTON LOCK ICON
+// =======================
+const chatLock = document.createElement("div");
+chatLock.innerHTML = `<i class="fa-solid fa-lock"></i>`;
+chatLock.id = "chatLock";
+
+chatLock.style.cssText = `
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.5);
+  color:white;
+  
+  font-size:18px;
+  border-radius:50%;
+  cursor:pointer;
+  display:none;
+  z-index:2000;
+`;
+
+btnMessage.style.position = "fixed";
+btnMessage.appendChild(chatLock);
 
 // रेड नंबर
 const messageCount = document.createElement("span");
@@ -1042,9 +1067,42 @@ messageCount.style.cssText = `
 `;
 btnMessage.style.position = "fixed";
 btnMessage.appendChild(messageCount);
+// =======================
+// 🎥 CHECK USER VIDEO COUNT (FOR CHAT LOCK)
+// =======================
+async function checkChatButtonLock() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const { data, error } = await supabaseClient
+    .from("pinora823")
+    .select("id")
+    .eq("uploader_uid", user.uid);
+
+  if (error) {
+    console.log("video count error", error);
+    return;
+  }
+
+  const videoCount = data.length;
+
+  if (videoCount < 2) {
+    // 🔒 LOCK
+    chatLock.style.display = "flex";
+
+   
+
+  } else {
+    // 🔓 UNLOCK
+    chatLock.style.display = "none";
+  }
+}
 
 firebase.auth().onAuthStateChanged(user => {
+  
   if (!user) return;
+  checkChatButtonLock();
+
   const uid = user.uid;
 
   const chatsRef = firebase.database().ref("chats");
@@ -1085,9 +1143,13 @@ firebase.auth().onAuthStateChanged(user => {
 });
 
 btnMessage.onclick = () => {
-    // bas chat.html open karo, messages abhi read na ho
-    window.location.href = "chat.html";
+  if (chatLock.style.display === "flex") {
+    showCustomAlert("Upload 2 videos to unlock the chat");
+    return;
+  }
+  window.location.href = "chat.html";
 };
+
 
 
 

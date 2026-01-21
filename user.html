@@ -122,5 +122,33 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="user.js"></script>
+  <!-- 🔔 CUSTOM WEB POPUP -->
+<div id="webPopup" class="web-popup hidden">
+  <div class="web-popup-box">
+    <h3 id="webPopupTitle"></h3>
+    <p id="webPopupMsg"></p>
+    <button id="webPopupBtn">OK</button>
+  </div>
+</div>
+<script>
+  function showPopup(title, message) {
+    const popup = document.getElementById("webPopup");
+    const popupTitle = document.getElementById("webPopupTitle");
+    const popupMsg = document.getElementById("webPopupMsg");
+    const popupBtn = document.getElementById("webPopupBtn");
+
+    if (!popup) return;
+
+    popupTitle.innerText = title;
+    popupMsg.innerText = message;
+
+    popup.classList.remove("hidden");
+
+    popupBtn.onclick = () => {
+      popup.classList.add("hidden");
+    };
+  }
+</script>
+
 </body>
 </html>

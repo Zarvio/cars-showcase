@@ -16,6 +16,17 @@
   
 </head>
 <body>
+<!-- Custom Confirm Modal -->
+<div id="confirmModal">
+  <div class="modal-content">
+    <p>Are you sure you want to clear all history</p>
+    <div class="modal-buttons">
+      <button id="confirmYes">Yes</button>
+      <button id="confirmNo">No</button>
+    </div>
+  </div>
+</div>
+
 
 <div class="app">
 
@@ -43,6 +54,11 @@
     <img id="chatUserImg" src="default.jpg">
     <span id="chatUserName">Chat</span>
   </div>
+  <div id="chatActions" style="margin-left:auto; display:flex; gap:10px;">
+  <i id="deleteSelectedBtn" class="fa-solid fa-trash" style="font-size:18px; display:none; cursor:pointer;"></i>
+  <i id="chatMenuBtn" class="fa-solid fa-broom" style="font-size:18px; cursor:pointer;"></i>
+</div>
+
 </div>
 
 

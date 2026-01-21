@@ -116,9 +116,52 @@ document.getElementById("userVideosSection").style.display = "none";
       messageBtn.style.display = "inline-block";
     }
 
-    messageBtn.onclick = () => {
-      window.location.href = `chat.html?uid=${profileUid}`;
-    };
+   messageBtn.onclick = async () => {
+
+  const user = firebase.auth().currentUser;
+
+  // ❌ login nahi hai
+  if (!user) {
+    showPopup(
+      "Login Required",
+      "Message bhejne ke liye pehle login karo"
+    );
+    return;
+  }
+
+  try {
+    // 🔍 current user ke videos count
+    const snap = await firebase.database()
+      .ref("videos")
+      .orderByChild("uid")
+      .equalTo(user.uid)
+      .once("value");
+
+    const videoCount = snap.exists()
+      ? Object.keys(snap.val()).length
+      : 0;
+
+    // ❌ agar 2 se kam videos
+    if (videoCount < 2) {
+      showPopup(
+        "Chat Locked 🔒",
+        "You must upload at least 2 videos to unlock the chat."
+      );
+      return;
+    }
+
+    // ✅ sab sahi hai → chat open
+    window.location.href = `chat.html?uid=${profileUid}`;
+
+  } catch (err) {
+    console.error(err);
+    showPopup(
+      "Error",
+      "Kuch galat ho gaya, thodi der baad try karo"
+    );
+  }
+};
+
 
     // followers / following count
     const followersSnap = await firebase.database().ref("followers/" + profileUid).once("value");

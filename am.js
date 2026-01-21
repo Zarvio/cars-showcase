@@ -1,3 +1,5 @@
+
+
 // ---------- Firebase Config ----------
 const firebaseConfig = {
   apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
@@ -16,6 +18,9 @@ let currentUser=null;
 let selectedUser=null;
 let replyTo=null;
 let typingDiv = null;
+let selectedUserPhoto = null;
+let canRenderMessages = false;
+
 
 // ---------- Elements ----------
 const chatListScreen=document.getElementById("chatListScreen");
@@ -66,6 +71,45 @@ firebase.auth().onAuthStateChanged(user=>{
 // ---------- Load Chat List ----------
 function loadChatList(){
   document.getElementById("chatSkeleton").style.display="block";
+// ================= GROUP CHAT LIST =================
+firebase.database().ref("userChats/"+currentUser).on("value", snap=>{
+  const data = snap.val();
+  if(!data) return;
+
+  Object.keys(data).forEach(chatId=>{
+    const info = data[chatId];
+
+    // sirf group chat
+    if(info.type === "group"){
+      firebase.database().ref("groups/"+chatId).once("value").then(gsnap=>{
+        const g = gsnap.val();
+        if(!g) return;
+
+        // duplicate na bane
+        if(chatDivMap[chatId]) return;
+
+        const div = document.createElement("div");
+        div.className = "chat-item";
+        chatDivMap[chatId] = div;
+
+        div.innerHTML = `
+          <img src="default.jpg">
+          <div>
+            <div style="font-weight:600">${g.name}</div>
+            <div class="chat-last">Group</div>
+          </div>
+        `;
+
+        div.onclick = ()=>{
+          openChat(chatId);
+        };
+
+        chatList.prepend(div);
+      });
+    }
+  });
+});
+// ==================================================
 
   firebase.database().ref("chats").on("value",snap=>{
     
@@ -162,58 +206,121 @@ firebase.database().ref(`chats/${chatId}`).once("value").then(chatSnap => {
 
 // ---------- Open Chat ----------
 function openChat(uid){
-   hideReplyBox();   // 🔥 yaha add karo
+
+  // ================= OLD INIT (SAME) =================
+  selectedUserPhoto = "default.jpg";
+  canRenderMessages = false;
+
+  lastMessageSender = null; // 🔥 chat change → chain reset
+
+  hideReplyBox();                 // old logic
   selectedUser = uid;
   history.pushState({}, "", "");
+
   chatListScreen.style.display = "none";
   chatScreen.classList.remove("hidden");
-  loadMessages();
-// 🔹 Restore last seen message after chat opens
-const chatId = getChatId(currentUser, uid);
-firebase.database().ref(`chats/${chatId}`).once("value").then(snap => {
+
+  chatBox.innerHTML = "";
+  shownDays = {};
+  msgDivMap = {};
+
+  const chatUserName = document.getElementById("chatUserName");
+  const chatUserImg  = document.getElementById("chatUserImg");
+
+  // ================= OLD SEEN LOGIC (SAFE) =================
+  const privateChatId = getChatId(currentUser, uid);
+  firebase.database().ref(`chats/${privateChatId}`).once("value").then(snap => {
     const msgs = snap.val();
     if(!msgs) return;
 
-    // 🔹 find last read message sent by currentUser
     let lastReadMsgKey = null;
     Object.keys(msgs).forEach(key => {
-        const m = msgs[key];
-        if(m.sender === currentUser && m.read && m.readTime){
-            lastReadMsgKey = key;
-        }
+      const m = msgs[key];
+      if(m.sender === currentUser && m.read && m.readTime){
+        lastReadMsgKey = key;
+      }
     });
 
     if(lastReadMsgKey){
-        const div = msgDivMap[lastReadMsgKey];
-        if(div){
-            showSeen(div, msgs[lastReadMsgKey].readTime);
-            lastSeenMsgDiv = div;
-        }
+      const div = msgDivMap[lastReadMsgKey];
+      if(div){
+        showSeen(div, msgs[lastReadMsgKey].readTime);
+        lastSeenMsgDiv = div;
+      }
     }
+  });
+const chatId = getChatId(currentUser, uid);
+
+// ✅ unread messages read = true update karo
+firebase.database().ref("chats/"+chatId).once("value").then(snap => {
+    const msgs = snap.val() || {};
+    Object.keys(msgs).forEach(key => {
+        const msg = msgs[key];
+        if(msg.sender !== currentUser && !msg.read){
+            firebase.database().ref(`chats/${chatId}/${key}`).update({
+                read: true,
+                readTime: Date.now()
+            });
+        }
+    });
 });
 
-  // ✅ Firebase user fetch
-  const chatUserName = document.getElementById("chatUserName");
-  const chatUserImg = document.getElementById("chatUserImg");
+  // ================= GROUP / PRIVATE CHECK =================
+  firebase.database().ref("groups/"+uid).once("value").then(gsnap=>{
+    if(gsnap.exists()){
+      // ========== GROUP CHAT ==========
+      const g = gsnap.val();
+      chatUserName.innerText = g.name;
+      chatUserImg.src = "default.jpg";
 
-  firebase.database().ref("users/" + uid).once("value").then(snap => {
-      const userData = snap.val() || {};
+      canRenderMessages = true;     // ✅ group me avatar issue nahi
+      loadGroupMessages(uid);
 
-      chatUserName.innerHTML = `
-        <div style="display:flex; align-items:center; gap:4px;">
-          @${userData.username || "User"}
-          ${userData.verified ? '<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px;height:16px;">' : ''}
-        </div>
-      `;
+    }else{
+      // ========== PRIVATE CHAT ==========
+      firebase.database().ref("users/"+uid).once("value").then(usnap=>{
+        const u = usnap.val() || {};
 
-      chatUserImg.src = userData.photoURL || "default.jpg";
+        chatUserName.innerText = "@"+(u.username || "User");
 
-      document.getElementById("chatUserInfo").onclick = function(){
-          // ✅ ab uid properly captured
-          window.location.href = `user.html?uid=${selectedUser}`;
-      };
+        // 🔥 MAIN FIX
+        selectedUserPhoto = u.photoURL || "default.jpg";
+        chatUserImg.src = selectedUserPhoto;
+
+        canRenderMessages = true;   // 🔥 AB messages safe hain
+      loadMessages();        // 🔥 typing + read logic attach
+loadPrivateMessages(uid);
+  // 🔥 photo ke baad hi load
+
+        // ===== OLD USERNAME CLICK LOGIC (SAFE) =====
+        chatUserName.style.cursor = "pointer";
+        chatUserName.onclick = () => {
+          window.location.href = `user.html?uid=${uid}`;
+        };
+      });
+    }
   });
 }
+
+
+// ---------- PRIVATE MESSAGES (OLD LOGIC) ----------
+function loadPrivateMessages(uid){
+  const chatId = getChatId(currentUser, uid);
+
+  firebase.database().ref("chats/"+chatId).off();
+  firebase.database().ref("chats/"+chatId).on("child_added", snap=>{
+    addMessage(snap.val(), snap.key);
+  });
+}
+
+// ---------- GROUP MESSAGES (OLD LOGIC) ----------
+function loadGroupMessages(groupId){
+  firebase.database().ref("groupMessages/"+groupId).off();
+  firebase.database().ref("groupMessages/"+groupId).on("child_added", snap=>{
+    addMessage(snap.val(), snap.key);
+  });
+}
+
 
 // ---------- Load Messages ----------
 function loadMessages(){
@@ -251,74 +358,51 @@ firebase.database().ref(`typing/${chatId}/${selectedUser}`).on("value", snap => 
   }
 });
 
-  firebase.database().ref("chats/"+chatId).on("child_added", snap => {
-  const msg = snap.val();
-  const msgId = snap.key;
+firebase.database().ref("chats/"+chatId).on("child_added", snap => {
+    const msg = snap.val();
+    const msgId = snap.key;
 
-  addMessage(msg, msgId);
+    addMessage(msg, msgId);
 
-  // ✅ IMPORTANT FIX
-  // Agar samne wale ka msg hai aur chat open hai
-  if(
-    msg.sender !== currentUser &&
-    !msg.read &&
-    selectedUser // chatScreen open
-  ){
-    firebase.database().ref(`chats/${chatId}/${msgId}`).update({
-      read: true,
-      readTime: Date.now()
-    });
-  }
+   
+
 });
+
+
+firebase.database().ref("groupMessages/" + groupId).on("child_added", snap => {
+    const msg = snap.val();
+    const msgId = snap.key;
+    addMessage(msg, msgId);
+
+    if(msg.sender !== currentUser){
+        const updates = {read: true, readTime: Date.now()};
+        firebase.database().ref(`groupMessages/${groupId}/${msgId}`).update(updates).then(() => {
+            const div = msgDivMap[msgId];
+            if(div && msg.sender === currentUser){
+                showSeen(div, updates.readTime);
+                lastSeenMsgDiv = div;
+            }
+        });
+    }
+});
+
 
 firebase.database().ref("chats/"+chatId).on("child_changed", snap => {
     const updatedMsg = snap.val();
     const msgId = snap.key;
 
     const div = msgDivMap[msgId];
-    if(div){
-        // ✅ Update message text
-        const textSpan = div.querySelector(".msg-text");
-        if(textSpan) textSpan.innerText = updatedMsg.text || "📷 Image";
+    if(!div) return;
 
-        // ✅ Add / remove edited label
-        let editedLabel = div.querySelector(".edited-label");
-        if(updatedMsg.edited){
-            if(!editedLabel){
-                editedLabel = document.createElement("span");
-                editedLabel.className = "edited-label";
-                editedLabel.innerText = "(edited)";
-                div.appendChild(editedLabel);
-            }
-        } else {
-            if(editedLabel) editedLabel.remove();
-        }
-
-        // 🔹 UPDATE REPLY PREVIEWS
-        // loop through all messages to see if kisi ne is msg pe reply kiya
-        Object.values(msgDivMap).forEach(mDiv => {
-            const replyPreview = mDiv.querySelector(`.reply-preview-wa[data-reply-id='${msgId}'] .reply-text`);
-            if(replyPreview){
-                replyPreview.innerText = updatedMsg.text || "📷 Image";
-            }
-        });
-    }
-
-
-    // --------------------------
-    // 🔥 Seen logic: only when readTime updated (ignore edits)
-    // --------------------------
-    // Check: updatedMsg.readTime exists AND sender is currentUser
-    if(updatedMsg.sender === currentUser && updatedMsg.read && updatedMsg.readTime && !updatedMsg.edited){
-        if(!div) return;
-
+    // ✅ Agar ye tumhara sent message hai aur ab read ho gaya
+    if(updatedMsg.sender === currentUser && updatedMsg.read && updatedMsg.readTime){
         // Remove old seen
         if(lastSeenMsgDiv){
             const oldSeen = lastSeenMsgDiv.querySelector(".seen-text");
             if(oldSeen) oldSeen.remove();
         }
 
-        // Show seen on this message
+        // Show new seen
         showSeen(div, updatedMsg.readTime);
         lastSeenMsgDiv = div;
     }
@@ -350,8 +434,23 @@ let lastSeenMsgDiv = null;
 
 let msgDivMap = {};
 let editingMessageId = null; // abhi kaun sa message edit ho raha hai
+let lastMessageSender = null;
 
 function addMessage(msg,id){
+  if (!canRenderMessages) return;
+let showProfilePic = false;
+
+if(msg.sender !== currentUser){
+  if(lastMessageSender !== msg.sender){
+    showProfilePic = true;
+  }
+}
+
+
+
+
+// sirf received messages
+
 
   const msgDate = new Date(msg.time);
   const today = new Date();
@@ -418,11 +517,33 @@ if(msg.reply){
 }
 
 div.innerHTML = `
-  ${replyHTML}
-  <span class="msg-text">${linkify(msg.text) || "📷 Image"}</span>
+  ${
+    msg.sender !== currentUser
+      ? `
+        <div class="avatar-wrap">
+         ${
+  showProfilePic
+    ? `<div class="avatar-wrap">
+         <img class="msg-avatar" src="${selectedUserPhoto}">
+       </div>`
+    : ``
+}
 
-  ${msg.edited ? '<span class="edited-label">(edited)</span>' : ''}
-  <span class="msg-time-swipe">${time12}</span>
+        </div>
+      `
+      : ``
+  }
+
+  <div class="msg-bubble">
+    ${replyHTML}
+    <span class="msg-text">${linkify(msg.text) || "📷 Image"}</span>
+    ${msg.edited ? '<span class="edited-label">(edited)</span>' : ''}
+    <span class="msg-time-swipe">
+${msg.sender === currentUser ? timeAgo(msg.time) : time12}
+
+</span>
+
+  </div>
 `;
 
 
@@ -526,6 +647,8 @@ div.addEventListener("mouseleave", e => clearTimeout(pressTimer));
 
 
 chatBox.scrollTop = chatBox.scrollHeight;
+lastMessageSender = msg.sender;
+
 }
 function showReplyOnlyBox(msgDiv, msgId, msgData){
     // Remove any existing box
@@ -611,37 +734,38 @@ function replyToMessage(msgId, msgData){
 
 // ---------- Send ----------
 sendBtn.onclick = () => {
-    if (!msgInput.value) return;
-    const chatId = getChatId(currentUser, selectedUser);
+  if (!msgInput.value) return;
 
-    if (editingMessageId) {
-        // ✅ edit mode → update existing message
-        firebase.database().ref(`chats/${chatId}/${editingMessageId}`).update({
-            text: msgInput.value,
-            edited: true
-        });
+  // 🔥 check karo: group hai ya normal user
+  firebase.database().ref("groups/" + selectedUser).once("value").then(snap => {
 
-        editingMessageId = null;          // edit mode off
-        replyBox.classList.add("hidden");
-        msgInput.value = "";
-         hideReplyBox();   // 🔥 VERY IMPORTANT
+    if (snap.exists()) {
+      // ========== GROUP MESSAGE ==========
+      firebase.database().ref("groupMessages/" + selectedUser).push({
+        sender: currentUser,
+        text: msgInput.value,
+        time: Date.now()
+      });
+
     } else {
-        // ✅ normal send
-        firebase.database().ref(`chats/${chatId}`).push({
-            sender: currentUser,
-            text: msgInput.value,
-            reply: replyTo,
-            time: Date.now(),
-            read: false,
-            readTime: null
-        });
-
-        replyTo = null;
-        replyBox.classList.add("hidden");
-        msgInput.value = "";
-         hideReplyBox();   // 🔥 VERY IMPORTANT
+      // ========== PRIVATE MESSAGE ==========
+      const chatId = getChatId(currentUser, selectedUser);
+      firebase.database().ref("chats/" + chatId).push({
+        sender: currentUser,
+        text: msgInput.value,
+        reply: replyTo,
+        time: Date.now(),
+        read: false,
+        readTime: null
+      });
     }
+
+    msgInput.value = "";
+    replyTo = null;
+    hideReplyBox();
+  });
 };
+
 
 
 // ---------- Edit / Unsend ----------
@@ -858,11 +982,12 @@ window.onpopstate = () => {
 
             Object.keys(msgs).forEach(key => {
                 const msg = msgs[key];
-                if(msg.sender !== currentUser && !msg.read){
-                    firebase.database().ref(`chats/${chatId}/${key}`).update({
-  read: true,
-  readTime: Date.now()
-});
+              if(msg.sender !== currentUser && !msg.read){
+    firebase.database().ref(`chats/${chatId}/${key}`).update({
+        read: true,
+        readTime: Date.now()
+    });
+
 
                 }
             });
@@ -897,5 +1022,3 @@ firstBackBtn.addEventListener("click", () => {
     // Redirect to main.html
     window.location.href = "main.html";
 });
-
-

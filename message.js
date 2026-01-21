@@ -10,6 +10,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
 // Supabase URL & anon key
 const supabaseUrl = "https://lxbojhmvcauiuxahjwzk.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA";
@@ -17,8 +18,11 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 // Initialize Supabase (sirf ek hi baar)
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-
-
+// ---------- Variables ----------
+let currentUserId = null;
+let selectedUserId = null;
+let selectMode = false;
+let selectedMessages = new Set();
 
 // ---------- Elements ----------
 const chatListScreen = document.getElementById("chatListScreen");
@@ -32,8 +36,38 @@ const backBtn = document.getElementById("backBtn");
 const listBackBtn = document.getElementById("listBackBtn");
 const typingIndicator = document.getElementById("typingIndicator");
 
-let currentUserId = null;
-let selectedUserId = null;
+// ---------- Custom Modal Elements ----------
+const confirmModal = document.getElementById("confirmModal");
+const confirmYes = document.getElementById("confirmYes");
+const confirmNo = document.getElementById("confirmNo");
+
+// ---------- Chat Menu Delete Button ----------
+document.getElementById("chatMenuBtn").onclick = () => {
+  if (!selectedUserId) return;
+
+  // Show custom modal
+  if (confirmModal) {
+    confirmModal.style.display = "flex";
+  }
+
+  // If user clicks Yes
+  if (confirmYes) {
+    confirmYes.onclick = () => {
+      const chatId = getChatId(currentUserId, selectedUserId);
+      firebase.database().ref("chats/" + chatId).remove();
+      chatBox.innerHTML = "";
+      confirmModal.style.display = "none"; // close modal
+    };
+  }
+
+  // If user clicks No
+  if (confirmNo) {
+    confirmNo.onclick = () => {
+      confirmModal.style.display = "none"; // just close modal
+    };
+  }
+};
+
 
 // ---------- URL से UID ----------
 const params = new URLSearchParams(window.location.search);
@@ -259,6 +293,19 @@ chatUserName.innerHTML = `
 
 // ---------- Send message ----------
 sendBtn.onclick = sendMessage;
+document.getElementById("deleteSelectedBtn").onclick = () => {
+  if (selectedMessages.size === 0) return;
+
+  const chatId = getChatId(currentUserId, selectedUserId);
+  selectedMessages.forEach(id => {
+    firebase.database().ref(`chats/${chatId}/${id}`).remove();
+  });
+
+  selectedMessages.clear();
+  selectMode = false;
+  document.getElementById("deleteSelectedBtn").style.display = "none";
+};
+
 msgInput.onkeydown = e => {
   if (e.key === "Enter") sendMessage();
 };
@@ -286,6 +333,7 @@ function linkify(text) {
 
 // ---------- Add message UI ----------
 function addMessage(msg, msgId, chatId) {
+  // ✅ First create the div
   const div = document.createElement("div");
   div.className = "msg";
   div.dataset.msgId = msgId;
@@ -294,19 +342,30 @@ function addMessage(msg, msgId, chatId) {
   else div.classList.add("received");
 
   if (msg.image) {
-  // Image box me wrap karo
-  div.innerHTML = `
-    <div class="img-box">
-      <img src="${msg.image}" class="chat-image">
-    </div>
-  `;
-} else {
-  div.innerHTML = linkify(msg.text || "");
-}
+    // Image box me wrap karo
+    div.innerHTML = `
+      <div class="img-box">
+        <img src="${msg.image}" class="chat-image">
+      </div>
+    `;
+  } else {
+    div.innerHTML = linkify(msg.text || "");
+  }
 
+  // ---------- Long press / right-click select ----------
+  div.addEventListener("contextmenu", e => e.preventDefault());
 
+  let pressTimer;
+  div.addEventListener("mousedown", () => {
+    pressTimer = setTimeout(() => toggleSelect(div, msgId), 500);
+  });
+  div.addEventListener("mouseup", () => clearTimeout(pressTimer));
+  div.addEventListener("touchstart", () => {
+    pressTimer = setTimeout(() => toggleSelect(div, msgId), 500);
+  });
+  div.addEventListener("touchend", () => clearTimeout(pressTimer));
 
-  // Time
+  // ---------- Time ----------
   const timeDiv = document.createElement("div");
   timeDiv.className = "msg-time";
   timeDiv.style.fontSize = "10px";
@@ -314,52 +373,70 @@ function addMessage(msg, msgId, chatId) {
   timeDiv.style.marginTop = "2px";
   div.appendChild(timeDiv);
 
-  // Sent/Seen Status for your messages
- if (msg.sender === currentUserId) {
-  const statusSpan = document.createElement("span");
-  statusSpan.style.fontSize = "12px";
-  statusSpan.style.marginLeft = "5px";
-  timeDiv.appendChild(statusSpan);
+  // ---------- Sent/Seen Status for your messages ----------
+  if (msg.sender === currentUserId) {
+    const statusSpan = document.createElement("span");
+    statusSpan.style.fontSize = "12px";
+    statusSpan.style.marginLeft = "5px";
+    timeDiv.appendChild(statusSpan);
 
-  // Live listener for read status
-  firebase.database().ref(`chats/${chatId}/${msgId}/read`).on("value", snap => {
-    const read = snap.val();
-    if (read) {
-      const diff = Math.floor((Date.now() - msg.time) / 60000);
-      if (diff < 1) {
-        statusSpan.innerText = "seen just now";
-      } else if (diff < 60) {
-        statusSpan.innerText = `seen ${diff} min ago`;
+    // Live listener for read status
+    firebase.database().ref(`chats/${chatId}/${msgId}/read`).on("value", snap => {
+      const read = snap.val();
+      if (read) {
+        const diff = Math.floor((Date.now() - msg.time) / 60000);
+        if (diff < 1) statusSpan.innerText = "seen just now";
+        else if (diff < 60) statusSpan.innerText = `seen ${diff} min ago`;
+        else statusSpan.innerText = `seen ${Math.floor(diff / 60)} h ago`;
+        statusSpan.style.color = "blue";
       } else {
-        const hours = Math.floor(diff / 60);
-        statusSpan.innerText = `seen ${hours} h ago`;
+        statusSpan.innerText = "sent";
+        statusSpan.style.color = "#888";
       }
-      statusSpan.style.color = "blue";
-    } else {
-      statusSpan.innerText = "sent";
-      statusSpan.style.color = "#888";
-    }
-  });
-}
-
+    });
+  }
 
   chatBox.appendChild(div);
-  // Image click to fullscreen
-chatBox.addEventListener("click", (e) => {
-  if (e.target.classList.contains("chat-image")) {
-    const overlay = document.getElementById("imgOverlay");
-    const overlayImg = document.getElementById("overlayImg");
-    overlayImg.src = e.target.src;
-    overlay.style.display = "flex";
-  }
-});
 
-// Click overlay to close
-document.getElementById("imgOverlay").addEventListener("click", () => {
-  document.getElementById("imgOverlay").style.display = "none";
-});
+  // ---------- Image click to fullscreen ----------
+  chatBox.addEventListener("click", (e) => {
+    if (e.target.classList.contains("chat-image")) {
+      const overlay = document.getElementById("imgOverlay");
+      const overlayImg = document.getElementById("overlayImg");
+      overlayImg.src = e.target.src;
+      overlay.style.display = "flex";
+    }
+  });
+
+  // Click overlay to close
+  document.getElementById("imgOverlay").addEventListener("click", () => {
+    document.getElementById("imgOverlay").style.display = "none";
+  });
 
   chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function toggleSelect(div, msgId) {
+  selectMode = true;
+  document.getElementById("deleteSelectedBtn").style.display = "block";
+
+  if (div.classList.contains("selected")) {
+    div.classList.remove("selected");
+    const circle = div.querySelector(".select-circle");
+    if (circle) circle.remove();
+    selectedMessages.delete(msgId);
+  } else {
+    div.classList.add("selected");
+    const circle = document.createElement("span");
+    circle.className = "select-circle";
+    div.appendChild(circle);
+    selectedMessages.add(msgId);
+  }
+
+  if (selectedMessages.size === 0) {
+    selectMode = false;
+    document.getElementById("deleteSelectedBtn").style.display = "none";
+  }
 }
 
 // ---------- Update message status ----------

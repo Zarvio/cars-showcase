@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Group</title>
+</head>
+<body>
+
+<h2>Create Group (Simple)</h2>
+
+<p>Comma se usernames likho (example: ram,shyam,alex)</p>
+
+<input id="usernamesInput" placeholder="user1,user2,user3" style="width:300px;padding:8px">
+<br><br>
+
+<input id="groupNameInput" placeholder="Group name" style="width:300px;padding:8px">
+<br><br>
+
+<button onclick="createGroupByUsernames()">Create Group</button>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script>
+/* 🔥 SAME firebaseConfig JO TUM chat.js ME USE KARTE HO */
+const firebaseConfig = {
+  apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
+  authDomain: "inspire4ever-c60ad.firebaseapp.com",
+  databaseURL: "https://inspire4ever-c60ad-default-rtdb.firebaseio.com",
+  projectId: "inspire4ever-c60ad",
+  storageBucket: "inspire4ever-c60ad.appspot.com",
+  messagingSenderId: "125014633127",
+  appId: "1:125014633127:web:d29e4c37628ab637f40982"
+};
+
+if(!firebase.apps.length){
+  firebase.initializeApp(firebaseConfig);
+}
+
+let currentUser = null;
+
+firebase.auth().onAuthStateChanged(user=>{
+  if(!user){
+    alert("Login required");
+    return;
+  }
+  currentUser = user.uid;
+});
+
+function createGroupByUsernames(){
+  const usernamesText = document.getElementById("usernamesInput").value;
+  const groupName = document.getElementById("groupNameInput").value;
+
+  if(!usernamesText || !groupName){
+    alert("Username aur group name dono likho");
+    return;
+  }
+
+  const usernames = usernamesText.split(",").map(u=>u.trim().toLowerCase());
+
+  firebase.database().ref("users").once("value").then(snap=>{
+    const members = {};
+    members[currentUser] = true; // khud ko add karo
+
+    snap.forEach(u=>{
+      const user = u.val();
+      if(user.username && usernames.includes(user.username.toLowerCase())){
+        members[u.key] = true;
+      }
+    });
+
+    if(Object.keys(members).length < 3){
+      alert("Kam users mile");
+      return;
+    }
+
+    // 🔥 GROUP CREATE
+    const groupRef = firebase.database().ref("groups").push();
+    groupRef.set({
+      name: groupName,
+      members: members,
+      createdBy: currentUser,
+      createdAt: Date.now()
+    });
+
+// 🔥 har member ke chat list me group add karo
+Object.keys(members).forEach(uid=>{
+  firebase.database().ref(`userChats/${uid}/${groupRef.key}`).set({
+    type: "group",
+    name: groupName,
+    createdAt: Date.now()
+  });
+});
+
+alert("Group created & added to all members chats");
+
+// chat page open
+window.location.href = "chat.html?uid=" + groupRef.key;
+
+  });
+}
+</script>
+
+</body>
+</html>

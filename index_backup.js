@@ -12,18 +12,58 @@ function showSkeletons(count = 6) {
     box.className = "pin-box";
 
     box.innerHTML = `
-      <div class="mediaContainer skeleton skeleton-video"></div>
-      <div style="display:flex;align-items:center;gap:8px;padding:8px;">
-        <div class="skeleton skeleton-dp"></div>
-        <div class="skeleton skeleton-name"></div>
-      </div>
-    `;
+  <div style="display:flex;align-items:center;gap:8px;padding:8px;">
+    <div class="skeleton skeleton-dp"></div>
+    <div class="skeleton skeleton-name"></div>
+  </div>
+  <div class="mediaContainer skeleton skeleton-video"></div>
+`;
+
     main.appendChild(box);
   }
 }
 let dataReady = false;   // ⬅️ NEW FLAG
+function normalizeTags(tags) {
+  if (!tags) return [];
+
+  let arr = [];
+
+  if (typeof tags === "string") {
+    arr = tags
+      .replace(/[\[\]{}"]/g, "")   // ⛔ remove [ ] { }
+      .split(",")
+      .map(t => t.trim().toLowerCase());
+  }
+  else if (Array.isArray(tags)) {
+    arr = tags.map(t => String(t).toLowerCase().trim());
+  }
+
+  return arr
+    .map(t => t.replace(/[.#$\[\]]/g, ""))  // 🔥 firebase unsafe chars remove
+    .filter(t => t.length > 0);
+}
+
 
 let allPosts = [];
+function formatViews(num) {
+  num = Number(num || 0);
+
+  if (num < 1000) return num.toString();
+
+  if (num < 1000000)
+    return (num / 1000).toFixed(1).replace(".0","") + "K";
+
+  if (num < 1000000000)
+    return (num / 1000000).toFixed(1).replace(".0","") + "M";
+
+  return (num / 1000000000).toFixed(1).replace(".0","") + "B";
+}
+
+// =======================
+// 🧠 USER INTEREST SYSTEM
+// =======================
+let userInterest = {};
+
 let currentFilter = "all";
 let followingList = [];
 let isLoading = true;
@@ -41,7 +81,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 window.sendLikeNotification = async function(postId) {
-  console.log("🔔 sendLikeNotification fired for:", postId);
+  
 
   try {
     const { data: post, error } = await window.supabaseClient
@@ -87,7 +127,7 @@ window.sendLikeNotification = async function(postId) {
       timestamp: Date.now()
     });
 
-    console.log("✅ Notification created");
+   
 
   } catch (err) {
     console.error("🔥 sendLikeNotification error:", err);
@@ -96,7 +136,7 @@ window.sendLikeNotification = async function(postId) {
 };
 
 window.sendCommentNotification = async function(postId, commentText) {
-  console.log("💬 sendCommentNotification fired for:", postId);
+ 
 
   try {
     const { data: post, error } = await window.supabaseClient
@@ -281,7 +321,7 @@ async function incrementSupabaseViews(postId) {
       .eq("id", postId)
       .single();
 
-    console.log("CURRENT VIEWS:", data?.views);
+   
 
     if (error || !data) {
       console.error("Fetch views error:", error);
@@ -298,7 +338,7 @@ async function incrementSupabaseViews(postId) {
     if (updateError) {
       console.error("UPDATE ERROR:", updateError);
     } else {
-      console.log("VIEWS UPDATED TO:", newViews);
+      
     }
 
   } catch (err) {
@@ -348,25 +388,6 @@ async function incrementSupabaseViews(postId) {
   displayVideos(finalResults);
 });
 
-function normalizeTags(tags) {
-  if (!tags) return [];
-
-  // agar string hai: "{bird,animal}"
-  if (typeof tags === "string") {
-    return tags
-      .replace(/[{}"]/g, "")
-      .split(",")
-      .map(t => t.trim().toLowerCase())
-      .filter(Boolean);
-  }
-
-  // agar array hai
-  if (Array.isArray(tags)) {
-    return tags.map(t => String(t).toLowerCase().trim());
-  }
-
-  return [];
-}
 
 
 
@@ -430,186 +451,201 @@ function getSmartRelated(currentPost, allPosts) {
 
   main.innerHTML = "";
 
-
-        if (!posts || posts.length === 0) {
-            main.innerHTML = "<p>No videos found.</p>";
-            return;
-        }
-
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        posts.forEach(post => {
-
-            const box = document.createElement("div");
-            box.classList.add("pin-box");
-
-            const mediaContainer = document.createElement("div");
-            mediaContainer.className = "mediaContainer";
-
-            // OVERLAY
-            const overlay = document.createElement("div");
-            overlay.className = "uploaderOverlay";
-
-            const verified = post.uploader_verified === true 
-                || post.uploader_verified === 'true' 
-                || post.uploader_verified === 1 
-                || post.uploader_verified === '1';
-
-            const badgeHTML = verified 
-                ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px; height:16px;">` 
-                : '';
-
-            overlay.innerHTML = `
-                <div style="display:flex; align-items:center; gap:8px; width:100%;">
-                    <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="uploaderDP" alt="uploader">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span class="uploaderName">${post.uploader_name || 'Unknown'}</span>
-                        ${badgeHTML}
-                    </div>
-                </div>
-            `;
-            // overlay ke andar div ko select karo
-const uploaderDiv = overlay.querySelector('div');
-if (uploaderDiv) {
-    uploaderDiv.style.cursor = "pointer";
-    uploaderDiv.addEventListener("click", (e) => {
-        e.stopPropagation(); // video click se conflict na ho
-        if (post.uploader_uid) {
-            window.location.href = `user.html?uid=${post.uploader_uid}`;
-        }
-    });
+if (!posts || posts.length === 0) {
+    main.innerHTML = "<p>No videos found.</p>";
+    return;
 }
 
-            mediaContainer.appendChild(overlay);
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-            // VIEWS
-            const viewsOverlay = document.createElement("div");
-            viewsOverlay.className = "viewsOverlay";
-            viewsOverlay.innerHTML = `
-                <i class="fa-regular fa-eye"></i>
-                <span class="viewCount">${post.views ? post.views.toLocaleString() : 0}</span>
-            `;
-            mediaContainer.appendChild(viewsOverlay);
+posts.forEach(post => {
 
-            // MEDIA
-            let media;
-            if (post.file_type.startsWith("video") && isMobile) {
-                media = document.createElement("img");
-                media.src = post.thumb_url || "default.jpg";
-            } else if (post.file_type.startsWith("video")) {
-                media = document.createElement("video");
-                media.src = post.file_url;
-                media.muted = true;
-                media.loop = true;
-                media.playsInline = true;
-                media.preload = "metadata";
-            } else {
-                media = document.createElement("img");
-                media.src = post.file_url;
+    const box = document.createElement("div");
+    box.classList.add("pin-box");
+
+    const mediaContainer = document.createElement("div");
+    mediaContainer.className = "mediaContainer";
+
+    // SKELETON FIRST
+    const skeleton = document.createElement("div");
+    skeleton.className = "skeleton skeleton-video";
+    mediaContainer.appendChild(skeleton);
+
+    // OVERLAY
+    const overlay = document.createElement("div");
+    overlay.className = "uploaderOverlay";
+    overlay.style.display = "none"; // hide overlay until media loads
+
+    const verified = post.uploader_verified === true 
+        || post.uploader_verified === 'true' 
+        || post.uploader_verified === 1 
+        || post.uploader_verified === '1';
+
+    const badgeHTML = verified 
+        ? `<img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:16px; height:16px;">` 
+        : '';
+
+    overlay.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; width:100%;">
+            <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="uploaderDP" alt="uploader">
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span class="uploaderName">${post.uploader_name || 'Unknown'}</span>
+                ${badgeHTML}
+            </div>
+        </div>
+    `;
+const uploaderImg = overlay.querySelector(".uploaderDP");
+uploaderImg.addEventListener("load", () => {
+    uploaderImg.classList.add("loaded");  // fade-in effect ke liye
+});
+    const uploaderDiv = overlay.querySelector('div');
+    if (uploaderDiv) {
+        uploaderDiv.style.cursor = "pointer";
+        uploaderDiv.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (post.uploader_uid) {
+                window.location.href = `user.html?uid=${post.uploader_uid}`;
             }
+        });
+    }
 
-            media.className = "postMedia";
+    mediaContainer.appendChild(overlay);
 
-            // ----------------
-            // MEDIA CLICK → OPEN MODAL
-            // ----------------
-            media.addEventListener("click", () => {
-               currentPostId = post.id;   // 🔥 VERY IMPORTANT
-    updateCommentCount();      // 🔥 FIX
-               loadLikes(post.id);
-              // ✅ REAL VIEW COUNT
-    countView(post.id);
-                if (post.file_type.startsWith("video")) {
-                    modalVideo.src = post.file_url;
-                    modalVideo.style.display = "block";
-                    modalImage.style.display = "none";
-                    modalVideo.controls = false; // hide browser controls
-                } else {
-                    modalImage.src = post.file_url;
-                    modalImage.style.display = "block";
-                    modalVideo.style.display = "none";
-                }
+    // VIEWS
+    const viewsOverlay = document.createElement("div");
+    viewsOverlay.className = "viewsOverlay";
+    viewsOverlay.innerHTML = `
+        <i class="fa-regular fa-eye"></i>
+        <span class="viewCount">${formatViews(post.views)}</span>
 
-                // MODAL TITLE
-                modalTitle.innerHTML = `
-                    ${post.title || ""}
-                    <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                        <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="modalUploaderDP">
-                        <span>${post.uploader_name || "Unknown"}</span>
-                        ${badgeHTML}
-                    </div>
-                `;
-                // ✅ UPLOADER CLICK → USER PAGE
-const modalUploader = modalTitle.querySelector(".modalUploader");
-if (modalUploader) {
-    modalUploader.style.cursor = "pointer"; // pointer dikhe
-    modalUploader.addEventListener("click", () => {
-        const uploaderUid = post.uploader_uid;
-        if (uploaderUid) {
-            window.location.href = `user.html?uid=${uploaderUid}`;
-        }
+    `;
+    mediaContainer.appendChild(viewsOverlay);
+
+    // MEDIA
+    let media;
+    if (post.file_type.startsWith("video") && isMobile) {
+        media = document.createElement("img");
+        media.src = post.thumb_url || "default.jpg";
+    } else if (post.file_type.startsWith("video")) {
+        media = document.createElement("video");
+        media.src = post.file_url;
+        media.muted = true;
+        media.loop = true;
+        media.playsInline = true;
+        media.preload = "metadata";
+    } else {
+        media = document.createElement("img");
+        media.src = post.file_url;
+    }
+
+    media.className = "postMedia";
+
+    // ✅ Wait for media to load before removing skeleton and showing overlay
+    media.addEventListener("loadeddata", () => {
+        skeleton.remove();       // remove skeleton
+        overlay.style.display = "flex"; // show overlay/profile image
     });
-}
 
-// ✅ YAHAN ADD KARO VIEW COUNT
-    const modalViewCount = document.getElementById("modalViewCount");
-if (modalViewCount) {
+    media.addEventListener("load", () => {
+        skeleton.remove();
+        overlay.style.display = "flex";
+    });
 
-  modalViewCount.textContent = post.views.toLocaleString();
-}
+    // MEDIA CLICK → OPEN MODAL
+    media.addEventListener("click", () => {
+      // hide media first
+modalVideo.style.display = "none";
+modalImage.style.display = "none";
+
+// remove old skeleton if exists
+const oldSkeleton = document.querySelector(".modal-skeleton-overlay");
+if (oldSkeleton) oldSkeleton.remove();
+
+// 🔹 MODAL 9:16 SKELETON
+const modalSkeleton = document.createElement("div");
+modalSkeleton.className = "modal-skeleton-overlay";
+modalSkeleton.style.width = "100%";
+modalSkeleton.style.aspectRatio = "9/16";  // 9:16 ratio
+modalSkeleton.style.background = "#111";
+modalSkeleton.style.borderRadius = "12px";
+modalSkeleton.style.marginBottom = "10px";
+
+// append to modal media wrapper
+modal.querySelector(".modal-media-wrapper").appendChild(modalSkeleton);
 
 
-                modal.classList.remove("hidden");
+
+        currentPostId = post.id;
+        updateCommentCount();
+        loadLikes(post.id);
+        countView(post.id);
+
+        if (post.file_type.startsWith("video")) {
+          // remove old skeleton if exists
+const oldSkeleton = document.querySelector(".modal-skeleton-overlay");
+if (oldSkeleton) oldSkeleton.remove();
+
+// 🔹 MODAL 9:16 SKELETON
+const modalSkeleton = document.createElement("div");
+modalSkeleton.className = "modal-skeleton-overlay";
+modalSkeleton.style.width = "100%";
+modalSkeleton.style.aspectRatio = "9/16";  // 9:16 ratio
+modalSkeleton.style.background = "#111";
+modalSkeleton.style.borderRadius = "12px";
+modalSkeleton.style.marginBottom = "10px";
+
+// append to modal media wrapper
+modal.querySelector(".modal-media-wrapper").appendChild(modalSkeleton);
+
+            modalVideo.src = post.file_url;
+            modalVideo.addEventListener("loadeddata", () => {
+    const s = document.querySelector(".modal-skeleton-overlay");
+    if (s) s.remove();
+    modalVideo.style.display = "block";
+}, { once: true });
+
+            modalVideo.style.display = "block";
+            modalImage.style.display = "none";
+            modalVideo.controls = false;
+        } else {
+            modalImage.src = post.file_url;
+            modalImage.style.display = "block";
+            modalVideo.style.display = "none";
+        }
+
+        // MODAL TITLE
+        modalTitle.innerHTML = `
+            ${post.title || ""}
+            <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
+                <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="modalUploaderDP">
+                <span>${post.uploader_name || "Unknown"}</span>
+                ${badgeHTML}
+            </div>
+        `;
+
+        const modalUploader = modalTitle.querySelector(".modalUploader");
+        if (modalUploader) {
+            modalUploader.style.cursor = "pointer";
+            modalUploader.addEventListener("click", () => {
+                const uploaderUid = post.uploader_uid;
+                if (uploaderUid) {
+                    window.location.href = `user.html?uid=${uploaderUid}`;
+                }
+            });
+        }
+
+        const modalViewCount = document.getElementById("modalViewCount");
+        if (modalViewCount) modalViewCount.textContent = formatViews(post.views);
+
+
+        modal.classList.remove("hidden");
+    
 
                 // ----------------
                 // RELATED VIDEOS
                 // ----------------
                 relatedVideos.innerHTML = "";
 
-function getSmartRelated(currentPost, allPosts) {
-
-  const stopWords = ["the","is","are","of","to","a","an","and","or","in","on","for","with"];
-
-  const currentTags = normalizeTags(currentPost.content_tags);
-
-  const titleWords = currentPost.title
-    ? currentPost.title.toLowerCase()
-        .split(" ")
-        .filter(w => w.length > 2 && !stopWords.includes(w))
-    : [];
-
-  const aiMatches = [];
-  const titleMatches = [];
-  const added = new Set();
-
-  // 🥇 AI TAG MATCH FIRST
-  allPosts.forEach(post => {
-    if (post.id === currentPost.id) return;
-
-    const tags = normalizeTags(post.content_tags);
-    const matchScore = tags.filter(t => currentTags.includes(t)).length;
-
-    if (matchScore > 0) {
-      aiMatches.push({ ...post, score: matchScore });
-      added.add(post.id);
-    }
-  });
-
-  aiMatches.sort((a,b) => b.score - a.score); // best match first
-
-  // 🥈 TITLE MATCH SECOND
-  allPosts.forEach(post => {
-    if (post.id === currentPost.id || added.has(post.id)) return;
-    if (!post.title) return;
-
-    const postTitle = post.title.toLowerCase();
-    const match = titleWords.some(w => postTitle.includes(w));
-
-    if (match) titleMatches.push(post);
-  });
-
-  return [...aiMatches, ...titleMatches];
-}
 
 // ----------------------
 // Related video box create karne ka function
@@ -658,14 +694,29 @@ function createRelatedVideoBox(post) {
         loadLikes(post.id);
 
         if (post.file_type.startsWith("video")) {
-            modalVideo.src = post.file_url;
-            modalVideo.style.display = "block";
-            modalImage.style.display = "none";
-        } else {
-            modalImage.src = post.file_url;
-            modalImage.style.display = "block";
-            modalVideo.style.display = "none";
-        }
+          
+    modalVideo.src = post.file_url;
+
+    modalVideo.addEventListener("loadeddata", () => {
+        const s = document.querySelector(".modal-skeleton-overlay");
+        if (s) s.remove();
+        modalVideo.style.display = "block";
+    }, { once: true });
+
+    modalImage.style.display = "none";
+    modalVideo.controls = false;
+} else {
+    modalImage.src = post.file_url;
+
+    modalImage.addEventListener("load", () => {
+        const s = document.querySelector(".modal-skeleton-overlay");
+        if (s) s.remove();
+        modalImage.style.display = "block";
+    }, { once: true });
+
+    modalVideo.style.display = "none";
+}
+
 
         // Modal title
         modalTitle.innerHTML = `
@@ -681,8 +732,11 @@ function createRelatedVideoBox(post) {
         const newRelated = getSmartRelated(post, allPosts);
         relatedVideos.innerHTML = ""; // purane clear karo
         newRelated.forEach(r => createRelatedVideoBox(r)); // nayi related videos add karo
+const modalContent = modal.querySelector(".modal-content"); // modal-content आपका scrollable div
+if(modalContent) modalContent.scrollTop = 0;
 
         modal.classList.remove("hidden");
+        
     });
 
     relatedVideos.appendChild(wrap);
@@ -818,10 +872,13 @@ if(!dataReady || isLoading) return;
   let filtered = [...allPosts];
 
 
-  if (currentFilter === "all") {
-    displayVideos(filtered);
-    return;
-  }
+ if (currentFilter === "all") {
+  let feed = smartShuffle(filtered);
+  feed = personalizeFeed(feed);   // 🧠 USER INTEREST APPLY
+  displayVideos(feed);
+  return;
+}
+
 
   if (currentFilter === "following") {
     filtered = filtered.filter(p =>
@@ -1032,7 +1089,7 @@ document.querySelector(".closeBtn").addEventListener("click", () => {
     }
 });
 // RELATED VIDEOS FUNCTION (Supabase version)
-const relatedVideos = document.getElementById("relatedVideos");
+
 const template = document.getElementById("relatedVideoTemplate");
 
 const fetchRelatedVideosSupabase = async (currentVideoId) => {
@@ -1086,6 +1143,7 @@ const fetchRelatedVideosSupabase = async (currentVideoId) => {
 };
 
 let liked = false;
+let rawLikeCount = 0;
 
 // ⚠️ yahan direct element mat lo (modal ke bahar crash hota hai)
 let likeBtn = null;
@@ -1113,12 +1171,14 @@ async function loadLikes(postId) {
   if (snap.exists()) {
     const data = snap.val();
     count = data.count || 0;
+rawLikeCount = count;
 
     if (user && data.users?.[user.uid]) liked = true;
     if (!user && data.users?.[browserId]) liked = true;
   }
 
-  likeCount.textContent = count;
+  likeCount.textContent = formatViews(count);
+
   updateLikeUI();
   attachLikeListener(); // 👈 listener yahin attach hoga
 }
@@ -1161,17 +1221,22 @@ function attachLikeListener() {
     const countRef = postRef.child("count");
 
     const prevLiked = liked;
-    const prevCount = Number(likeCount.textContent);
+    const prevCount = rawLikeCount;
+
 
     // ⚡ instant UI
     liked = !prevLiked;
-    likeCount.textContent = Math.max(prevCount + (liked ? 1 : -1), 0);
+    rawLikeCount = Math.max(prevCount + (liked ? 1 : -1), 0);
+likeCount.textContent = formatViews(rawLikeCount);
+
     updateLikeUI();
 
     try {
       if (!prevLiked) {
         await userLikeRef.set(true);
         await countRef.transaction(c => (c || 0) + 1);
+        updateUserInterest(currentPostId);
+
          sendLikeNotification(currentPostId);
       } else {
         await userLikeRef.remove();
@@ -1182,7 +1247,9 @@ function attachLikeListener() {
 
       // ❌ revert UI
       liked = prevLiked;
-      likeCount.textContent = prevCount;
+      rawLikeCount = prevCount;
+likeCount.textContent = formatViews(rawLikeCount);
+
       updateLikeUI();
     } finally {
       // ✅ STOP shimmer (YAHAN PROBLEM THI)
@@ -1244,7 +1311,8 @@ function showCustomAlert(msg) {
 async function updateCommentCount() {
     const snapshot = await firebase.database().ref(`videoComments/${currentPostId}`).once("value");
     const comments = snapshot.val() || {};
-    commentCountEl.textContent = Object.keys(comments).length;
+    commentCountEl.textContent = formatViews(Object.keys(comments).length);
+
 }
 
 // ----------------------
@@ -1270,7 +1338,8 @@ async function loadAllComments() {
     allCommentsList.scrollTop = allCommentsList.scrollHeight;
 
     // Update count fast
-    commentCountEl.textContent = Object.keys(comments).length;
+   commentCountEl.textContent = formatViews(Object.keys(comments).length);
+
 }
 
 // ----------------------
@@ -1482,6 +1551,7 @@ downloadBtn.addEventListener("click", async () => {
         document.body.removeChild(a);
 
         URL.revokeObjectURL(blobUrl);
+updateUserInterest(currentPostId);   // 🔥 USER INTEREST
 
         setTimeout(() => {
             progressOverlay.style.display = "none";
@@ -1571,6 +1641,25 @@ firebase.auth().onAuthStateChanged(async user => {
 
     }, 600); // smooth loading dots time
 });
+async function updateUserInterest(postId) {
+  const user = firebase.auth().currentUser;
+  if(!user) return;
+
+  const { data: post } = await supabaseClient
+    .from("pinora823")
+    .select("content_tags")
+    .eq("id", postId)
+    .single();
+
+  if(!post || !post.content_tags) return;
+
+  const tags = normalizeTags(post.content_tags);
+  const ref = firebase.database().ref(`userInterest/${user.uid}`);
+
+  tags.forEach(tag => {
+    ref.child(tag).transaction(c => (c || 0) + 1);
+  });
+}
 
 // update coins function
 async function updateUserCoins(amount){
@@ -1618,23 +1707,70 @@ async function getUserCoins(){
   return Number(snap.val() || 0);
 }
 firebase.auth().onAuthStateChanged(user=>{
+  if(!user){
+    userInterest = {};
+    return;
+  }
+
+  const uid = user.uid;
+
+  // 🧠 user interest listener (SIRF EK JAGAH)
+  firebase.database()
+    .ref(`userInterest/${uid}`)
+    .on("value", snap => {
+      userInterest = snap.val() || {};
+    });
+
   const creditBox = document.getElementById("creditBox");
+  if(!creditBox) return;
 
   const oldBtn = document.querySelector(".addCoinBtn");
   if(oldBtn) oldBtn.remove();
 
-  if(user){
-    const plus = document.createElement("i");
-    plus.className = "fa-solid fa-plus addCoinBtn";
-    creditBox.appendChild(plus);
+  const plus = document.createElement("i");
+  plus.className = "fa-solid fa-plus addCoinBtn";
+  creditBox.appendChild(plus);
 
-    plus.addEventListener("click",()=>{
-      document.getElementById("coinPurchasePopup").classList.remove("hidden");
-    });
-  }
+  plus.addEventListener("click",()=>{
+    document.getElementById("coinPurchasePopup").classList.remove("hidden");
+  });
 });
+
 
 
 function closeCoinPopup(){
   document.getElementById("coinPurchasePopup").classList.add("hidden");
+}
+function smartShuffle(posts){
+  if(!posts || posts.length < 10) return posts;
+
+  const head = posts.slice(0, 30);   // 🔥 sirf top 30 latest
+  const tail = posts.slice(30);      // purane same order me
+
+  // Fisher-Yates shuffle
+  for(let i = head.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [head[i], head[j]] = [head[j], head[i]];
+  }
+
+  return [...head, ...tail];
+}
+function personalizeFeed(posts){
+  if(!userInterest || Object.keys(userInterest).length === 0) return posts;
+
+  const topTag = Object.keys(userInterest)
+    .sort((a,b)=>userInterest[b]-userInterest[a])[0];
+
+  if(userInterest[topTag] < 6) return posts;  // ❗ 6 threshold
+
+  const matched = [];
+  const others = [];
+
+  posts.forEach(p=>{
+    const tags = normalizeTags(p.content_tags);
+    if(tags.includes(topTag)) matched.push(p);
+    else others.push(p);
+  });
+
+  return [...matched, ...others];
 }

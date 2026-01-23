@@ -1848,95 +1848,103 @@ function personalizeFeed(posts){
 
   return [...matched, ...others];
 }
-const currentVersion = "1.0.6"; // Current web version
 
+
+
+
+
+
+
+
+// testtttttttttttttt
+// 🔢 Current web version (JO USER USE KAR RAHA HAI)
+const currentVersion = "1.0.6";
+
+// 🔍 Check for update
 async function checkForUpdate() {
     try {
-        const res = await fetch("/version.json", { cache: "no-store" });
+        // ❗ GitHub Pages ke liye RELATIVE path
+        const res = await fetch("version.json", { cache: "no-store" });
         const data = await res.json();
 
-        // Agar user ne already update kiya → popup na dikhe
-        if (localStorage.getItem("updated") === "true") return;
+        // Agar already isi version pe update ho chuka hai → popup mat dikhao
+        if (localStorage.getItem("updated_version") === data.version) return;
 
         if (data.version !== currentVersion) {
-            showForcedUpdatePopup();
+            showForcedUpdatePopup(data.version);
         }
     } catch (err) {
         console.error("Version check failed:", err);
     }
 }
 
-// ✅ Forced full-screen popup
-function showForcedUpdatePopup() {
+// 🚨 Full-screen forced update popup
+function showForcedUpdatePopup(newVersion) {
     if (document.getElementById("updatePopup")) return;
 
     const popup = document.createElement("div");
     popup.id = "updatePopup";
-    popup.style.position = "fixed";
-    popup.style.top = 0;
-    popup.style.left = 0;
-    popup.style.width = "100vw";
-    popup.style.height = "100vh";
-    popup.style.background = "rgba(0,0,0,0.95)";
-    popup.style.color = "#fff";
-    popup.style.display = "flex";
-    popup.style.flexDirection = "column";
-    popup.style.justifyContent = "center";
-    popup.style.alignItems = "center";
-    popup.style.fontFamily = "sans-serif";
-    popup.style.zIndex = 99999;
-    popup.style.pointerEvents = "auto";
+
+    popup.style.cssText = `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.95);
+        color:#fff;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        font-family:sans-serif;
+        z-index:99999;
+    `;
 
     popup.innerHTML = `
-        <h1 style="font-size:2em; margin-bottom:20px;">🚀 New Update Available!</h1>
-        <p style="margin-bottom:30px; text-align:center; max-width:400px;">
-            You are using an old version of the web app. Click below to update and continue.
+        <h1 style="font-size:2em; margin-bottom:15px;">🚀 New Update Available</h1>
+        <p style="max-width:420px; text-align:center; margin-bottom:30px;">
+            A new version (${newVersion}) is available.  
+            Please update to continue using the app.
         </p>
         <button id="updateBtn" style="
-            padding:15px 30px; 
-            font-size:1.2em; 
-            background:#22c55e; 
-            border:none; 
-            border-radius:10px; 
+            padding:14px 32px;
+            font-size:1.1em;
+            background:#22c55e;
+            border:none;
+            border-radius:10px;
             cursor:pointer;
-            color:white;
+            color:#fff;
             font-weight:bold;
-        ">Update</button>
+        ">Update Now</button>
     `;
 
     document.body.appendChild(popup);
-
-    // Disable clicks outside the popup
-    popup.addEventListener("click", e => e.stopPropagation());
 
     document.getElementById("updateBtn").onclick = async () => {
         const btn = document.getElementById("updateBtn");
         btn.disabled = true;
         btn.innerText = "Updating...";
 
-        // 1️⃣ Clear caches
-        if ('caches' in window) {
-            const names = await caches.keys();
-            await Promise.all(names.map(name => caches.delete(name)));
+        // 🧹 Clear browser caches
+        if ("caches" in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
         }
 
-        // 2️⃣ Unregister service workers
-        if ('serviceWorker' in navigator) {
+        // 🧹 Unregister service workers
+        if ("serviceWorker" in navigator) {
             const regs = await navigator.serviceWorker.getRegistrations();
             for (let reg of regs) await reg.unregister();
         }
 
-        // 3️⃣ Set flag so popup na aaye dobara
-        localStorage.setItem("updated", "true");
+        // ✅ Store updated version (important – popup loop fix)
+        localStorage.setItem("updated_version", newVersion);
 
-        // 4️⃣ Force reload
-        window.location.reload(true);
+        // 🔄 Hard reload
+        location.reload();
     };
 }
 
-// Check for update on page load
+// 🚀 On page load
 window.addEventListener("load", () => {
     checkForUpdate();
-    // Optional: check every 1 min
-    setInterval(checkForUpdate, 60000);
+    setInterval(checkForUpdate, 60000); // optional
 });

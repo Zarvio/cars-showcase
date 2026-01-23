@@ -642,6 +642,13 @@ sendBtn.onclick = () => {
          hideReplyBox();   // 🔥 VERY IMPORTANT
     }
 };
+// ---------- Send message on Enter key ----------
+msgInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { // shift+enter = new line
+        e.preventDefault(); // default newline roko
+        sendBtn.click();    // send button trigger karo
+    }
+});
 
 
 // ---------- Edit / Unsend ----------

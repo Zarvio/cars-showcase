@@ -1864,7 +1864,7 @@ const currentVersion = "1.0.6";
 async function checkForUpdate() {
     try {
         // ❗ GitHub Pages ke liye RELATIVE path
-        const res = await fetch("version.json", { cache: "no-store" });
+        const res = await fetch("update.json", { cache: "no-store" });
         const data = await res.json();
 
         // Agar already isi version pe update ho chuka hai → popup mat dikhao

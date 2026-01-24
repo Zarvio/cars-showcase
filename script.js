@@ -1856,95 +1856,174 @@ function personalizeFeed(posts){
 
 
 
-// testtttttttttttttt
-// 🔢 Current web version (JO USER USE KAR RAHA HAI)
-const currentVersion = "1.0.6";
+// ==============================
+// 🔢 CURRENT VERSION
+// ==============================
+const currentVersion = "1.0.2";
 
-// 🔍 Check for update
+// ==============================
+// 🔍 CHECK FOR UPDATE
+// ==============================
 async function checkForUpdate() {
-    try {
-        // ❗ GitHub Pages ke liye RELATIVE path
-        const res = await fetch("update.json", { cache: "no-store" });
-        const data = await res.json();
+  try {
+    const res = await fetch("update.json", { cache: "no-store" });
+    if (!res.ok) return;
 
-        // Agar already isi version pe update ho chuka hai → popup mat dikhao
-        if (localStorage.getItem("updated_version") === data.version) return;
+    const data = await res.json();
+    const lastSeenVersion = localStorage.getItem("last_seen_version");
 
-        if (data.version !== currentVersion) {
-            showForcedUpdatePopup(data.version);
-        }
-    } catch (err) {
-        console.error("Version check failed:", err);
+    // 🟢 First time user
+    if (!lastSeenVersion) {
+      localStorage.setItem("last_seen_version", currentVersion);
+      return;
     }
+
+    // 🔴 Version changed → force popup
+    if (data.version !== lastSeenVersion) {
+      showForcedUpdatePopup(data.version);
+    }
+
+  } catch (err) {
+    console.error("Version check failed:", err);
+  }
 }
 
-// 🚨 Full-screen forced update popup
+window.addEventListener("load", checkForUpdate);
+
+// ==============================
+// 🚨 MOBILE FRIENDLY UPDATE POPUP
+// ==============================
 function showForcedUpdatePopup(newVersion) {
-    if (document.getElementById("updatePopup")) return;
+  if (document.getElementById("updatePopup")) return;
 
-    const popup = document.createElement("div");
-    popup.id = "updatePopup";
+  const popup = document.createElement("div");
+  popup.id = "updatePopup";
 
-    popup.style.cssText = `
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,0.95);
-        color:#fff;
+  popup.style.cssText = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.92);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:99999;
+    padding:16px;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  `;
+
+  popup.innerHTML = `
+    <div style="
+      width:100%;
+      max-width:380px;
+      background:#020617;
+      border-radius:22px;
+      padding:26px 22px;
+      text-align:center;
+      box-shadow:0 25px 70px rgba(0,0,0,0.7);
+      animation:scaleIn .35s ease;
+    ">
+      
+      <div style="
+        width:70px;
+        height:70px;
+        margin:0 auto 14px;
+        border-radius:50%;
+        background:linear-gradient(135deg,#22c55e,#16a34a);
         display:flex;
-        flex-direction:column;
-        justify-content:center;
         align-items:center;
-        font-family:sans-serif;
-        z-index:99999;
-    `;
+        justify-content:center;
+        font-size:34px;
+      ">
+        🚀
+      </div>
 
-    popup.innerHTML = `
-        <h1 style="font-size:2em; margin-bottom:15px;">🚀 New Update Available</h1>
-        <p style="max-width:420px; text-align:center; margin-bottom:30px;">
-            A new version (${newVersion}) is available.  
-            Please update to continue using the app.
-        </p>
-        <button id="updateBtn" style="
-            padding:14px 32px;
-            font-size:1.1em;
-            background:#22c55e;
-            border:none;
-            border-radius:10px;
-            cursor:pointer;
-            color:#fff;
-            font-weight:bold;
-        ">Update Now</button>
-    `;
+      <h2 style="
+        font-size:1.35em;
+        margin-bottom:10px;
+        font-weight:700;
+      ">
+        Update Available
+      </h2>
 
-    document.body.appendChild(popup);
+      <p style="
+        font-size:0.95em;
+        color:#cbd5f5;
+        line-height:1.55;
+        margin-bottom:22px;
+      ">
+        A new version <b>${newVersion}</b> is ready.<br>
+        Please update to continue using the app.
+      </p>
 
-    document.getElementById("updateBtn").onclick = async () => {
-        const btn = document.getElementById("updateBtn");
-        btn.disabled = true;
-        btn.innerText = "Updating...";
+      <button id="updateBtn" style="
+        width:100%;
+        padding:14px;
+        font-size:1em;
+        background:linear-gradient(135deg,#22c55e,#16a34a);
+        border:none;
+        border-radius:14px;
+        color:#fff;
+        font-weight:700;
+        cursor:pointer;
+        box-shadow:0 10px 25px rgba(34,197,94,0.35);
+      ">
+        Update Now
+      </button>
 
-        // 🧹 Clear browser caches
-        if ("caches" in window) {
-            const keys = await caches.keys();
-            await Promise.all(keys.map(k => caches.delete(k)));
-        }
+      <p style="
+        font-size:0.75em;
+        color:#94a3b8;
+        margin-top:14px;
+      ">
+        Mandatory update required
+      </p>
+    </div>
 
-        // 🧹 Unregister service workers
-        if ("serviceWorker" in navigator) {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            for (let reg of regs) await reg.unregister();
-        }
+    <style>
+      @keyframes scaleIn {
+        from { transform:scale(.9); opacity:0 }
+        to { transform:scale(1); opacity:1 }
+      }
+      #updateBtn:active {
+        transform:scale(.96);
+      }
+    </style>
+  `;
 
-        // ✅ Store updated version (important – popup loop fix)
-        localStorage.setItem("updated_version", newVersion);
+  document.body.appendChild(popup);
 
-        // 🔄 Hard reload
-        location.reload();
-    };
+  // ==============================
+  // 🔄 UPDATE HANDLER
+  // ==============================
+  document.getElementById("updateBtn").onclick = async () => {
+    const btn = document.getElementById("updateBtn");
+    btn.disabled = true;
+    btn.innerText = "Updating...";
+
+    // 🧹 Clear cache
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+
+    // 🧹 Unregister service workers
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (let reg of regs) await reg.unregister();
+    }
+
+    // ✅ Save updated version
+    localStorage.setItem("last_seen_version", newVersion);
+
+    // 🔄 Hard reload
+    location.reload(true);
+  };
 }
 
-// 🚀 On page load
+// ==============================
+// 🔁 OPTIONAL AUTO CHECK
+// ==============================
 window.addEventListener("load", () => {
-    checkForUpdate();
-    setInterval(checkForUpdate, 60000); // optional
+  checkForUpdate();
+  setInterval(checkForUpdate, 60000);
 });

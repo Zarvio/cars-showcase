@@ -131,15 +131,12 @@ document.getElementById("userVideosSection").style.display = "none";
 
   try {
     // 🔍 current user ke videos count
-    const snap = await firebase.database()
-      .ref("videos")
-      .orderByChild("uid")
-      .equalTo(user.uid)
-      .once("value");
+const { data, error } = await supabaseClient
+  .from("pinora823")
+  .select("id")
+  .eq("uploader_uid", user.uid);
 
-    const videoCount = snap.exists()
-      ? Object.keys(snap.val()).length
-      : 0;
+const videoCount = data ? data.length : 0;
 
     // ❌ agar 2 se kam videos
     if (videoCount < 2) {

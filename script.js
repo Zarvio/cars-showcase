@@ -1859,7 +1859,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "1.0.2";
+const currentVersion = "1.0.3";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE

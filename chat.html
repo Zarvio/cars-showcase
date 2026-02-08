@@ -12,6 +12,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 
 <body>
@@ -89,17 +91,40 @@
 
     <div id="replyBox" class="hidden"></div>
 
-    <div class="chat-input">
-      <input id="msgInput" placeholder="Message...">
-      <button id="sendBtn">
-        <i class="fa-solid fa-paper-plane"></i>
-      </button>
-    </div>
+<div class="chat-input">
+  <!-- Image button -->
+<!-- Image / Video button -->
+<button id="imgBtn">
+  <i class="fa-solid fa-image"></i>
+</button>
 
-  </div>
+<!-- Hidden file input -->
+<input 
+  type="file" 
+  id="imgInput" 
+  accept="image/*,video/*" 
+  hidden
+>
 
+  <input id="msgInput" placeholder="Message...">
+
+  <!-- Send button -->
+  <button id="sendBtn">
+    <i class="fa-solid fa-paper-plane"></i>
+  </button>
 </div>
 
+
 <script src="chat.js"></script>
+<!-- Fullscreen Media Viewer -->
+<div id="mediaViewer" class="media-viewer hidden">
+  <span id="closeViewer">✕</span>
+  <div id="mediaViewerContent"></div>
+</div>
+<div id="mediaViewer" class="media-viewer hidden">
+  <span class="close-viewer">✕</span>
+  <div id="mediaViewerContent"></div>
+</div>
+
 </body>
 </html>

@@ -11,6 +11,20 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
+// ---------- Supabase Config ----------
+const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA";
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+// 🔥 track downloaded media (local)
+let downloadedMedia = JSON.parse(
+  localStorage.getItem("downloadedMedia") || "{}"
+);
+
 // ---------- Variables ----------
 let currentUser=null;
 let selectedUser=null;
@@ -116,7 +130,11 @@ firebase.database().ref(`chats/${chatId}`).once("value").then(chatSnap => {
   else if(unreadCount >= 4) unreadText = "4+ new message";
 
   // last message agar new nahi hai, text show karna
-  const lastText = last.text || "📷 Image";
+ const lastText = last.text || (last.media ? "📷 Media" : "");
+
+  // 🔥 UPLOADING STATE
+
+
   div.innerHTML = `
     <img src="${userData.photoURL || 'default.jpg'}">
     <div>
@@ -155,7 +173,7 @@ firebase.database().ref(`chats/${chatId}`).once("value").then(chatSnap => {
     }
 };
 
-      chatList.appendChild(div);
+      
     });
   });
 }
@@ -272,57 +290,109 @@ firebase.database().ref(`typing/${chatId}/${selectedUser}`).on("value", snap => 
 });
 
 firebase.database().ref("chats/"+chatId).on("child_changed", snap => {
-    const updatedMsg = snap.val();
-    const msgId = snap.key;
+  const updatedMsg = snap.val();
+  const msgId = snap.key;
 
-    const div = msgDivMap[msgId];
-    if(div){
-        // ✅ Update message text
-        const textSpan = div.querySelector(".msg-text");
-        if(textSpan) textSpan.innerText = updatedMsg.text || "📷 Image";
+  const div = msgDivMap[msgId];
+  if (!div) return;
 
-        // ✅ Add / remove edited label
-        let editedLabel = div.querySelector(".edited-label");
-        if(updatedMsg.edited){
-            if(!editedLabel){
-                editedLabel = document.createElement("span");
-                editedLabel.className = "edited-label";
-                editedLabel.innerText = "(edited)";
-                div.appendChild(editedLabel);
-            }
-        } else {
-            if(editedLabel) editedLabel.remove();
-        }
+  // 🔥 CASE 1: upload finished (blur → real media)
+  if (!updatedMsg.uploading && updatedMsg.media) {
 
-        // 🔹 UPDATE REPLY PREVIEWS
-        // loop through all messages to see if kisi ne is msg pe reply kiya
-        Object.values(msgDivMap).forEach(mDiv => {
-            const replyPreview = mDiv.querySelector(`.reply-preview-wa[data-reply-id='${msgId}'] .reply-text`);
-            if(replyPreview){
-                replyPreview.innerText = updatedMsg.text || "📷 Image";
-            }
-        });
+    let newMediaHTML = "";
+
+    // sender
+    if (updatedMsg.sender === currentUser) {
+      newMediaHTML =
+        updatedMsg.mediaType === "image"
+  ? `<img 
+        src="${updatedMsg.media}" 
+        style="max-width:220px;border-radius:10px;cursor:pointer"
+        onclick="openMediaFullscreen('${updatedMsg.media}','image')"
+     >`
+  : `<video 
+        src="${updatedMsg.media}" 
+        controls 
+        style="max-width:220px;border-radius:10px;cursor:pointer"
+        onclick="openMediaFullscreen('${updatedMsg.media}','video')"
+     ></video>`;
+    }
+    // receiver
+else {
+  newMediaHTML = `
+    <div class="media-placeholder blur" data-msgid="${msgId}">
+      <button class="download-btn">⬇ Download</button>
+    </div>
+  `;
+}
+
+
+    // 🔥 REPLACE blur placeholder with real media
+    const oldPlaceholder = div.querySelector(".media-placeholder");
+    if (oldPlaceholder) {
+      oldPlaceholder.outerHTML = newMediaHTML;
+      // 🔥 IMPORTANT: re-attach download click (LIVE)
+setTimeout(() => {
+  const newDiv = msgDivMap[msgId];
+  if (!newDiv) return;
+
+  const downloadBtn = newDiv.querySelector(".download-btn");
+  if (!downloadBtn) return;
+
+  downloadBtn.onclick = () => {
+    const placeholder = downloadBtn.parentElement;
+
+    placeholder.innerHTML = `
+      <div class="progress-circle">Downloading...</div>
+    `;
+
+    setTimeout(() => {
+      placeholder.classList.remove("blur");
+      placeholder.innerHTML =
+        updatedMsg.mediaType === "image"
+          ? `<img src="${updatedMsg.media}" style="max-width:220px;border-radius:10px;">`
+          : `<video src="${updatedMsg.media}" controls style="max-width:220px;border-radius:10px;"></video>`;
+          // ✅ mark as downloaded
+downloadedMedia[msgId] = true;
+localStorage.setItem("downloadedMedia", JSON.stringify(downloadedMedia));
+
+    }, 1200);
+  };
+}, 0);
+
+    }
+  }
+
+  // 🔹 edited label
+  let editedLabel = div.querySelector(".edited-label");
+  if (updatedMsg.edited) {
+    if (!editedLabel) {
+      editedLabel = document.createElement("span");
+      editedLabel.className = "edited-label";
+      editedLabel.innerText = "(edited)";
+      div.appendChild(editedLabel);
+    }
+  } else {
+    if (editedLabel) editedLabel.remove();
+  }
+
+  // 🔹 seen logic (same as pehle)
+  if (
+    updatedMsg.sender === currentUser &&
+    updatedMsg.read &&
+    updatedMsg.readTime &&
+    !updatedMsg.edited
+  ) {
+    if (lastSeenMsgDiv) {
+      const oldSeen = lastSeenMsgDiv.querySelector(".seen-text");
+      if (oldSeen) oldSeen.remove();
     }
 
-
-    // --------------------------
-    // 🔥 Seen logic: only when readTime updated (ignore edits)
-    // --------------------------
-    // Check: updatedMsg.readTime exists AND sender is currentUser
-    if(updatedMsg.sender === currentUser && updatedMsg.read && updatedMsg.readTime && !updatedMsg.edited){
-        if(!div) return;
-
-        // Remove old seen
-        if(lastSeenMsgDiv){
-            const oldSeen = lastSeenMsgDiv.querySelector(".seen-text");
-            if(oldSeen) oldSeen.remove();
-        }
-
-        // Show seen on this message
-        showSeen(div, updatedMsg.readTime);
-        lastSeenMsgDiv = div;
-    }
+    showSeen(div, updatedMsg.readTime);
+    lastSeenMsgDiv = div;
+  }
 });
+
 
 
 // ✅ Child removed: remove deleted messages from DOM live
@@ -416,16 +486,112 @@ if(msg.reply){
 
     }
 }
+let mediaHTML = "";
+
+// 🟡 upload ho raha hai (sender ke liye)
+// 🟡 upload ho raha hai → SIRF sender ko dikhe
+// 🟡 upload ho raha hai
+if (msg.uploading) {
+
+  // sender → progress
+if (msg.sender === currentUser) {
+  const progressText =
+    msg.progress && msg.progress > 0
+      ? `${msg.progress}%`
+      : "Sending...";
+
+  mediaHTML = `
+    <div class="media-placeholder blur">
+      <div class="progress-circle">${progressText}</div>
+    </div>
+  `;
+}
+
+
+  // receiver → EMPTY placeholder (VERY IMPORTANT)
+else {
+  mediaHTML = `
+    <div class="media-placeholder blur">
+      <div class="receiving-text">📥 Media receiving...</div>
+    </div>
+  `;
+}
+}
+
+
+
+// 🟢 upload complete
+else if (msg.media) {
+
+  // sender
+  if (msg.sender === currentUser) {
+    mediaHTML =
+      msg.mediaType === "image"
+        ? `<img src="${msg.media}" style="max-width:220px;border-radius:10px;">`
+        : `<video src="${msg.media}" controls style="max-width:220px;border-radius:10px;"></video>`;
+  }
+
+  // receiver
+  else {
+if (downloadedMedia[id]) {
+  // ✅ already downloaded → direct show
+  mediaHTML =
+    msg.mediaType === "image"
+      ? `<img src="${msg.media}" style="max-width:220px;border-radius:10px;">`
+      : `<video src="${msg.media}" controls style="max-width:220px;border-radius:10px;"></video>`;
+} else {
+  // ❌ not downloaded yet
+  mediaHTML = `
+    <div class="media-placeholder blur">
+      <button class="download-btn">⬇ Download</button>
+    </div>
+  `;
+}
+
+  }
+}
+
+// 🔵 normal text
+else {
+  mediaHTML = `<span class="msg-text">${linkify(msg.text)}</span>`;
+}
+
 
 div.innerHTML = `
   ${replyHTML}
-  <span class="msg-text">${linkify(msg.text) || "📷 Image"}</span>
-
+  ${mediaHTML}
   ${msg.edited ? '<span class="edited-label">(edited)</span>' : ''}
   <span class="msg-time-swipe">${time12}</span>
 `;
 
 
+const downloadBtn = div.querySelector(".download-btn");
+
+if (downloadBtn) {
+  downloadBtn.onclick = async () => {
+    const placeholder = downloadBtn.parentElement;
+
+    // 🔵 downloading UI
+    placeholder.innerHTML = `
+      <div class="progress-circle">Downloading...</div>
+    `;
+
+    // ⏳ fake delay (download feel)
+    setTimeout(() => {
+      placeholder.classList.remove("blur");
+
+      // ✅ real media show
+      placeholder.innerHTML =
+        msg.mediaType === "image"
+          ? `<img src="${msg.media}" style="max-width:220px;border-radius:10px;">`
+          : `<video src="${msg.media}" controls style="max-width:220px;border-radius:10px;"></video>`;
+          // ✅ mark as downloaded
+downloadedMedia[msgId] = true;
+localStorage.setItem("downloadedMedia", JSON.stringify(downloadedMedia));
+
+    }, 1500);
+  };
+}
 
 chatBox.appendChild(div);
 // 🔥 Reply preview click → scroll to original message
@@ -906,3 +1072,111 @@ firstBackBtn.addEventListener("click", () => {
 });
 
 
+const imgBtn = document.getElementById("imgBtn");
+const imgInput = document.getElementById("imgInput");
+
+
+imgBtn.addEventListener("click", () => {
+  imgInput.click();
+});
+
+imgInput.addEventListener("change", async () => {
+  const file = imgInput.files[0];
+  if (!file || !selectedUser) return;
+
+  const chatId = getChatId(currentUser, selectedUser);
+  const ext = file.name.split(".").pop();
+  const fileName = `${Date.now()}.${ext}`;
+
+  // 🔥 1) Firebase me PEHLE message push (placeholder)
+  const msgRef = firebase.database().ref(`chats/${chatId}`).push();
+  msgRef.set({
+    sender: currentUser,
+    text: "",
+    media: "",
+    mediaType: file.type.startsWith("image/") ? "image" : "video",
+    uploading: true,
+    progress: 0,
+    time: Date.now(),
+    read: false,
+    readTime: null
+  });
+
+  // 🔥 2) Fake progress
+  let fakeProgress = 0;
+  const progressTimer = setInterval(() => {
+    fakeProgress += Math.floor(Math.random() * 8) + 4;
+    if (fakeProgress > 90) fakeProgress = 90;
+    msgRef.update({ progress: fakeProgress });
+  }, 400);
+
+  // 🔥 3) Supabase upload
+  const { error } = await supabaseClient.storage
+    .from("videos")
+    .upload(fileName, file);
+
+  clearInterval(progressTimer);
+
+  if (error) {
+    msgRef.remove();
+    alert("Upload failed");
+    return;
+  }
+
+  const { data } = supabaseClient.storage
+    .from("videos")
+    .getPublicUrl(fileName);
+
+  // 🔥 4) Upload complete → update message
+  msgRef.update({
+    media: data.publicUrl,
+    uploading: false,
+    progress: 100
+  });
+
+  imgInput.value = "";
+});
+const mediaViewer = document.getElementById("mediaViewer");
+const mediaViewerContent = document.getElementById("mediaViewerContent");
+const closeViewer = document.querySelector(".close-viewer");
+
+function openMediaFullscreen(src, type){
+
+  let viewer = document.getElementById("mediaViewer");
+
+  // 🔥 agar viewer exist nahi karta → create kar do
+  if(!viewer){
+    viewer = document.createElement("div");
+    viewer.id = "mediaViewer";
+    viewer.className = "media-viewer";
+    viewer.innerHTML = `
+      <span class="close-viewer">✕</span>
+      <div id="mediaViewerContent"></div>
+    `;
+    document.body.appendChild(viewer);
+
+    // close logic
+    viewer.querySelector(".close-viewer").onclick = closeMediaViewer;
+    viewer.onclick = (e)=>{
+      if(e.target === viewer) closeMediaViewer();
+    };
+  }
+
+  const content = document.getElementById("mediaViewerContent");
+
+  content.innerHTML =
+    type === "image"
+      ? `<img src="${src}">`
+      : `<video src="${src}" controls autoplay></video>`;
+
+  viewer.classList.remove("hidden");
+}
+
+function closeMediaViewer(){
+  const viewer = document.getElementById("mediaViewer");
+  const content = document.getElementById("mediaViewerContent");
+  if(viewer){
+    viewer.classList.add("hidden");
+    content.innerHTML = "";
+  }
+}

@@ -462,3 +462,81 @@ body{background:#000;color:#fff}
   width:34px;
   height:34px;
 }
+.media-placeholder{
+  width:220px;
+  height:160px;
+  background:#ddd;
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.blur-layer{
+  position:absolute;
+  inset:0;
+  backdrop-filter: blur(8px);
+}
+
+.progress-circle{
+  position:absolute;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#0008;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  z-index:2;
+}
+
+.download-btn{
+  z-index:2;
+  padding:8px 14px;
+  border:none;
+  border-radius:20px;
+  background:#22c55e;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+.receiving-text {
+  font-size: 13px;
+  color: #555;
+  background: rgba(255,255,255,0.7);
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.media-viewer{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.media-viewer.hidden{
+  display: none;
+}
+
+.media-viewer img,
+.media-viewer video{
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 6px;
+}
+
+.close-viewer{
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  font-size: 26px;
+  color: white;
+  cursor: pointer;
+}

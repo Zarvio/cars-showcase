@@ -120,11 +120,11 @@ window.sendLikeNotification = async function(postId) {
       from: fromName,
       fromUid: fromUid,
       postId: postId,
-      thumb: post.thumb_url || "default.jpg",
+      thumb: post.thumb_url || "dp.jpg",
       commentText: "",
 
       text: `${fromName} liked your video`,
-      profileImage: user?.photoURL || "default.jpg",
+      profileImage: user?.photoURL || "dp.jpg",
       verified: user?.emailVerified || false,
       type: "like",
       read: false,
@@ -165,11 +165,11 @@ window.sendCommentNotification = async function(postId, commentText) {
       from: user.displayName || "User",
       fromUid: user.uid,
       postId: postId,
-      thumb: post.thumb_url || "default.jpg",
+      thumb: post.thumb_url || "dp.jpg",
       commentText: commentText,
 
       text: `${user.displayName || "User"} commented on your video`,
-      profileImage: user.photoURL || "default.jpg",
+      profileImage: user.photoURL || "dp.jpg",
       verified: user.emailVerified || false,
       type: "comment",
       read: false,
@@ -509,7 +509,7 @@ function getSmartRelated(currentPost, allPosts) {
 
         overlay.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px; width:100%;">
-                <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="uploaderDP" alt="uploader">
+                <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'dp.jpg'}" class="uploaderDP" alt="uploader">
                 <div style="display:flex; align-items:center; gap:6px;">
                     <span class="uploaderName">${post.uploader_name || 'Unknown'}</span>
                     ${badgeHTML}
@@ -549,7 +549,7 @@ function getSmartRelated(currentPost, allPosts) {
     let media;
     if (post.file_type.startsWith("video") && isMobile) {
         media = document.createElement("img");
-        media.src = post.thumb_url || "default.jpg";
+        media.src = post.thumb_url || "dp.jpg";
     } else if (post.file_type.startsWith("video")) {
         media = document.createElement("video");
         media.src = post.file_url;
@@ -641,7 +641,7 @@ modal.querySelector(".modal-media-wrapper").appendChild(modalSkeleton);
         modalTitle.innerHTML = `
             ${post.title || ""}
             <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'default.jpg'}" class="modalUploaderDP">
+                <img src="${post.uploader_image ? post.uploader_image + '?t=' + Date.now() : 'dp.jpg'}" class="modalUploaderDP">
                 <span>${post.uploader_name || "Unknown"}</span>
                 ${badgeHTML}
             </div>
@@ -692,7 +692,7 @@ function createRelatedVideoBox(post) {
         <div class="relatedThumb">
             <img src="${post.thumb_url || post.file_url || 'default_thumb.jpg'}" class="relatedVideoThumb">
             <div class="uploaderHeaderSmall">
-                <img src="${post.uploader_image || 'default.jpg'}" class="smallDP">
+                <img src="${post.uploader_image || 'dp.jpg'}" class="smallDP">
                 <span class="smallName">${post.uploader_name || "User"}</span>
                 ${badgeHTML}
             </div>
@@ -746,7 +746,7 @@ function createRelatedVideoBox(post) {
         modalTitle.innerHTML = `
             ${post.title || ""}
             <div class="modalUploader" style="display:flex; align-items:center; gap:5px;">
-                <img src="${post.uploader_image || 'default.jpg'}" class="modalUploaderDP">
+                <img src="${post.uploader_image || 'dp.jpg'}" class="modalUploaderDP">
                 <span>${post.uploader_name || "Unknown"}</span>
                 ${badgeHTML}
             </div>
@@ -1108,33 +1108,40 @@ firebase.auth().onAuthStateChanged(user => {
   const chatsRef = firebase.database().ref("chats");
 
   const updateUnreadCount = () => {
-    chatsRef.once("value", snapshot => {
-      const chats = snapshot.val();
-      if (!chats) {
-        messageCount.style.display = "none";
-        return;
-      }
+  chatsRef.once("value", snapshot => {
+    const chats = snapshot.val();
+    if (!chats) {
+      messageCount.style.display = "none";
+      return;
+    }
 
-      let unread = 0;
+    const uniqueSenders = new Set(); // 🔥 IMPORTANT
 
-      Object.keys(chats).forEach(chatId => {
-        if (!chatId.includes(uid)) return;
+    Object.keys(chats).forEach(chatId => {
+      if (!chatId.includes(uid)) return;
 
-        const messages = chats[chatId];
-        Object.keys(messages).forEach(msgId => {
-          const msg = messages[msgId];
-          if (msg.sender !== uid && !msg.read) unread++;
-        });
+      const messages = chats[chatId];
+      Object.keys(messages).forEach(msgId => {
+        const msg = messages[msgId];
+
+        // ❗ sirf unread + dusra banda
+        if (msg.sender !== uid && !msg.read) {
+          uniqueSenders.add(msg.sender); // 👈 same sender count 1 hi
+        }
       });
-
-      if (unread > 0) {
-        messageCount.style.display = "block";
-        messageCount.innerText = unread;
-      } else {
-        messageCount.style.display = "none";
-      }
     });
-  };
+
+    const unread = uniqueSenders.size;
+
+    if (unread > 0) {
+      messageCount.style.display = "block";
+      messageCount.innerText = unread;
+    } else {
+      messageCount.style.display = "none";
+    }
+  });
+};
+
 
   // listener for new messages
   chatsRef.on("child_added", updateUnreadCount);
@@ -1182,7 +1189,7 @@ const fetchRelatedVideosSupabase = async (currentVideoId) => {
       if (video.id === currentVideoId) return; // skip current
 
       const card = template.content.cloneNode(true);
-      card.querySelector(".smallDP").src = video.uploader_image || "default.jpg";
+      card.querySelector(".smallDP").src = video.uploader_image || "dp.jpg";
       card.querySelector(".smallName").textContent = video.uploader_name || "Unknown";
       card.querySelector(".relatedThumb").src = video.thumb_url || video.file_url;
 
@@ -1201,7 +1208,7 @@ const fetchRelatedVideosSupabase = async (currentVideoId) => {
         modalTitle.innerHTML = `
           ${video.title || ""}
           <div class="modalUploader">
-            <img src="${video.uploader_image || 'default.jpg'}" class="modalUploaderDP">
+            <img src="${video.uploader_image || 'dp.jpg'}" class="modalUploaderDP">
             <span>${video.uploader_name || "Unknown"}</span>
           </div>
         `;
@@ -1466,7 +1473,7 @@ async function sendComment() {
 
     const uid = user.uid;
     const username = user.displayName || "Anonymous";
-    const profileImage = user.photoURL || "default.jpg";
+    const profileImage = user.photoURL || "dp.jpg";
 
     const commentRef = firebase.database().ref(`videoComments/${currentPostId}`).push();
     await commentRef.set({
@@ -1859,7 +1866,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "1.0.4";
+const currentVersion = "1.0.5";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE

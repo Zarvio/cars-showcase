@@ -136,7 +136,7 @@ notifRef.once("value", snap => {
 
 
 const fallbackName = n.from || "Guest";
-const fallbackImage = n.profileImage || "default.jpg";
+const fallbackImage = n.profileImage || "dp.jpg";
 
 const profileImg = sender?.photoURL || fallbackImage;
 const senderName =
@@ -171,7 +171,7 @@ else actionText = n.text || "sent you a notification";
     div.style.borderRadius = "10px";
     div.style.background = "#111";
 
-    const videoThumb = n.thumb || "default.jpg";
+    const videoThumb = n.thumb || "dp.jpg";
 const commentText = n.commentText || "";
 
 const showVideoThumb = n.type !== "follow"; // ❌ follow pe image mat dikhao

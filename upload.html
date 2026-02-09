@@ -100,21 +100,17 @@
     <a class="nav-item" id="btnHome"><i class="fa-solid fa-house"></i><span>Home</span></a>
     <a class="nav-item" id="btnSearch"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
     <a class="nav-item active" id="btnUpload"><i class="fa-solid fa-plus"></i><span>Upload</span></a>
-    <a class="nav-item" id="btnNotifs"><i class="fa-regular fa-bell"></i><span>Notification</span></a>
+    <a class="nav-item" id="btnNotifs"><i class="fa-solid fa-heart"></i></i><span>Notification</span></a>
     <a class="nav-item" id="btnProfile"><i class="fa-regular fa-circle-user"></i><span>Profile</span></a>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="upload.js"></script>
+
 <!-- 1. Firebase Core -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-
-<!-- 2. Firebase Auth -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
-<!-- 3. Firebase Database -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 
 <!-- 4. Firebase Initialize -->
@@ -132,6 +128,6 @@
 </script>
 
 
-
+<script src="presence.js"></script>
 </body>
 </html>

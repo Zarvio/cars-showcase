@@ -10,7 +10,9 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
@@ -58,7 +60,7 @@
   </div>
 </div>
   <div id="profileView" class="profile-container hidden">
-  <img id="profilePic" class="profile-pic" src="default.jpg" alt="Profile Picture">
+  <img id="profilePic" class="profile-pic" src="dp.jpg" alt="Profile Picture">
   <h2 id="displayName"></h2>
   <p id="displayUsername"></p>
   <p id="displayBio" style="text-align:center; font-size:13px; opacity:.8;"></p>
@@ -106,7 +108,7 @@
     </a>
 
     <a class="nav-item" id="btnNotifs">
-        <i class="fa-regular fa-bell"></i>
+        <i class="fa-solid fa-heart"></i>
         <span>Notification</span>
     </a>
 
@@ -149,6 +151,6 @@
     };
   }
 </script>
-
+<script src="presence.js"></script>
 </body>
 </html>

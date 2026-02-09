@@ -62,6 +62,25 @@ const chatDivMap = {}; // ye track karega har chatId ka div
 firebase.auth().onAuthStateChanged(user=>{
   if(!user){location.href="profile.html";return;}
   currentUser=user.uid;
+  // ---------- USER PRESENCE ----------
+const userStatusRef = firebase.database().ref("users/" + currentUser);
+
+// user online
+userStatusRef.update({
+  online: true,
+  lastSeen: Date.now()
+});
+
+// disconnect detect
+firebase.database().ref(".info/connected").on("value", snap => {
+  if (snap.val() === false) return;
+
+  userStatusRef.onDisconnect().update({
+    online: false,
+    lastSeen: Date.now()
+  });
+});
+
 
   // ✅ URL se uid read karo
   const params = new URLSearchParams(window.location.search);
@@ -136,7 +155,7 @@ firebase.database().ref(`chats/${chatId}`).once("value").then(chatSnap => {
 
 
   div.innerHTML = `
-    <img src="${userData.photoURL || 'default.jpg'}">
+    <img src="${userData.photoURL || 'dp.jpg'}">
     <div>
       <div style="font-size:14px;font-weight:600; display:flex; align-items:center; gap:4px;">
         @${userData.username || 'User'}
@@ -182,6 +201,22 @@ firebase.database().ref(`chats/${chatId}`).once("value").then(chatSnap => {
 function openChat(uid){
    hideReplyBox();   // 🔥 yaha add karo
   selectedUser = uid;
+  // 🔥 LIVE ONLINE / OFFLINE STATUS
+firebase.database().ref("users/" + selectedUser).on("value", snap => {
+  const u = snap.val();
+  if (!u) return;
+
+  const statusEl = document.getElementById("userStatus");
+  if (!statusEl) return;
+
+  if (u.online) {
+    statusEl.innerHTML = `<span class="green-dot"></span> online`;
+  } else {
+    statusEl.innerHTML =
+      `<span class="gray-dot"></span> offline ${lastSeenText(u.lastSeen)}`;
+  }
+});
+
   history.pushState({}, "", "");
   chatListScreen.style.display = "none";
   chatScreen.classList.remove("hidden");
@@ -215,6 +250,21 @@ firebase.database().ref(`chats/${chatId}`).once("value").then(snap => {
   const chatUserImg = document.getElementById("chatUserImg");
 
   firebase.database().ref("users/" + uid).once("value").then(snap => {
+    const statusDiv = document.getElementById("chatUserStatus");
+
+firebase.database().ref("users/" + uid).on("value", snap => {
+  const u = snap.val();
+  if(!u) return;
+
+  if(u.online){
+    statusDiv.className = "user-status online";
+    statusDiv.innerHTML = `<span class="dot"></span> online`;
+  }else{
+    statusDiv.className = "user-status";
+    statusDiv.innerHTML = `<span class="dot"></span> ${lastSeenText(u.lastSeen)}`;
+  }
+});
+
       const userData = snap.val() || {};
 
       chatUserName.innerHTML = `
@@ -224,7 +274,7 @@ firebase.database().ref(`chats/${chatId}`).once("value").then(snap => {
         </div>
       `;
 
-      chatUserImg.src = userData.photoURL || "default.jpg";
+      chatUserImg.src = userData.photoURL || "dp.jpg";
 
       document.getElementById("chatUserInfo").onclick = function(){
           // ✅ ab uid properly captured
@@ -926,6 +976,24 @@ replyBox.innerHTML = `
 
 
 // ---------- Helpers ----------
+function lastSeenText(t){
+  if(!t) return "offline";
+
+  const diff = Date.now() - t;
+  const min = Math.floor(diff / 60000);
+  const hour = Math.floor(min / 60);
+  const day = Math.floor(hour / 24);
+
+  if(min < 1) return "offline just now";
+  if(min < 60) return `offline ${min} min ago`;
+  if(hour < 24) return `offline ${hour} hour ago`;
+  if(day === 1) return "offline 24 hours ago";
+  if(day < 7) return `offline ${day} days ago`;
+  if(day === 7) return "offline one week ago";
+
+  return "offline";
+}
+
 function cancelReply(){
   replyTo = null;
   editingMessageId = null;
@@ -942,6 +1010,7 @@ function hideReplyBox(){
 
 // ---------- Close options box on outside click + cancel edit ----------
 document.addEventListener("click", (e) => {
+  
     const box = document.getElementById("msgOptionsBox");
 
     // options box close
@@ -965,7 +1034,38 @@ document.addEventListener("click", (e) => {
         replyTo = null;
         replyBox.classList.add("hidden");
     }
+
+
+
+// cooming soon wala popup audio call
+
+
+const comingSoonPopup = document.getElementById("comingSoonPopup");
+const closePopup = document.getElementById("closePopup");
+
+// audio call button
+document.getElementById("audioCallBtn")?.addEventListener("click", () => {
+  comingSoonPopup.classList.remove("hidden");
 });
+
+// video call button
+document.getElementById("videoCallBtn")?.addEventListener("click", () => {
+  comingSoonPopup.classList.remove("hidden");
+});
+
+// close popup
+closePopup.addEventListener("click", () => {
+  comingSoonPopup.classList.add("hidden");
+});
+
+
+// cooming soon wala popup audio call
+
+
+
+
+
+  });
 
 
 
@@ -1180,3 +1280,12 @@ function closeMediaViewer(){
     content.innerHTML = "";
   }
 }
+
+
+
+
+
+
+
+
+

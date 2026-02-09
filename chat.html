@@ -77,13 +77,26 @@
   <div id="chatScreen" class="hidden">
 
     <div class="chat-header">
-      <button id="backBtn"><i class="fa-solid fa-arrow-left"></i></button>
+  <button id="backBtn">
+    <i class="fa-solid fa-arrow-left"></i>
+  </button>
 
-      <div id="chatUserInfo">
-        <img id="chatUserImg">
-        <span id="chatUserName"></span>
-      </div>
-    </div>
+  <div id="chatUserInfo">
+    <img id="chatUserImg">
+    <div>
+  <div id="chatUserName"></div>
+  <div id="chatUserStatus" class="user-status"></div>
+</div>
+
+  </div>
+
+  <!-- 📞 Call buttons -->
+  <div class="chat-header-actions">
+    <button id="audioCallBtn"><i class="fa-solid fa-phone"></i></button>
+    <button id="videoCallBtn"><i class="fa-solid fa-video"></i></button>
+  </div>
+</div>
+
 
     <div id="chatBox"></div>
 
@@ -92,19 +105,6 @@
     <div id="replyBox" class="hidden"></div>
 
 <div class="chat-input">
-  <!-- Image button -->
-<!-- Image / Video button -->
-<button id="imgBtn">
-  <i class="fa-solid fa-image"></i>
-</button>
-
-<!-- Hidden file input -->
-<input 
-  type="file" 
-  id="imgInput" 
-  accept="image/*,video/*" 
-  hidden
->
 
   <input id="msgInput" placeholder="Message...">
 
@@ -112,6 +112,20 @@
   <button id="sendBtn">
     <i class="fa-solid fa-paper-plane"></i>
   </button>
+
+  <!-- Image / Video button -->
+  <button id="imgBtn">
+    <i class="fa-solid fa-image"></i>
+  </button>
+
+  <!-- Hidden file input -->
+  <input 
+    type="file" 
+    id="imgInput" 
+    accept="image/*,video/*" 
+    hidden
+  >
+
 </div>
 
 
@@ -124,6 +138,19 @@
 <div id="mediaViewer" class="media-viewer hidden">
   <span class="close-viewer">✕</span>
   <div id="mediaViewerContent"></div>
+</div>
+
+
+
+
+
+<!-- Coming Soon Popup -->
+<div id="comingSoonPopup" class="popup hidden">
+  <div class="popup-box">
+    <h3>🚧 Coming Soon</h3>
+    <p>This feature will be available soon.</p>
+    <button id="closePopup">OK</button>
+  </div>
 </div>
 
 </body>

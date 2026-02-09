@@ -19,7 +19,7 @@ async function fixUser(uid, username, password) {
 
 // 👉 YAHAN APNA PASSWORD KHUD DALO
 fixUser(
-  "6xMxaqYFvfTmGzYHusXFmWtWsuP2", // UID
-  "pinorafounderbesti",                     // username → fake email
-  "12344321"                 // PASSWORD (jo tum chahte ho)
+  "oHWeVNyKOlN4fJ5RNDuEPtBz4lo1", // UID
+  "mahi_7",                     // username → fake email
+  "7104100"                 // PASSWORD (jo tum chahte ho)
 );

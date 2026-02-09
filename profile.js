@@ -321,7 +321,7 @@ function loadUserProfile(data) {
     displayUsername.innerText = "@" + (data.username || "");
   }
 
-  profilePic.src = data.photoURL || currentUser.photoURL || "default.jpg";
+  profilePic.src = data.photoURL || currentUser.photoURL || "dp.jpg";
 
   firebase.database().ref("followers/" + (data.uid || currentUser.uid)).once("value")
     .then(snap => followersCount.innerText = snap ? snap.numChildren() : 0);
@@ -962,7 +962,7 @@ followersBtn.addEventListener("click", async () => {
     const div = document.createElement("div");
     div.className = "follower-item";
     div.innerHTML = `
-      <img src="${user.photoURL || 'default.jpg'}">
+      <img src="${user.photoURL || 'dp.jpg'}">
       <div>
         <div style="display:flex; align-items:center; gap:6px;">
           ${user.name || ""} ${user.surname || ""}
@@ -1020,7 +1020,7 @@ followingBtn.addEventListener("click", async () => {
     const div = document.createElement("div");
     div.className = "follower-item";
     div.innerHTML = `
-      <img src="${user.photoURL || 'default.jpg'}">
+      <img src="${user.photoURL || 'dp.jpg'}">
       <div>
         <div style="display:flex; align-items:center; gap:6px;">
           ${user.name || ""} ${user.surname || ""}

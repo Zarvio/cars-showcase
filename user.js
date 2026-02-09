@@ -107,7 +107,7 @@ document.getElementById("userVideosSection").style.display = "none";
     }
 
     // ✅ Profile pic
-    profilePic.src = data.photoURL || "default.jpg";
+    profilePic.src = data.photoURL || "dp.jpg";
 
     // ✅ Message button logic
     if (currentUid === profileUid) {
@@ -270,7 +270,7 @@ followersSpan.addEventListener("click", async () => {
     const div = document.createElement("div");
     div.className = "follower-item";
     div.innerHTML = `
-      <img src="${user.photoURL || 'default.jpg'}">
+      <img src="${user.photoURL || 'dp.jpg'}">
       <div>
         <div style="display:flex; align-items:center; gap:6px;">
           ${user.name || ''} ${user.surname || ''} ${badgeHTML}
@@ -311,7 +311,7 @@ followingSpan.addEventListener("click", async () => {
     const div = document.createElement("div");
     div.className = "follower-item";
     div.innerHTML = `
-      <img src="${user.photoURL || 'default.jpg'}">
+      <img src="${user.photoURL || 'dp.jpg'}">
       <div>
         <div style="display:flex; align-items:center; gap:6px;">
           ${user.name || ''} ${user.surname || ''} ${badgeHTML}
@@ -329,6 +329,48 @@ closeFollowers.addEventListener("click", () => {
   followersModal.classList.remove("show");
 });
 
+// ---------- VIDEO MODAL ----------
+const videoModal = document.createElement("div");
+videoModal.style.position = "fixed";
+videoModal.style.top = "0";
+videoModal.style.left = "0";
+videoModal.style.width = "100%";
+videoModal.style.height = "100%";
+videoModal.style.background = "rgba(0,0,0,0.9)";
+videoModal.style.display = "none";
+videoModal.style.alignItems = "center";
+videoModal.style.justifyContent = "center";
+videoModal.style.zIndex = "9999";
+
+videoModal.innerHTML = `
+  <span id="closeVideoModal"
+    style="position:absolute;top:20px;right:25px;
+    font-size:30px;color:white;cursor:pointer;">✖</span>
+
+  <video id="profileVideoPlayer"
+    controls
+    autoplay
+    controlsList="nodownload noplaybackrate noremoteplayback"
+    disablePictureInPicture
+    style="max-width:90%;max-height:90%;border-radius:10px;">
+</video>
+`;
+
+document.body.appendChild(videoModal);
+
+const profileVideoPlayer = videoModal.querySelector("#profileVideoPlayer");
+const closeVideoModal = videoModal.querySelector("#closeVideoModal");
+
+closeVideoModal.onclick = () => {
+  profileVideoPlayer.pause();
+  profileVideoPlayer.src = "";
+  videoModal.style.display = "none";
+};
+
+function openVideoModal(videoUrl) {
+  profileVideoPlayer.src = videoUrl;
+  videoModal.style.display = "flex";
+}
 
 async function loadUserVideos(uid) {
   const container = document.getElementById("userVideos");
@@ -385,7 +427,8 @@ async function loadUserVideos(uid) {
     card.appendChild(deleteBtn);
 
     card.addEventListener("click", () => {
-      window.location.href = `main.html?id=${post.id}`;
+      openVideoModal(post.file_url);
+
     });
 
     container.appendChild(card);

@@ -23,7 +23,7 @@ const db = firebase.database();
       db.ref("users/" + uid).once("value").then(snapshot => {
           if(snapshot.exists()) {
               const u = snapshot.val();
-              document.getElementById("profilePhoto").src = u.photoURL || "default.jpg";
+              document.getElementById("profilePhoto").src = u.photoURL || "dp.jpg";
               document.getElementById("username").innerText = "@" + u.username;
               document.getElementById("name").innerText = (u.name || "") + " " + (u.surname || "");
           }
@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     uid: user.key,
                     username: u.username,
                     name: (u.name || "") + " " + (u.surname || ""),
-                    photo: u.photoURL || "default.jpg",
+                    photo: u.photoURL || "dp.jpg",
                     verified: u.verified || false
                 });
             }
@@ -208,7 +208,7 @@ async function loadUsers() {
             uid: user.key,
             username: u.username,
             name: (u.name || "") + " " + (u.surname || ""),
-            photo: u.photoURL || "default.jpg",
+            photo: u.photoURL || "dp.jpg",
             verified: u.verified || false   // ✅ add verified flag
         });
     });

@@ -1,5 +1,12 @@
-// 🔕 FEED VIDEO TOGGLE
-let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band
+// ----------// 🔕 FEED VIDEO TOGGLE
+// ----------let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band----------
+
+
+
+
+
+
+
 // ==============================
 // 🎬 SKELETON LOADER FUNCTIONS
 // ==============================
@@ -50,6 +57,7 @@ let allPosts = [];
 let batchSize = 6;        // har batch me kitne video load honge
 let batchIndex = 0;        // kaunse batch pe hain
 let displayedPosts = [];   // already display hue posts
+let storyTimer = null;
 
 function formatViews(num) {
   num = Number(num || 0);
@@ -452,10 +460,16 @@ function getSmartRelated(currentPost, allPosts) {
 
 
 
-        if (!FEED_VIDEOS_ENABLED) {
-    main.innerHTML = "";   // feed empty
-    return;
-  }
+
+
+// 🔕 FEED VIDEO TOGGLE (currently disabled)
+/*
+if (!FEED_VIDEOS_ENABLED) {
+  main.innerHTML = "";   // feed empty
+  return;
+}
+*/
+
 
 
 
@@ -1879,7 +1893,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "1.0.7";
+const currentVersion = "2.0";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE
@@ -2129,107 +2143,302 @@ window.addEventListener("DOMContentLoaded", async () => {
     console.error("Error opening from link:", err);
   }
 });
+
+
+
+
+
 /* ================= STORY LOGIC ================= */
+let selectedStoryFile = null;
+let selectedStoryType = null;
+let selectedStoryText = "";
+let selectedStorySong = "";
 
-// TEMP USER (later auth se replace karna)
-const currentUser = {
-  id: "user123",
-  name: "You",
-  dp: "default.jpg"
-};
+function hasSeenStory(storyId){
+  return localStorage.getItem("story_seen_" + storyId) === "1";
+}
 
-// LOAD STORIES
+function markStorySeen(storyId){
+  localStorage.setItem("story_seen_" + storyId, "1");
+}
+
+/* ================= HELPER: GET PINORA PROFILE ================= */
+
+async function getPinoraProfile(uid){
+  const snap = await firebase.database()
+    .ref("users/" + uid)
+    .once("value");
+
+  if(!snap.exists()) return null;
+
+  const data = snap.val();
+  return {
+    username: data.username || "user",
+    image: data.photoURL || "dp.jpg"
+  };
+}
+
+/* ================= LOAD STORIES ================= */
+
 async function loadStories(){
+
+  const user = firebase.auth().currentUser;
+  if(!user) return;
+
+  // 🔥 following list
+  const followSnap = await firebase.database()
+    .ref(`following/${user.uid}`)
+    .once("value");
+
+  const following = followSnap.exists()
+    ? Object.keys(followSnap.val())
+    : [];
+
+  following.push(user.uid);
+
   const { data } = await supabaseClient
     .from("stories")
     .select("*")
-    .order("created_at",{ascending:false});
+    .order("created_at", { ascending:false });
 
   const bar = document.getElementById("storiesBar");
-  bar.innerHTML = `
-    <div class="story-item" onclick="addStory()">
-      <div class="story-ring">
-        <img src="${currentUser.dp}">
-        <div class="add-story">+</div>
+  bar.innerHTML = "";
+
+  // 🔥 MY PROFILE (PINORA)
+  const myProfile = await getPinoraProfile(user.uid);
+
+  // 🧑 YOUR STORY
+  const myStory = data?.find(s => s.user_id === user.uid);
+
+  bar.innerHTML += `
+    <div class="story-item"
+      onclick="${myStory
+        ? `openStory('${myStory.media_url}','${myStory.media_type}','${myStory.id}')`
+        : "addStory()"}">
+
+      <div class="story-ring ${myStory && !hasSeenStory(myStory.id) ? "active" : ""}">
+        <img src="${myProfile?.image || 'dp.jpg'}">
+        ${!myStory ? `<div class="add-story">+</div>` : ""}
       </div>
+
       <div>Your Story</div>
     </div>
   `;
 
-  data?.forEach(story=>{
+  // 👥 FOLLOWING STORIES
+  data?.forEach(story => {
+
+    if(story.user_id === user.uid) return;
+    if(!following.includes(story.user_id)) return;
+
+    const seen = hasSeenStory(story.id);
+
     bar.innerHTML += `
       <div class="story-item"
-        onclick="openStory('${story.media_url}','${story.media_type}')">
-        <div class="story-ring">
-          <img src="${story.user_dp}">
+        onclick="openStory('${story.media_url}','${story.media_type}','${story.id}')">
+
+        <div class="story-ring ${!seen ? "active" : ""}">
+          <img src="${story.uploader_image || 'dp.jpg'}">
         </div>
-        <div>${story.username}</div>
+
+        <div>${story.uploader_username || "user"}</div>
       </div>
     `;
   });
 }
 
-// ADD STORY
+/* ================= ADD STORY ================= */
+
 function addStory(){
   document.getElementById("storyFileInput").click();
 }
 
-// FILE SELECT
-document.getElementById("storyFileInput").addEventListener("change", async e=>{
+/* ================= FILE SELECT & UPLOAD ================= */
+
+document.getElementById("storyFileInput")
+  .addEventListener("change", async e => {
+
+  const user = firebase.auth().currentUser;
+  if(!user) return;
+
   const file = e.target.files[0];
   if(!file) return;
 
+  // 🔥 PINORA PROFILE (REAL SOURCE)
+  const profile = await getPinoraProfile(user.uid);
+  if(!profile){
+    alert("Profile not found");
+    return;
+  }
+
   const ext = file.name.split(".").pop();
-  const fileName = `story_${Date.now()}.${ext}`;
+  const fileName = `story_${user.uid}_${Date.now()}.${ext}`;
   const isVideo = file.type.startsWith("video");
 
   await supabaseClient.storage
     .from("stories")
-    .upload(fileName,file,{contentType:file.type});
+    .upload(fileName, file, { contentType:file.type });
 
   const { data } = supabaseClient
     .storage.from("stories")
     .getPublicUrl(fileName);
 
   await supabaseClient.from("stories").insert({
-    user_id: currentUser.id,
-    username: currentUser.name,
-    user_dp: currentUser.dp,
+    user_id: user.uid,
+    uploader_username: profile.username,
+    uploader_image: profile.image,
     media_url: data.publicUrl,
-    media_type: isVideo ? "video" : "image"
+    media_type: isVideo ? "video" : "image",
+    created_at: new Date()
   });
 
   loadStories();
 });
 
-// OPEN STORY
-function openStory(url,type){
+/* ================= OPEN STORY ================= */
+
+function openStory(url, type, storyId){
+
   const viewer = document.getElementById("storyViewer");
   const img = document.getElementById("storyImage");
   const vid = document.getElementById("storyVideo");
 
+  // 🔥 CLEAR OLD TIMER
+  if(storyTimer){
+    clearTimeout(storyTimer);
+    storyTimer = null;
+  }
+
   viewer.classList.remove("hidden");
 
-  if(type==="image"){
-    vid.style.display="none";
-    img.style.display="block";
-    img.src=url;
-    setTimeout(closeStory,5000);
-  }else{
-    img.style.display="none";
-    vid.style.display="block";
-    vid.src=url;
+  if(storyId) markStorySeen(storyId);
+saveStoryView(storyId);
+
+  if(type === "image"){
+    vid.pause();
+    vid.style.display = "none";
+
+    img.style.display = "block";
+    img.src = url;
+
+    // ✅ FIXED TIMER
+    storyTimer = setTimeout(() => {
+      closeStory();
+    }, 15000);
+
+  } 
+  else {
+    img.style.display = "none";
+
+    vid.style.display = "block";
+    vid.src = url;
+    vid.currentTime = 0;
     vid.play();
-    vid.onended = closeStory;
+
+    vid.onended = () => {
+      closeStory();
+    };
+  }
+
+  loadStories();
+loadSeenCount(storyId);
+}
+
+
+/* ================= CLOSE STORY ================= */
+
+function closeStory(){
+
+  if(storyTimer){
+    clearTimeout(storyTimer);
+    storyTimer = null;
+  }
+
+  document.getElementById("storyViewer").classList.add("hidden");
+
+  const v = document.getElementById("storyVideo");
+  v.pause();
+  v.src = "";
+}
+
+
+/* ================= AUTO LOAD ================= */
+
+firebase.auth().onAuthStateChanged(user=>{
+  if(user){
+    loadStories();
+  }
+});
+async function saveStoryView(storyId){
+
+  const user = firebase.auth().currentUser;
+  if(!user || !storyId) return;
+
+  const profile = await getPinoraProfile(user.uid);
+  if(!profile) return;
+
+  await supabaseClient
+    .from("story_views")
+    .upsert({
+      story_id: storyId,
+      viewer_uid: user.uid,
+      viewer_username: profile.username,
+      viewer_image: profile.image
+    }, { onConflict: "story_id,viewer_uid" });
+}
+async function loadSeenCount(storyId){
+
+  const user = firebase.auth().currentUser;
+  if(!user) return;
+
+  // check owner
+  const { data: story } = await supabaseClient
+    .from("stories")
+    .select("user_id")
+    .eq("id", storyId)
+    .single();
+
+  if(story?.user_id !== user.uid) return;
+
+  const { count } = await supabaseClient
+    .from("story_views")
+    .select("*", { count: "exact", head: true })
+    .eq("story_id", storyId);
+
+  if(count > 0){
+    document.getElementById("seenCount").innerText = count;
+    document.getElementById("storySeenBy").classList.remove("hidden");
   }
 }
+async function openSeenList(){
 
-// CLOSE STORY
-function closeStory(){
-  document.getElementById("storyViewer").classList.add("hidden");
-  const v=document.getElementById("storyVideo");
-  v.pause(); v.src="";
+  const storyId = document
+    .getElementById("storyImage").src
+    ? null
+    : null; // (we already know current story)
+
+  const list = document.getElementById("seenUsersList");
+  list.innerHTML = "";
+
+  const { data } = await supabaseClient
+    .from("story_views")
+    .select("*")
+    .order("created_at", { ascending:false });
+
+  data.forEach(u => {
+    list.innerHTML += `
+      <div class="seen-user">
+        <img src="${u.viewer_image || 'dp.jpg'}">
+        <span>${u.viewer_username}</span>
+      </div>
+    `;
+  });
+
+  document.getElementById("seenListModal")
+    .classList.remove("hidden");
 }
 
-// AUTO LOAD
-document.addEventListener("DOMContentLoaded", loadStories);
+function closeSeenList(){
+  document.getElementById("seenListModal")
+    .classList.add("hidden");
+}

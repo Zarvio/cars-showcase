@@ -172,6 +172,11 @@ document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
     </button>
   </div>
 </header>
+<!-- ================= STORIES BAR ================= -->
+<div class="stories-bar" id="storiesBar"></div>
+
+<!-- Hidden input for story upload -->
+<input type="file" id="storyFileInput" accept="image/*,video/*" hidden>
 
 
 <!-- Message Icon -->
@@ -453,6 +458,14 @@ If you believe this action was taken in error, please contact our support team f
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<!-- ================= STORY VIEWER ================= -->
+<div id="storyViewer" class="story-viewer hidden">
+    
+  <span class="closeStory" onclick="closeStory()">✕</span>
+
+  <img id="storyImage" style="display:none">
+  <video id="storyVideo" style="display:none" controls></video>
+</div>
 
 <!-- Your JS -->
 <script src="script.js"></script>

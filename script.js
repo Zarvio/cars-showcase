@@ -1517,7 +1517,7 @@ document.addEventListener("click", () => {
 shareMenu.querySelectorAll(".shareOption").forEach(btn => {
     btn.addEventListener("click", () => {
         const platform = btn.dataset.platform;
-        const uniqueLink = `${window.location.origin}/?video=${currentPostId}`;
+        const uniqueLink = `${window.location.origin}${window.location.pathname}?video=${currentPostId}`;
         const text = encodeURIComponent(uniqueLink);
 
         if (platform === "whatsapp") {
@@ -2051,3 +2051,68 @@ buyVerifyBtn.onclick = () => {
   alert("Not Enough Coins 🚀\nPlease First Earn Coins And Buy");
   verifyPopup.classList.add("hidden");
 };
+// ==============================
+// 🔗 OPEN VIDEO MODAL FROM SHARE LINK
+// ==============================
+window.addEventListener("DOMContentLoaded", async () => {
+
+  const params = new URLSearchParams(window.location.search);
+  const videoId = params.get("video");
+
+  if (!videoId) return;
+
+  try {
+    const { data: post, error } = await supabaseClient
+      .from("pinora823")
+      .select("*")
+      .eq("id", videoId)
+      .single();
+
+    if (error || !post) {
+      console.warn("Video not found:", error);
+      return;
+    }
+
+    currentPostId = post.id;
+
+    // update modal UI
+    const modal = document.getElementById("videoModal");
+    const modalVideo = document.getElementById("modalVideo");
+    const modalImage = document.getElementById("modalImage");
+    const modalTitle = document.getElementById("modalTitle");
+
+    if (!modal || (!modalVideo && !modalImage)) {
+      console.error("Modal or video/image elements missing!");
+      return;
+    }
+
+    // hide both first
+    modalVideo.style.display = "none";
+    modalImage.style.display = "none";
+
+    // set media
+    if (post.file_type?.startsWith("video")) {
+      modalVideo.src = post.file_url;
+      modalVideo.addEventListener("loadeddata", () => {
+        modalVideo.style.display = "block";
+      }, { once: true });
+    } else {
+      modalImage.src = post.file_url;
+      modalImage.style.display = "block";
+    }
+
+    // title + uploader
+    modalTitle.innerHTML = `
+      ${post.title || ""}
+      <div class="modalUploader" style="display:flex;gap:6px;align-items:center">
+        <img src="${post.uploader_image || 'dp.jpg'}" class="modalUploaderDP">
+        <span>${post.uploader_name || "Unknown"}</span>
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+
+  } catch (err) {
+    console.error("Error opening from link:", err);
+  }
+});

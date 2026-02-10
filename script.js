@@ -1,3 +1,5 @@
+// 🔕 FEED VIDEO TOGGLE
+let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band
 // ==============================
 // 🎬 SKELETON LOADER FUNCTIONS
 // ==============================
@@ -446,6 +448,17 @@ function getSmartRelated(currentPost, allPosts) {
     // DISPLAY VIDEOS
     // ----------------
     function displayVideos(posts) {
+
+
+
+
+        if (!FEED_VIDEOS_ENABLED) {
+    main.innerHTML = "";   // feed empty
+    return;
+  }
+
+
+
     if(!dataReady){
         showSkeletons(8);
         return;
@@ -1866,7 +1879,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "1.0.6";
+const currentVersion = "1.0.7";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE
@@ -2116,4 +2129,107 @@ window.addEventListener("DOMContentLoaded", async () => {
     console.error("Error opening from link:", err);
   }
 });
+/* ================= STORY LOGIC ================= */
 
+// TEMP USER (later auth se replace karna)
+const currentUser = {
+  id: "user123",
+  name: "You",
+  dp: "default.jpg"
+};
+
+// LOAD STORIES
+async function loadStories(){
+  const { data } = await supabaseClient
+    .from("stories")
+    .select("*")
+    .order("created_at",{ascending:false});
+
+  const bar = document.getElementById("storiesBar");
+  bar.innerHTML = `
+    <div class="story-item" onclick="addStory()">
+      <div class="story-ring">
+        <img src="${currentUser.dp}">
+        <div class="add-story">+</div>
+      </div>
+      <div>Your Story</div>
+    </div>
+  `;
+
+  data?.forEach(story=>{
+    bar.innerHTML += `
+      <div class="story-item"
+        onclick="openStory('${story.media_url}','${story.media_type}')">
+        <div class="story-ring">
+          <img src="${story.user_dp}">
+        </div>
+        <div>${story.username}</div>
+      </div>
+    `;
+  });
+}
+
+// ADD STORY
+function addStory(){
+  document.getElementById("storyFileInput").click();
+}
+
+// FILE SELECT
+document.getElementById("storyFileInput").addEventListener("change", async e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const ext = file.name.split(".").pop();
+  const fileName = `story_${Date.now()}.${ext}`;
+  const isVideo = file.type.startsWith("video");
+
+  await supabaseClient.storage
+    .from("stories")
+    .upload(fileName,file,{contentType:file.type});
+
+  const { data } = supabaseClient
+    .storage.from("stories")
+    .getPublicUrl(fileName);
+
+  await supabaseClient.from("stories").insert({
+    user_id: currentUser.id,
+    username: currentUser.name,
+    user_dp: currentUser.dp,
+    media_url: data.publicUrl,
+    media_type: isVideo ? "video" : "image"
+  });
+
+  loadStories();
+});
+
+// OPEN STORY
+function openStory(url,type){
+  const viewer = document.getElementById("storyViewer");
+  const img = document.getElementById("storyImage");
+  const vid = document.getElementById("storyVideo");
+
+  viewer.classList.remove("hidden");
+
+  if(type==="image"){
+    vid.style.display="none";
+    img.style.display="block";
+    img.src=url;
+    setTimeout(closeStory,5000);
+  }else{
+    img.style.display="none";
+    vid.style.display="block";
+    vid.src=url;
+    vid.play();
+    vid.onended = closeStory;
+  }
+}
+
+// CLOSE STORY
+function closeStory(){
+  document.getElementById("storyViewer").classList.add("hidden");
+  const v=document.getElementById("storyVideo");
+  v.pause(); v.src="";
+}
+
+// AUTO LOAD
+document.addEventListener("DOMContentLoaded", loadStories);

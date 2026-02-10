@@ -60,6 +60,9 @@ const chatDivMap = {}; // ye track karega har chatId ka div
 
 // ---------- Auth ----------
 firebase.auth().onAuthStateChanged(user=>{
+  // चैट लिस्ट पूरी तरह hide करो
+chatListScreen.style.display = "none";
+
   if(!user){location.href="profile.html";return;}
   currentUser=user.uid;
   // ---------- USER PRESENCE ----------
@@ -86,7 +89,8 @@ firebase.database().ref(".info/connected").on("value", snap => {
   const params = new URLSearchParams(window.location.search);
   const openUid = params.get("uid");
 
-  loadChatList();
+ // loadChatList();  // चैट लिस्ट बंद
+
 
   // ✅ agar uid mila to direct chat open karo
   if(openUid){

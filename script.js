@@ -2034,3 +2034,20 @@ window.addEventListener("load", () => {
   checkForUpdate();
   setInterval(checkForUpdate, 60000);
 });
+const verifyBtn = document.getElementById("verifyBtn");
+const verifyPopup = document.getElementById("verifyPopup");
+const closePopup = document.getElementById("closePopup");
+const buyVerifyBtn = document.getElementById("buyVerifyBtn");
+
+verifyBtn.onclick = () => {
+  verifyPopup.classList.remove("hidden");
+};
+
+closePopup.onclick = () => {
+  verifyPopup.classList.add("hidden");
+};
+
+buyVerifyBtn.onclick = () => {
+  alert("Not Enough Coins 🚀\nPlease First Earn Coins And Buy");
+  verifyPopup.classList.add("hidden");
+};

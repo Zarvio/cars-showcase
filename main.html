@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pinora Web</title>
+    <link rel="icon" type="image/png" href="default.jpg">
+
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
@@ -155,14 +157,22 @@ document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
 
 <!-- HEADER -->
 <header class="top-header">
-    <div class="logo">Pinora</div>
+  <div class="logo">Pinora</div>
+
+  <div class="header-right">
+    <!-- Coins -->
     <div class="credit-box" id="creditBox">
-    <i class="fa-solid fa-coins"></i>
-    <span id="creditText">...</span>
-</div>
+      <i class="fa-solid fa-coins"></i>
+      <span id="creditText">...</span>
+    </div>
 
-
+    <!-- Verify Button -->
+    <button id="verifyBtn" class="verify-btn">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" style="width:14px;height:14px;">
+    </button>
+  </div>
 </header>
+
 
 <!-- Message Icon -->
 <a class="nav-item" id="btnmessage">
@@ -276,7 +286,24 @@ If you believe this action was taken in error, please contact our support team f
     <button onclick="closeFlagPopup()">OK</button>
   </div>
 </div>
+<div id="verifyPopup" class="popup hidden">
+  <div class="popup-box">
+    <h3>Get Verified ✅</h3>
+    <p>Get verified badge for</p>
 
+    <div class="price">
+      <i class="fa-solid fa-coins"></i> 400 Coins
+    </div>
+
+    <button id="buyVerifyBtn" class="buy-btn">
+      Buy Verified
+    </button>
+
+    <button id="closePopup" class="close-btn">
+      Cancel
+    </button>
+  </div>
+</div>
 
 <!-- ========== SMALL UPLOADER TEMPLATE ========== -->
 <template id="relatedVideoTemplate">

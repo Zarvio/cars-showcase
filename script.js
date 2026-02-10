@@ -1866,7 +1866,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "1.0.5";
+const currentVersion = "1.0.6";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE
@@ -2116,3 +2116,4 @@ window.addEventListener("DOMContentLoaded", async () => {
     console.error("Error opening from link:", err);
   }
 });
+

@@ -66,7 +66,7 @@ firebase.auth().onAuthStateChanged(user=>{
 
 // ---------- (chatoffkrna wla )chatListScreen.style.display = "none";----------
 
-
+chatListScreen.style.display = "none";
 
 
 
@@ -99,7 +99,8 @@ firebase.database().ref(".info/connected").on("value", snap => {
 
 
 
-loadChatList();  // चैट लिस्ट बंद
+// loadChatList();  // चैट लिस्ट बंद
+
 
 
 

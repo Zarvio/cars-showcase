@@ -2,7 +2,7 @@
 // ----------let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band----------
 
 
-
+let FEED_VIDEOS_ENABLED = false; 
 
 
 
@@ -469,7 +469,10 @@ if (!FEED_VIDEOS_ENABLED) {
   return;
 }
 */
-
+ if (!FEED_VIDEOS_ENABLED) {
+    main.innerHTML = "";   // feed empty
+    return;
+  }
 
 
 
@@ -1893,7 +1896,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "2.0";
+const currentVersion = "2.1";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE

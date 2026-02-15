@@ -124,19 +124,14 @@ body{background:#000;color:#fff}
 /* CHAT */
 #chatBox{
   padding:10px;
-  
+   position: relative;   /* ⭐ VERY IMPORTANT */
   overflow-y:auto;
   height: calc(100vh - 170px); /* 🔥 thoda zyada gap */
 }
 
-.msg{
-  max-width:75%;
-  padding:10px 14px;
-  border-radius:18px;
-  margin-bottom:8px;
-}
-.sent{margin-left:auto;background:#11358e;color:#000}
-.received{background:#334155}
+
+
+
 
 /* TIME */
 .time{
@@ -213,14 +208,20 @@ body{background:#000;color:#fff}
 }
 
 .msg-time-swipe{
-  position: absolute;
-  right: -80px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 11px;
-  color: #999;
-  white-space: nowrap;
-  transition: right 0.2s ease;
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:12px;
+  color:#9ca3af;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease;
+}
+
+.msg.show-time .msg-time-swipe{
+  opacity:1;
 }
 
 .msg.show-time .msg-time-swipe{
@@ -233,40 +234,51 @@ body{background:#000;color:#fff}
   text-align:right;
 }
 /* Typing bubble style */
-.typing-bubble {
-  display: flex;
-  align-items: flex-end;
-  padding: 8px 12px;
-  background-color: #334155;
+/* Same bubble style */
+.msg.received .bubble {
+  background: #2a2a2a;
+  padding: 10px 14px;
   border-radius: 18px;
-  width: fit-content;
+  display: inline-flex;
+  align-items: center;
 }
 
-.typing-bubble .dot {
-  width: 6px;
-  height: 6px;
-  background-color: #fff;
-  border-radius: 50%;
-  margin: 0 3px;
-  animation: typingJump 1.2s infinite ease-in-out;
+/* Typing dots container */
+.typing-bubble{
+  background:#2a2a2a;
+  padding:10px 14px;
+  border-radius:18px;
+  color:#ccc;
+  font-size:14px;
 }
 
-.typing-bubble .dot:nth-child(1) {
-  animation-delay: 0s;
-}
-.typing-bubble .dot:nth-child(2) {
-  animation-delay: 0.15s;
-}
-.typing-bubble .dot:nth-child(3) {
-  animation-delay: 0.3s;
+.jump-text{
+  display:inline-block;
+  animation: textJump 1.2s infinite ease-in-out;
 }
 
-@keyframes typingJump {
-  0%   { transform: translateY(0); opacity: 0.5; }
-  30%  { transform: translateY(-6px); opacity: 1; }
-  60%  { transform: translateY(0); opacity: 0.5; }
-  100% { transform: translateY(0); opacity: 0.5; }
+@keyframes textJump{
+  0%,100%{ 
+    transform: translateY(0); 
+    opacity:0.7; 
+  }
+  50%{ 
+    transform: translateY(-3px); 
+    opacity:1; 
+  }
 }
+
+
+/* Animation */
+@keyframes bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
 #msgOptionsBox button {
     background: #fff;
     border: none;
@@ -629,4 +641,348 @@ body{background:#000;color:#fff}
 
 .user-status.online .dot{
   background: #22c55e;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.group-btn {
+  background: white;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+.group-popup-box {
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.user-select-list {
+  margin: 10px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.user-select-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.user-select-item:hover {
+  background: #f5f5f5;
+}
+
+
+.user-select-item input {
+  margin-right: 10px;
+}
+.msg{
+  position: relative;
+  width:100%;
+  display:flex;
+  margin:6px 0;
+}
+
+.insta-msg-row{
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
+  max-width:75%;
+}
+
+.insta-msg-row.you{
+  margin-left:auto;
+  justify-content:flex-end;
+}
+
+.insta-dp{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.insta-bubble{
+  background:#262626;
+  color:white;
+  padding:8px 12px;
+  border-radius:18px;
+  font-size:14px;
+  display:flex;
+  transition: transform .25s ease;
+  flex-direction:column;
+}
+
+.you-bubble{
+  background:#9F3FE8;
+}
+#msgOptionsBox{
+  position: absolute;
+  background: #fff;
+  color: #000;
+  border-radius: 12px;
+  padding: 6px 0;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  z-index: 999;
+  min-width: 130px;
+
+  display: flex;              /* ⭐ NEW */
+  flex-direction: column;     /* ⭐ MAIN FIX */
+  overflow: hidden;
+}
+/* 🔥 message swipe animation */
+.insta-bubble{
+  transition: transform .2s ease;
+}
+
+/* swipe hone par bubble left shift */
+
+.msg.show-time .msg-time-swipe{
+  opacity:1;
+}.msg.show-time .insta-bubble{
+  transform: translateX(-70px);
+}
+.group-btn{
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+
+  background: linear-gradient(180deg, #1f1c20 0%, #000000 50%, #222223 100%);
+  color: white;
+  font-size: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.insta-dp,
+.insta-dp-placeholder{
+  width:28px;
+  height:28px;
+  flex-shrink:0;
+}
+
+.insta-dp-placeholder{
+  visibility:hidden;
+}
+/* Message row */
+.msg{
+  display:flex;
+  flex-direction:column;
+  margin:6px 0;
+}
+
+/* Empty DP space */
+.dp-space {
+  width: 32px;   /* Same width as DP */
+  height: 32px;
+  margin-right: 8px;
+}
+
+/* Received bubble */
+.msg.received .bubble {
+  background: #2a2a2a;
+  padding: 10px 14px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Typing dots */
+.typing-bubble{
+  background:#2a2a2a;
+  padding:10px 14px;
+  border-radius:18px;
+  color:#ccc;
+  font-size:14px;
+}
+
+.jump-text{
+  display:inline-block;
+  animation: jumpText 1.2s infinite ease-in-out;
+}
+
+@keyframes jumpText{
+  0%,100%{ transform:translateY(0); opacity:0.7; }
+  50%{ transform:translateY(-3px); opacity:1; }
+}
+
+
+@keyframes bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+/* 🔥 Group Popup Box */
+.group-popup-box{
+  width: 90%;
+  max-width: 400px;
+  background: #111;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.6);
+}
+
+/* 🔎 Search Username Input */
+#groupUserSearch{
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+#groupUserSearch:focus{
+  border-color: #00c853;
+  box-shadow: 0 0 0 2px rgba(0,200,83,0.2);
+}
+
+/* 📝 Enter Group Name Input */
+#groupNameInput{
+  width: 100%;
+  padding: 12px 15px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+#groupNameInput:focus{
+  border-color: #00c853;
+  box-shadow: 0 0 0 2px rgba(0,200,83,0.2);
+}
+
+/* Placeholder color */
+#groupUserSearch::placeholder,
+#groupNameInput::placeholder{
+  color: #888;
+}
+
+.typing-bubble{
+  background:#2a2a2a;
+  padding:10px 14px;
+  border-radius:18px;
+  color:#ccc;
+  font-size:14px;
+}
+
+/* Jump animation on whole text */
+.jump-text{
+  display:inline-block;
+  animation: textJump 1.2s infinite;
+}
+
+@keyframes textJump{
+  0%{
+    transform: translateY(0);
+    opacity:0.6;
+  }
+  50%{
+    transform: translateY(-4px);
+    opacity:1;
+  }
+  100%{
+    transform: translateY(0);
+    opacity:0.6;
+  }
+}
+.group-seen-text{
+  font-size: 11px;
+  color: #777;
+  margin-top: 4px;
+  text-align: right;
+  width: 100%;
+}
+
+
+
+
+
+
+
+
+
+
+.popup-overlay{
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.popup-box{
+  background:#1c1b1b;
+  padding:20px;
+  border-radius:12px;
+  width:280px;
+  text-align:center;
+  animation: popupFade 0.2s ease;
+}
+
+.popup-title{
+  font-weight:600;
+  font-size:18px;
+  margin-bottom:8px;
+}
+
+.popup-text{
+  font-size:14px;
+  color:#cac4c4;
+  margin-bottom:16px;
+}
+
+.popup-buttons{
+  display:flex;
+  justify-content:space-between;
+}
+
+.cancel-btn{
+  background:#eee;
+  border:none;
+  padding:8px 16px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.leave-btn{
+  background:#ff3b30;
+  color:#fff;
+  border:none;
+  padding:8px 16px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.hidden{
+  display:none;
+}
+
+@keyframes popupFade{
+  from{transform:scale(0.9);opacity:0;}
+  to{transform:scale(1);opacity:1;}
 }

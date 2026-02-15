@@ -2,7 +2,10 @@
 // ----------let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band----------
 
 
-let FEED_VIDEOS_ENABLED = false; 
+
+
+const STORY_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 
 
 
@@ -52,12 +55,17 @@ function normalizeTags(tags) {
     .filter(t => t.length > 0);
 }
 
+// 📌 PINNED POST ID
+const PINNED_POST_ID = "2c0ac06b-a7b9-4c2d-8da3-348db9b14c89"; // 👈 yahan apni post ki id daal
 
 let allPosts = [];
 let batchSize = 6;        // har batch me kitne video load honge
 let batchIndex = 0;        // kaunse batch pe hain
 let displayedPosts = [];   // already display hue posts
 let storyTimer = null;
+let isPaused = false;
+let storyStartTime = 0;
+let storyDuration = 0;
 
 function formatViews(num) {
   num = Number(num || 0);
@@ -469,10 +477,7 @@ if (!FEED_VIDEOS_ENABLED) {
   return;
 }
 */
- if (!FEED_VIDEOS_ENABLED) {
-    main.innerHTML = "";   // feed empty
-    return;
-  }
+
 
 
 
@@ -929,12 +934,26 @@ if(!dataReady || isLoading) return;
   let filtered = [...allPosts];
 
 
- if (currentFilter === "all") {
+if (currentFilter === "all") {
+
   let feed = smartShuffle(filtered);
-  feed = personalizeFeed(feed);   // 🧠 USER INTEREST APPLY
+  feed = personalizeFeed(feed);
+
+  // 📌 PINNED POST LOGIC
+  const pinnedPost = feed.find(p => p.id == PINNED_POST_ID);
+
+  if (pinnedPost) {
+    // remove duplicate from list
+    feed = feed.filter(p => p.id != PINNED_POST_ID);
+
+    // add pinned post at top
+    feed.unshift(pinnedPost);
+  }
+
   displayVideos(feed);
   return;
 }
+
 
 
   if (currentFilter === "following") {
@@ -1137,46 +1156,83 @@ firebase.auth().onAuthStateChanged(user => {
 
   const chatsRef = firebase.database().ref("chats");
 
-  const updateUnreadCount = () => {
-  chatsRef.once("value", snapshot => {
-    const chats = snapshot.val();
-    if (!chats) {
-      messageCount.style.display = "none";
-      return;
-    }
+  const updateUnreadCount = async () => {
 
-    const uniqueSenders = new Set(); // 🔥 IMPORTANT
+  const uid = firebase.auth().currentUser?.uid;
+  if (!uid) return;
 
-    Object.keys(chats).forEach(chatId => {
-      if (!chatId.includes(uid)) return;
+  const uniqueSources = new Set(); // 🔥 chats + groups dono
 
-      const messages = chats[chatId];
-      Object.keys(messages).forEach(msgId => {
-        const msg = messages[msgId];
+  // ======================
+  // 🔹 SINGLE CHATS
+  // ======================
+  const chatsSnap = await firebase.database().ref("chats").once("value");
+  const chats = chatsSnap.val() || {};
 
-        // ❗ sirf unread + dusra banda
-        if (msg.sender !== uid && !msg.read) {
-          uniqueSenders.add(msg.sender); // 👈 same sender count 1 hi
-        }
-      });
+  Object.keys(chats).forEach(chatId => {
+
+    if (!chatId.includes(uid)) return;
+
+    const messages = chats[chatId];
+
+    Object.values(messages).forEach(msg => {
+      if (msg.sender !== uid && !msg.read) {
+        uniqueSources.add(chatId); // 👈 per chat 1 count
+      }
     });
 
-    const unread = uniqueSenders.size;
-
-    if (unread > 0) {
-      messageCount.style.display = "block";
-      messageCount.innerText = unread;
-    } else {
-      messageCount.style.display = "none";
-    }
   });
+
+
+  // ======================
+  // 🔹 GROUP CHATS
+  // ======================
+  const groupsSnap = await firebase.database().ref("groupChats").once("value");
+  const groups = groupsSnap.val() || {};
+
+  Object.keys(groups).forEach(groupId => {
+
+    const messages = groups[groupId];
+
+    Object.values(messages).forEach(msg => {
+
+      // agar message mera nahi hai
+      if (msg.sender !== uid) {
+
+        // agar seenBy me current user nahi hai
+        if (!msg.seenBy || !msg.seenBy[uid]) {
+          uniqueSources.add(groupId); // 👈 per group 1 count
+        }
+
+      }
+
+    });
+
+  });
+
+
+  const unread = uniqueSources.size;
+
+  if (unread > 0) {
+    messageCount.style.display = "block";
+    messageCount.innerText = unread;
+  } else {
+    messageCount.style.display = "none";
+  }
 };
+
 
 
   // listener for new messages
   chatsRef.on("child_added", updateUnreadCount);
   chatsRef.on("child_changed", updateUnreadCount);
   chatsRef.on("child_removed", updateUnreadCount);
+  firebase.database().ref("groupChats")
+  .on("child_added", updateUnreadCount);
+
+firebase.database().ref("groupChats")
+  .on("child_changed", updateUnreadCount);
+
 });
 
 btnMessage.onclick = () => {
@@ -1896,7 +1952,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "2.1";
+const currentVersion = "2.2";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE
@@ -2156,6 +2212,7 @@ let selectedStoryFile = null;
 let selectedStoryType = null;
 let selectedStoryText = "";
 let selectedStorySong = "";
+let currentStoryId = null;
 
 function hasSeenStory(storyId){
   return localStorage.getItem("story_seen_" + storyId) === "1";
@@ -2184,6 +2241,7 @@ async function getPinoraProfile(uid){
 /* ================= LOAD STORIES ================= */
 
 async function loadStories(){
+showStoriesSkeleton();
 
   const user = firebase.auth().currentUser;
   if(!user) return;
@@ -2199,12 +2257,20 @@ async function loadStories(){
 
   following.push(user.uid);
 
-  const { data } = await supabaseClient
+const { data: freshData } = await supabaseClient
+
     .from("stories")
     .select("*")
     .order("created_at", { ascending:false });
+const data = freshData || [];
+window.allStories = data;
+
+    // 🔥 AUTO DELETE EXPIRED STORIES
+await deleteExpiredStories(data);
 
   const bar = document.getElementById("storiesBar");
+
+
   bar.innerHTML = "";
 
   // 🔥 MY PROFILE (PINORA)
@@ -2248,6 +2314,7 @@ async function loadStories(){
       </div>
     `;
   });
+hideStoriesSkeleton();
 }
 
 /* ================= ADD STORY ================= */
@@ -2286,21 +2353,63 @@ document.getElementById("storyFileInput")
     .storage.from("stories")
     .getPublicUrl(fileName);
 
-  await supabaseClient.from("stories").insert({
-    user_id: user.uid,
-    uploader_username: profile.username,
-    uploader_image: profile.image,
-    media_url: data.publicUrl,
-    media_type: isVideo ? "video" : "image",
-    created_at: new Date()
-  });
+await supabaseClient.from("stories").insert({
+  user_id: user.uid,
+  uploader_username: profile.username,
+  uploader_image: profile.image,
+ media_url: data.publicUrl,
+media_path: fileName,   // 🔥 IMPORTANT
+
+  media_type: isVideo ? "video" : "image",
+  created_at: new Date()
+});
 
   loadStories();
 });
 
 /* ================= OPEN STORY ================= */
+async function deleteExpiredStories(stories){
+  const now = Date.now();
+
+  for(const story of stories){
+
+    const created = new Date(story.created_at).getTime();
+
+    if(now - created >= STORY_EXPIRY_MS){
+
+      // 🗑️ DELETE FILE FROM STORAGE
+      if(story.media_path){
+        await supabaseClient
+          .storage
+          .from("stories")
+          .remove([story.media_path]);
+      }
+
+      // 🗑️ DELETE STORY + VIEWS FROM TABLE
+      await supabaseClient
+        .from("stories")
+        .delete()
+        .or(`id.eq.${story.id},story_id.eq.${story.id}`);
+    }
+  }
+}
 
 function openStory(url, type, storyId){
+  // ⛔ expired story safety
+const story = window.allStories?.find(s => s.id === storyId);
+if(story){
+  const created = new Date(story.created_at).getTime();
+  if(Date.now() - created >= STORY_EXPIRY_MS){
+    loadStories();
+    return;
+  }
+}
+
+  currentStoryId = storyId;
+
+const progressBar = document.getElementById("storyProgressBar");
+progressBar.style.transition = "none";
+progressBar.style.width = "0%";
 
   const viewer = document.getElementById("storyViewer");
   const img = document.getElementById("storyImage");
@@ -2317,31 +2426,54 @@ function openStory(url, type, storyId){
   if(storyId) markStorySeen(storyId);
 saveStoryView(storyId);
 
-  if(type === "image"){
-    vid.pause();
-    vid.style.display = "none";
+if(type === "image"){
+  vid.pause();
+  vid.style.display = "none";
 
-    img.style.display = "block";
-    img.src = url;
+  img.style.display = "block";
+  img.src = url;
 
-    // ✅ FIXED TIMER
-    storyTimer = setTimeout(() => {
-      closeStory();
-    }, 15000);
+// ⏱️ 7 seconds
+const duration = 7000;
+storyDuration = duration;
+storyStartTime = Date.now();
+isPaused = false;
 
-  } 
+setTimeout(() => {
+  progressBar.style.transition = `width ${duration}ms linear`;
+  progressBar.style.width = "100%";
+}, 50);
+
+storyTimer = setTimeout(() => {
+  closeStory();
+}, duration);
+
+}
+
   else {
-    img.style.display = "none";
+  img.style.display = "none";
 
-    vid.style.display = "block";
-    vid.src = url;
-    vid.currentTime = 0;
-    vid.play();
+  vid.style.display = "block";
+  vid.src = url;
+  vid.currentTime = 0;
+  vid.controls = false; // ❌ browser controls off
+  vid.play();
+isPaused = false;
 
-    vid.onended = () => {
-      closeStory();
-    };
-  }
+vid.onloadedmetadata = () => {
+  storyDuration = vid.duration * 1000;
+  storyStartTime = Date.now();
+
+  progressBar.style.transition = `width ${storyDuration}ms linear`;
+  progressBar.style.width = "100%";
+};
+
+
+  vid.onended = () => {
+    closeStory();
+  };
+}
+
 
   loadStories();
 loadSeenCount(storyId);
@@ -2351,6 +2483,7 @@ loadSeenCount(storyId);
 /* ================= CLOSE STORY ================= */
 
 function closeStory(){
+document.getElementById("storyProgressBar").style.width = "0%";
 
   if(storyTimer){
     clearTimeout(storyTimer);
@@ -2372,23 +2505,41 @@ firebase.auth().onAuthStateChanged(user=>{
     loadStories();
   }
 });
+// 🔥 AUTO STORY EXPIRY CHECK (every 30 min)
+setInterval(() => {
+  if (firebase.auth().currentUser) {
+    loadStories();
+  }
+}, 30 * 60 * 1000); // 30 minutes
+
+
 async function saveStoryView(storyId){
 
   const user = firebase.auth().currentUser;
   if(!user || !storyId) return;
 
+  // pehle check karo already viewed?
+  const { data: already } = await supabaseClient
+    .from("stories")
+    .select("id")
+    .eq("story_id", storyId)
+    .eq("viewer_uid", user.uid)
+    .maybeSingle();
+
+  if(already) return; // 👈 duplicate nahi
+
   const profile = await getPinoraProfile(user.uid);
   if(!profile) return;
 
-  await supabaseClient
-    .from("story_views")
-    .upsert({
-      story_id: storyId,
-      viewer_uid: user.uid,
-      viewer_username: profile.username,
-      viewer_image: profile.image
-    }, { onConflict: "story_id,viewer_uid" });
+  await supabaseClient.from("stories").insert({
+    story_id: storyId,
+    viewer_uid: user.uid,
+    viewer_username: profile.username,
+    viewer_image: profile.image,
+    created_at: new Date()
+  });
 }
+
 async function loadSeenCount(storyId){
 
   const user = firebase.auth().currentUser;
@@ -2403,10 +2554,11 @@ async function loadSeenCount(storyId){
 
   if(story?.user_id !== user.uid) return;
 
-  const { count } = await supabaseClient
-    .from("story_views")
-    .select("*", { count: "exact", head: true })
-    .eq("story_id", storyId);
+const { count } = await supabaseClient
+  .from("stories")
+  .select("*", { count: "exact", head: true })
+  .eq("story_id", storyId);
+
 
   if(count > 0){
     document.getElementById("seenCount").innerText = count;
@@ -2415,33 +2567,111 @@ async function loadSeenCount(storyId){
 }
 async function openSeenList(){
 
-  const storyId = document
-    .getElementById("storyImage").src
-    ? null
-    : null; // (we already know current story)
+const { data } = await supabaseClient
+ 
+    .from("stories")
+    .select("viewer_uid, viewer_username")
+    .eq("story_id", currentStoryId)
+    .not("viewer_uid", "is", null)
+    .order("created_at", { ascending: false });
 
   const list = document.getElementById("seenUsersList");
   list.innerHTML = "";
 
-  const { data } = await supabaseClient
-    .from("story_views")
-    .select("*")
-    .order("created_at", { ascending:false });
+  for(const u of data){
 
-  data.forEach(u => {
+    // 🔥 REAL PROFILE FROM FIREBASE
+    const profile = await getPinoraProfile(u.viewer_uid);
+
     list.innerHTML += `
       <div class="seen-user">
-        <img src="${u.viewer_image || 'dp.jpg'}">
+        <img src="${profile?.image || 'dp.jpg'}">
         <span>${u.viewer_username}</span>
       </div>
     `;
-  });
+  }
 
-  document.getElementById("seenListModal")
-    .classList.remove("hidden");
+  const modal = document.getElementById("seenListModal");
+  modal.classList.remove("hidden");
+
+  setTimeout(() => {
+    modal.classList.add("show");
+  }, 10);
 }
+
+
 
 function closeSeenList(){
-  document.getElementById("seenListModal")
-    .classList.add("hidden");
+const modal = document.getElementById("seenListModal");
+
+// pehle slide down
+modal.classList.remove("show");
+
+// animation ke baad hide
+setTimeout(() => {
+  modal.classList.add("hidden");
+}, 300);
+
 }
+function togglePauseStory(){
+  const progressBar = document.getElementById("storyProgressBar");
+  const vid = document.getElementById("storyVideo");
+
+  // 👉 PAUSE
+  if(!isPaused){
+    isPaused = true;
+
+    // pause timer
+    if(storyTimer){
+      clearTimeout(storyTimer);
+      storyTimer = null;
+    }
+
+    // remaining time calculate
+    const elapsed = Date.now() - storyStartTime;
+    storyDuration = Math.max(0, storyDuration - elapsed);
+
+    progressBar.style.transition = "none";
+
+    if(vid && !vid.paused){
+      vid.pause();
+    }
+  }
+
+  // 👉 RESUME
+  else{
+    isPaused = false;
+    storyStartTime = Date.now();
+
+    progressBar.style.transition = `width ${storyDuration}ms linear`;
+
+    storyTimer = setTimeout(() => {
+      closeStory();
+    }, storyDuration);
+
+    if(vid && vid.src){
+      vid.play().catch(()=>{});
+    }
+  }
+}
+document.getElementById("storyViewer").addEventListener("click", togglePauseStory);
+function showStoriesSkeleton(){
+  const skel = document.getElementById("storiesSkeleton");
+  const bar  = document.getElementById("storiesBar");
+
+  if(!skel || !bar) return;
+
+  bar.style.display = "none";      // 👈 real stories hide
+  skel.style.display = "flex";     // 👈 skeleton show
+}
+
+function hideStoriesSkeleton(){
+  const skel = document.getElementById("storiesSkeleton");
+  const bar  = document.getElementById("storiesBar");
+
+  if(!skel || !bar) return;
+
+  skel.style.display = "none";     // 👈 skeleton off
+  bar.style.display = "flex";      // 👈 stories on
+}
+

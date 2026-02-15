@@ -173,7 +173,22 @@ document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
   </div>
 </header>
 <!-- ================= STORIES BAR ================= -->
-<div class="stories-bar" id="storiesBar"></div>
+<div class="stories-wrapper">
+
+  <!-- 🔥 STORY SKELETON (sirf stories ke liye) -->
+  <div id="storiesSkeleton" class="stories-skeleton">
+    <div class="story-skel"></div>
+    <div class="story-skel"></div>
+    <div class="story-skel"></div>
+    <div class="story-skel"></div>
+    <div class="story-skel"></div>
+  </div>
+
+  <!-- ✅ REAL STORIES -->
+  <div class="stories-bar" id="storiesBar"></div>
+
+</div>
+
 
 <!-- Hidden input for story upload -->
 <input type="file" id="storyFileInput" accept="image/*,video/*" hidden>
@@ -460,16 +475,33 @@ If you believe this action was taken in error, please contact our support team f
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <!-- ================= STORY VIEWER ================= -->
 <div id="storyViewer" class="story-viewer hidden">
-    
+    <div class="story-progress">
+  <div class="story-progress-bar" id="storyProgressBar"></div>
+</div>
+<div id="storySeenBy" class="story-seen-by hidden" onclick="openSeenList()">
+  Seen by <span id="seenCount">0</span>
+</div>
+
   <span class="closeStory" onclick="closeStory()">✕</span>
 
   <img id="storyImage" style="display:none">
-  <video id="storyVideo" style="display:none" controls></video>
+<video id="storyVideo" style="display:none"></video>
+
 </div>
 
 <!-- Your JS -->
 <script src="script.js"></script>
 <script src="presence.js"></script>
+<div id="seenListModal" class="seen-modal hidden">
+  <div class="seen-box">
+    <div class="seen-header">
+      <span>Story Views</span>
+      <span onclick="closeSeenList()">✕</span>
+    </div>
+
+    <div id="seenUsersList"></div>
+  </div>
+</div>
 
 </body>
 </html>

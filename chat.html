@@ -23,7 +23,19 @@
   <!-- CHAT LIST -->
   <div id="chatListScreen">
     
-    <div class="header"><button id="FirstbackBtn"><i class="fa-solid fa-arrow-left"></i></button>Messages</div>
+<div class="header">
+  <button id="FirstbackBtn">
+    <i class="fa-solid fa-arrow-left"></i>
+  </button>
+
+  <span>Messages</span>
+
+  <!-- 🔥 Group Create Button -->
+  <button id="createGroupBtn" class="group-btn">
+    <i class="fa-solid fa-users"></i>
+  </button>
+</div>
+
 
     <!-- Skeleton -->
   <div id="chatSkeleton">
@@ -69,6 +81,38 @@
   </div>
 </div>
 
+<!-- 🔥 Group Create Popup -->
+<!-- 🔥 NEW 2 STEP GROUP POPUP -->
+<div id="groupPopup" class="popup hidden">
+  <div class="popup-box group-popup-box">
+<!-- ✅ Custom Success Popup -->
+<div id="customPopup" class="custom-popup hidden">
+   <div id="popupMessage"></div>
+</div>
+    <!-- STEP 1 -->
+    <div id="groupStep1">
+      <h3>Create New Group</h3>
+
+      <input type="text" id="groupUserSearch" placeholder="Search username">
+
+      <div id="userSelectList" class="user-select-list"></div>
+
+      <button id="groupNextBtn">Next</button>
+      <button id="closeGroupPopup">Cancel</button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="groupStep2" class="hidden">
+      <h3>Enter Group Name</h3>
+
+      <input type="text" id="groupNameInput" placeholder="Enter group name">
+
+      <button id="createGroupConfirmBtn">Create Group</button>
+    </div>
+
+  </div>
+</div>
+
 
     <div id="chatList"></div>
   </div>
@@ -94,12 +138,49 @@
   <div class="chat-header-actions">
     <button id="audioCallBtn"><i class="fa-solid fa-phone"></i></button>
     <button id="videoCallBtn"><i class="fa-solid fa-video"></i></button>
+    <button id="leaveGroupBtn" style="display:none;">
+  <i class="fa-solid fa-right-from-bracket"></i>
+</button>
+
   </div>
+  
 </div>
 
 
+<!-- Group Members Popup -->
+<div id="groupMembersPopup" class="hidden" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:2000;
+">
+  <div style="
+    background:#151414;
+    width:90%;
+    max-width:400px;
+    max-height:70%;
+    overflow-y:auto;
+    border-radius:10px;
+    padding:15px;
+  ">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3>Group Members</h3>
+      <button onclick="closeGroupMembers()">✕</button>
+    </div>
+
+    <div id="groupMembersList"></div>
+  </div>
+</div>
+
     <div id="chatBox"></div>
 
+<div id="typingIndicator" class="typing-indicator"></div>
     
 
     <div id="replyBox" class="hidden"></div>
@@ -129,7 +210,7 @@
 </div>
 
 
-<script src="chat.js"></script>
+
 <!-- Fullscreen Media Viewer -->
 <div id="mediaViewer" class="media-viewer hidden">
   <span id="closeViewer">✕</span>
@@ -152,6 +233,24 @@
     <button id="closePopup">OK</button>
   </div>
 </div>
+<!-- Leave Group Popup -->
+<div id="leaveGroupPopup" class="popup-overlay hidden">
+  <div class="popup-box">
+    
+    <div class="popup-title">Leave Group?</div>
+    
+    <div class="popup-text">
+      Are you sure you want to leave this group?
+    </div>
 
+    <div class="popup-buttons">
+      <button id="cancelLeaveBtn" class="cancel-btn">Cancel</button>
+      <button id="confirmLeaveBtn" class="leave-btn">Leave</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="chat.js"></script>
 </body>
 </html>

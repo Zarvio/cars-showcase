@@ -1653,6 +1653,15 @@ body {
   max-width:100%;
   max-height:100%;
 }
+.story-viewer {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .closeStory{
   position:absolute;
@@ -1661,4 +1670,132 @@ body {
   font-size:22px;
   color:white;
   cursor:pointer;
+}
+.story-progress {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  height: 3px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 5px;
+  overflow: hidden;
+  z-index: 10001;
+}
+
+.story-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: white;
+  transition: width linear;
+}
+.story-seen-by {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 14px;
+  z-index: 10002;   /* 🔥 VERY IMPORTANT */
+  cursor: pointer;
+}
+#storyVideo,
+#storyImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  z-index: 1;
+}
+
+.seen-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 10002;
+}
+
+.seen-modal.hidden {
+  display: none;
+}
+
+.seen-box {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #111;
+  border-radius: 16px 16px 0 0;
+  padding: 15px;
+  max-height: 60%;
+  overflow-y: auto;
+}
+
+.seen-header {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.seen-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  color: white;
+}
+
+.seen-user img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+/* ================= STORY SKELETON ================= */
+
+.stories-wrapper{
+  position: relative;
+}
+
+/* skeleton container */
+.stories-skeleton{
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  overflow: hidden;
+}
+
+/* individual story circle */
+.story-skel{
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: #111;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* shimmer animation */
+.story-skel::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.12),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+/* hide real stories initially */
+#storiesBar{
+  display: none;
+}
+
+/* shimmer keyframes */
+@keyframes shimmer{
+  0%{ transform: translateX(-100%); }
+  100%{ transform: translateX(100%); }
 }

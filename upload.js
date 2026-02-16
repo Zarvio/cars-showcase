@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileNameText = document.getElementById("fileName");
 
   const popup = document.getElementById("uploadPopup");
+  let isPrivateSelected = false; // default PUBLIC
+let privacyConfirmed = false;
+
   const progressFill = document.getElementById("progressFill");
   const uploadStatus = document.getElementById("uploadStatus");
 
@@ -89,7 +92,15 @@ cryingAudio.play();
     if (uploadForm) uploadForm.querySelector("button[type='submit']").disabled = false;
 
     uploadForm?.addEventListener("submit", async (e) => {
-      e.preventDefault();
+e.preventDefault();
+
+if (!privacyConfirmed) {
+  // pehli baar → popup dikhao
+  document.getElementById("privacyPopup").classList.remove("hidden");
+  return;
+}
+
+// ✅ yahan se REAL upload start hoga
 
       const userRef = firebase.database().ref("users/" + user.uid);
       const userSnap = await userRef.once("value");
@@ -227,7 +238,9 @@ if (file.type.startsWith("video")) {
           uploader_name: uploaderName,
           uploader_image: uploaderImg,
           uploader_verified: uploaderVerified,
+          private_url: isPrivateSelected,
           content_tags: contentTags
+          
         }]);
 
       clearInterval(interval);
@@ -240,6 +253,9 @@ if (file.type.startsWith("video")) {
       }
 
       uploadStatus.innerText = "Uploaded Successfully ✔️";
+      privacyConfirmed = false;
+isPrivateSelected = false;
+
       uploadStatus.style.color = "black";
       onUploadDone();
 // 🔓 upload ke baad chat unlock check
@@ -253,6 +269,18 @@ if (typeof checkChatButtonLock === "function") {
       setTimeout(() => window.location.href = "main.html", 1500);
     });
   });
+document.getElementById("confirmPrivacy").addEventListener("click", () => {
+  const selected = document.querySelector('input[name="privacy"]:checked').value;
+
+  isPrivateSelected = selected === "private"; // true / false
+  privacyConfirmed = true; // ✅ IMPORTANT
+
+  document.getElementById("privacyPopup").classList.add("hidden");
+
+  // 🔥 ab REAL upload
+  uploadForm.requestSubmit();
+});
+
 
   // Navigation
   document.getElementById("btnHome")?.addEventListener("click", () => window.location.href = "main.html");

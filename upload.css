@@ -63,7 +63,7 @@ form button {
     padding: 10px;
     border: none;
     border-radius: 8px;
-    background: #ff5252;
+    background: #3c3b3b;
     color: white;
     font-weight: bold;
     cursor: pointer;
@@ -105,7 +105,7 @@ form button {
 .select-btn {
   width: 100%;
   padding: 12px;
-  background: #ff5252;
+  background: #242323;
   color: white;
   border-radius: 10px;
   border: none;
@@ -254,7 +254,7 @@ form button {
   position: absolute;
   top: -42px;
   left: -20px;
-  background: #fff;
+  background: #bfbaba;
   padding: 6px 10px;
   border-radius: 14px;
   font-size: 11px;
@@ -466,4 +466,92 @@ form button {
 @keyframes danceMove {
   0% { transform: rotate(-5deg) translateY(0); }
   100% { transform: rotate(5deg) translateY(-4px); }
+}
+/* ===== OVERLAY ===== */
+#privacyPopup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* ===== CARD ===== */
+.privacyCard {
+  background: #09161e;
+  width: 90%;
+  max-width: 340px;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  animation: popup 0.25s ease;
+  text-align: center;
+}
+
+@keyframes popup {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ===== TITLE ===== */
+.privacyCard h3 {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+/* ===== OPTIONS ===== */
+.privacyOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #111;
+  cursor: pointer;
+  font-size: 15px;
+  border: 2px solid transparent;
+}
+
+/* hide radio */
+.option input {
+  display: none;
+}
+
+/* selected */
+.option:has(input:checked) {
+  background: #776e6e; 
+  color: #fff;
+}
+
+/* ===== BUTTON ===== */
+#confirmPrivacy {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: #111;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.fa,
+.fa-solid,
+.fa-regular,
+.fa-brands {
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900;
+}
+.hidden {
+  display: none !important;
 }

@@ -127,8 +127,31 @@
   };
   firebase.initializeApp(firebaseConfig);
 </script>
+<div id="privacyPopup" class="hidden">
+
+  <div class="privacyCard">
+
+    <h3>Who can see this video?</h3>
+
+    <div class="privacyOptions">
+      <label class="option">
+        <input type="radio" name="privacy" value="public" checked>
+        <span><i class="fa-solid fa-earth-americas"style="margin-right:5px;"></i> Public</span>
+      </label>
+
+      <label class="option">
+        <input type="radio" name="privacy" value="private">
+        <span><i class="fa-solid fa-lock"style="margin-right:5px;"></i> Private</span>
+      </label>
+    </div>
+
+    <button id="confirmPrivacy">Continue</button>
+
+  </div>
+</div>
 
 
 <script src="presence.js"></script>
+
 </body>
 </html>

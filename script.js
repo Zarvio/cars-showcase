@@ -90,6 +90,7 @@ let currentFilter = "all";
 let followingList = [];
 let isLoading = true;
 
+let activeFeed = [];
 
 // ---------- Firebase Config ----------
 const firebaseConfig = {
@@ -379,7 +380,12 @@ async function incrementSupabaseViews(postId) {
 }
 
   const query = searchVideoInput.value.toLowerCase().trim();
-  if (!query) return displayVideos(allPosts);
+  if (!query) {
+  clearFeed();
+  displayVideos(activeFeed);
+  return;
+}
+
 
   const aiResults = [];
   const titleResults = [];
@@ -458,6 +464,14 @@ function getSmartRelated(currentPost, allPosts) {
   return [...aiMatches, ...titleMatches];
 }
 
+function clearFeed() {
+  const main = document.querySelector(".main-content");
+  if (!main) return;
+
+  main.innerHTML = "";   // pura feed clear
+  batchIndex = 0;        // scroll reset
+  displayedPosts = [];   // duplicate band
+}
 
 
     // ----------------
@@ -933,63 +947,94 @@ if(!dataReady || isLoading) return;
 
   let filtered = [...allPosts];
 
+// helper
+const isPrivate = (p) =>
+  p.private_url === true ||
+  p.private_url === "true" ||
+  p.private_url === 1 ||
+  p.private_url === "1";
 
+batchIndex = 0; // 🔥 important
+clearFeed();    // jo bhi container empty karta ho
+
+/* ================= ALL ================= */
 if (currentFilter === "all") {
 
-  let feed = smartShuffle(filtered);
-  feed = personalizeFeed(feed);
+  activeFeed = filtered.filter(p => !isPrivate(p));
 
-  // 📌 PINNED POST LOGIC
-  const pinnedPost = feed.find(p => p.id == PINNED_POST_ID);
+  activeFeed = smartShuffle(activeFeed);
+  activeFeed = personalizeFeed(activeFeed);
+
+  const pinnedPost = activeFeed.find(
+    p => p.id == PINNED_POST_ID && !isPrivate(p)
+  );
 
   if (pinnedPost) {
-    // remove duplicate from list
-    feed = feed.filter(p => p.id != PINNED_POST_ID);
-
-    // add pinned post at top
-    feed.unshift(pinnedPost);
+    activeFeed = activeFeed.filter(p => p.id != PINNED_POST_ID);
+    activeFeed.unshift(pinnedPost);
   }
 
-  displayVideos(feed);
+  displayVideos(activeFeed);
   return;
 }
 
+/* ================= FOLLOWING ================= */
+if (currentFilter === "following") {
+  activeFeed = filtered.filter(p =>
+    followingList.includes(p.uploader_uid) &&
+    !isPrivate(p)
+  );
 
+  displayVideos(activeFeed);
+  return;
+}
 
-  if (currentFilter === "following") {
-    filtered = filtered.filter(p =>
-      followingList.includes(p.uploader_uid)
-    );
-    displayVideos(filtered);
-    return;
-  }
-
-  if (currentFilter === "verified") {
-    filtered = filtered.filter(p =>
+/* ================= VERIFIED ================= */
+if (currentFilter === "verified") {
+  activeFeed = filtered.filter(p =>
+    !isPrivate(p) &&
+    (
       p.uploader_verified == true ||
       p.uploader_verified == "true" ||
       p.uploader_verified == 1 ||
       p.uploader_verified == "1"
-    );
-    displayVideos(filtered);
-    return;
-  }
+    )
+  );
 
-  if (currentFilter === "popular") {
-    filtered = filtered
-      .sort((a,b) => (b.views||0) - (a.views||0))
-      .slice(0,40);
-    displayVideos(filtered);
-  }
+  displayVideos(activeFeed);
+  return;
+}
+
+/* ================= POPULAR ================= */
+if (currentFilter === "popular") {
+  activeFeed = filtered
+    .filter(p => !isPrivate(p))
+    .sort((a,b) => (b.views||0) - (a.views||0));
+
+  displayVideos(activeFeed);
+  return;
+}
+
+/* ================= PRIVATE ================= */
+if (currentFilter === "private") {
+  activeFeed = filtered.filter(p => isPrivate(p));
+  displayVideos(activeFeed);
+  return;
+}
+
+
 }
 window.addEventListener("scroll", () => {
-    if(isLoading || !dataReady) return;
+  if (isLoading || !dataReady) return;
 
-    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-        // scroll bottom ke kareeb → next batch load
-        if(batchIndex * batchSize >= allPosts.length) return; // koi aur nahi
-        displayVideos(allPosts);
-    }
+  if (
+    window.innerHeight + window.scrollY >=
+    document.body.offsetHeight - 100
+  ) {
+    if (batchIndex * batchSize >= activeFeed.length) return;
+
+    displayVideos(activeFeed); // ✅ FILTERED FEED ONLY
+  }
 });
 
 });
@@ -1952,7 +1997,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "2.2";
+const currentVersion = "2.3";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE

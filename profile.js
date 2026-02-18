@@ -553,8 +553,8 @@ firebase.auth().onAuthStateChanged(async user => {
 
 
 // ---------- Supabase Config ----------
-const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA"; // yaha apna anon key dalna
+ const SUPABASE_URL = "https://apewbmwwgobliozdollx.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZXdibXd3Z29ibGlvemRvbGx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDc4MzksImV4cCI6MjA4Njk4MzgzOX0.8wm8Rpis6W13ZJeavfY-ijicXj57A_1ycYu3heVX5X8";// yaha apna anon key dalna
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ----------------------
@@ -808,7 +808,7 @@ confirmDeleteBtn.addEventListener("click", async () => {
     if (filesToDelete.length > 0) {
       await supabaseClient
         .storage
-        .from("Zarvio") // ⚠️ bucket name
+        .from("Pinora") // ⚠️ bucket name
         .remove(filesToDelete);
     }
 
@@ -864,9 +864,9 @@ document.getElementById("saveCrop").onclick = async () => {
     const filePath = `profilePics/${currentUser.uid}_${Date.now()}.png`;
 
 
-    await supabaseClient.storage.from("Zarvio").upload(filePath, blob, { upsert:true });
+    await supabaseClient.storage.from("Pinora").upload(filePath, blob, { upsert:true });
 
-    const { data } = supabaseClient.storage.from("Zarvio").getPublicUrl(filePath);
+    const { data } = supabaseClient.storage.from("Pinora").getPublicUrl(filePath);
     const url = data.publicUrl;
 
     await firebase.database().ref("users/"+currentUser.uid+"/photoURL").set(url);

@@ -227,8 +227,8 @@ function markViewed(postId) {
 // MAIN DOM LOADED
 // ----------------------
 document.addEventListener("DOMContentLoaded", async () => {
-    const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA";
+    const SUPABASE_URL = "https://apewbmwwgobliozdollx.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZXdibXd3Z29ibGlvemRvbGx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDc4MzksImV4cCI6MjA4Njk4MzgzOX0.8wm8Rpis6W13ZJeavfY-ijicXj57A_1ycYu3heVX5X8";
 
     window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -1997,7 +1997,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "2.3";
+const currentVersion = "2.4";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE

@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const helloAudio = document.getElementById("helloSound");
   helloAudio.volume = 0.5; // optional, halka sound
   helloAudio.play();
-  const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4Ym9qaG12Y2F1aXV4YWhqd3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MzM3NjEsImV4cCI6MjA4MDUwOTc2MX0.xP1QCzWIwnWFZArsk_5C8wCz7vkPrmwmLJkEThT74JA";
+  const SUPABASE_URL = "https://apewbmwwgobliozdollx.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZXdibXd3Z29ibGlvemRvbGx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDc4MzksImV4cCI6MjA4Njk4MzgzOX0.8wm8Rpis6W13ZJeavfY-ijicXj57A_1ycYu3heVX5X8";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const uploadForm = document.getElementById("uploadForm");
@@ -132,7 +132,7 @@ if (!privacyConfirmed) {
 
       // Upload main file
       const { error: uploadError } = await supabaseClient
-        .storage.from("Zarvio")
+        .storage.from("Pinora")
         .upload(filePath, file);
 
       if (uploadError) {
@@ -143,7 +143,7 @@ if (!privacyConfirmed) {
       }
 
       const { data: publicURL } = supabaseClient.storage
-        .from("Zarvio")
+        .from("Pinora")
         .getPublicUrl(filePath);
       const fileUrl = publicURL.publicUrl;
 
@@ -154,11 +154,11 @@ if (!privacyConfirmed) {
           const thumbBlob = await generateVideoThumbnail(file);
           const thumbPath = `thumbnails/${Date.now()}-${safeFileName}.jpg`;
           const { error: thumbError } = await supabaseClient
-            .storage.from("Zarvio")
+            .storage.from("Pinora")
             .upload(thumbPath, thumbBlob);
           if (!thumbError) {
             const { data: thumbData } = supabaseClient.storage
-              .from("Zarvio")
+              .from("Pinora")
               .getPublicUrl(thumbPath);
             thumbUrl = thumbData.publicUrl;
           }

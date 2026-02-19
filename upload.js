@@ -92,6 +92,12 @@ cryingAudio.play();
     if (uploadForm) uploadForm.querySelector("button[type='submit']").disabled = false;
 
     uploadForm?.addEventListener("submit", async (e) => {
+      const currentUser = firebase.auth().currentUser;
+if (!currentUser) {
+  alert("Login expired, page reload karo");
+  return;
+}
+
 e.preventDefault();
 
 if (!privacyConfirmed) {
@@ -132,13 +138,19 @@ if (!privacyConfirmed) {
 
       // Upload main file
       const { error: uploadError } = await supabaseClient
-        .storage.from("Pinora")
-        .upload(filePath, file);
+  .storage
+  .from("Pinora")
+  .upload(filePath, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type
+  });
+
 
       if (uploadError) {
         clearInterval(interval);
         uploadStatus.innerText = "Upload failed!";
-        console.error(uploadError);
+        alert(uploadError.message);
         return;
       }
 
@@ -290,26 +302,30 @@ document.getElementById("confirmPrivacy").addEventListener("click", () => {
   document.getElementById("btnUpload")?.addEventListener("click", () => window.location.href = "upload.html");
 
   // Thumbnail generator
-  async function generateVideoThumbnail(file) {
-    return new Promise((resolve, reject) => {
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      video.src = URL.createObjectURL(file);
-      video.muted = true;
-      video.currentTime = 1;
+async function generateVideoThumbnail(file) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.src = URL.createObjectURL(file);
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
 
-      video.onloadeddata = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.8);
-      };
-
-      video.onerror = (e) => reject(e);
+    video.addEventListener("loadedmetadata", () => {
+      video.currentTime = Math.min(1, video.duration / 2);
     });
-  }
+
+    video.addEventListener("seeked", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+      canvas.toBlob(blob => resolve(blob), "image/jpeg", 0.8);
+    });
+
+    video.onerror = reject;
+  });
+}
+
 
 });
 function showCustomAlert(message) {

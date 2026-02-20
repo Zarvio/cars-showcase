@@ -1,3 +1,5 @@
+// ---------- (chatonkrna wla ) 127 number pr h ----------
+
 // ---------- Firebase Config ----------
 const firebaseConfig = {
   apiKey: "AIzaSyDUefeJbHKIAs-l3zvFlGaas6VD63vv4kI",
@@ -123,7 +125,7 @@ firebase.database().ref("users/" + currentUser).once("value").then(snap => {
 
 
 // ---------- (chatoffkrna wla )chatListScreen.style.display = "none";----------
-
+chatListScreen.style.display = "none";
 
 
 

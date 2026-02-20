@@ -1799,3 +1799,54 @@ body {
   0%{ transform: translateX(-100%); }
   100%{ transform: translateX(100%); }
 }
+
+
+
+
+/* vote wala popup */
+
+
+
+#shutdownPopup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999999;
+}
+
+.popupBox{
+  background:#111;
+  color:#fff;
+  padding:25px;
+  border-radius:12px;
+  text-align:center;
+  width:90%;
+  max-width:360px;
+}
+
+.popupBox h2{
+  margin-bottom:10px;
+}
+
+.voteInfo{
+  margin:15px 0;
+  font-size:18px;
+  font-weight:bold;
+}
+
+#voteBtn{
+  padding:10px 20px;
+  background:#e7f4ef;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:16px;
+}
+#voteBtn:disabled{
+  color: #000;        /* 🔥 text black */
+  opacity: 1;         /* optional: text clear dikhe */
+  cursor: not-allowed;
+}

@@ -1,7 +1,6 @@
-// ----------// 🔕 FEED VIDEO TOGGLE
+// 1 bumber pr let wali fir 487 prif (!FEED_VIDEOS_ENABLED) wali and story mein bucket name stories2 ki jgh stories krna hai or web on krne ke liye script.js chat.js user.js main.html style.css in mein jana h  // 🔕 vapis shi krna kr liye
 // ----------let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band----------
-
-
+let FEED_VIDEOS_ENABLED = false;
 
 
 const STORY_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -491,7 +490,10 @@ if (!FEED_VIDEOS_ENABLED) {
   return;
 }
 */
-
+if (!FEED_VIDEOS_ENABLED) {
+  main.innerHTML = "";   // feed empty
+  return;
+}
 
 
 
@@ -1997,7 +1999,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "2.5";
+const currentVersion = "2.6";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE
@@ -2304,7 +2306,7 @@ showStoriesSkeleton();
 
 const { data: freshData } = await supabaseClient
 
-    .from("stories")
+    .from("stories2")
     .select("*")
     .order("created_at", { ascending:false });
 const data = freshData || [];
@@ -2391,14 +2393,14 @@ document.getElementById("storyFileInput")
   const isVideo = file.type.startsWith("video");
 
   await supabaseClient.storage
-    .from("stories")
+    .from("stories2")
     .upload(fileName, file, { contentType:file.type });
 
   const { data } = supabaseClient
-    .storage.from("stories")
+    .storage.from("stories2")
     .getPublicUrl(fileName);
 
-await supabaseClient.from("stories").insert({
+await supabaseClient.from("stories2").insert({
   user_id: user.uid,
   uploader_username: profile.username,
   uploader_image: profile.image,
@@ -2426,13 +2428,13 @@ async function deleteExpiredStories(stories){
       if(story.media_path){
         await supabaseClient
           .storage
-          .from("stories")
+          .from("stories2")
           .remove([story.media_path]);
       }
 
       // 🗑️ DELETE STORY + VIEWS FROM TABLE
       await supabaseClient
-        .from("stories")
+        .from("stories2")
         .delete()
         .or(`id.eq.${story.id},story_id.eq.${story.id}`);
     }
@@ -2565,7 +2567,7 @@ async function saveStoryView(storyId){
 
   // pehle check karo already viewed?
   const { data: already } = await supabaseClient
-    .from("stories")
+    .from("stories2")
     .select("id")
     .eq("story_id", storyId)
     .eq("viewer_uid", user.uid)
@@ -2576,7 +2578,7 @@ async function saveStoryView(storyId){
   const profile = await getPinoraProfile(user.uid);
   if(!profile) return;
 
-  await supabaseClient.from("stories").insert({
+  await supabaseClient.from("stories2").insert({
     story_id: storyId,
     viewer_uid: user.uid,
     viewer_username: profile.username,
@@ -2592,7 +2594,7 @@ async function loadSeenCount(storyId){
 
   // check owner
   const { data: story } = await supabaseClient
-    .from("stories")
+    .from("stories2")
     .select("user_id")
     .eq("id", storyId)
     .single();
@@ -2600,7 +2602,7 @@ async function loadSeenCount(storyId){
   if(story?.user_id !== user.uid) return;
 
 const { count } = await supabaseClient
-  .from("stories")
+  .from("stories2")
   .select("*", { count: "exact", head: true })
   .eq("story_id", storyId);
 
@@ -2614,7 +2616,7 @@ async function openSeenList(){
 
 const { data } = await supabaseClient
  
-    .from("stories")
+    .from("stories2")
     .select("viewer_uid, viewer_username")
     .eq("story_id", currentStoryId)
     .not("viewer_uid", "is", null)
@@ -2720,3 +2722,64 @@ function hideStoriesSkeleton(){
   bar.style.display = "flex";      // 👈 stories on
 }
 
+
+
+
+
+
+
+
+/* vote wala popup------------------------------------- */
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const popup = document.getElementById("shutdownPopup");
+  const voteBtn = document.getElementById("voteBtn");
+  const voteCountEl = document.getElementById("voteCount");
+
+  if (!voteBtn) {
+    console.error("❌ voteBtn not found in DOM");
+    return;
+  }
+
+  const siteRef = firebase.database().ref("siteControl");
+
+  function getVoterId(){
+    const user = firebase.auth().currentUser;
+    if(user) return user.uid;
+    return getBrowserId();
+  }
+
+  siteRef.on("value", snap => {
+    const data = snap.val();
+    if(!data) return;
+
+    const votes = data.votes ? Object.keys(data.votes).length : 0;
+    voteCountEl.innerText = votes;
+
+    popup.style.display = data.status === "on" ? "none" : "flex";
+
+    if(votes >= data.voteGoal){
+      siteRef.update({ status:"on" });
+    }
+  });
+
+  voteBtn.onclick = async () => {
+    const voterId = getVoterId();
+    const voteRef = siteRef.child("votes").child(voterId);
+
+    const snap = await voteRef.get();
+    if (snap.exists()) {
+      voteBtn.innerText = "Already Voted ✅";
+      voteBtn.disabled = true;
+      return;
+    }
+
+    await voteRef.set(true);
+    voteBtn.innerText = "Voted ✅";
+    voteBtn.disabled = true;
+  };
+
+});

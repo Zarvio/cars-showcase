@@ -1,6 +1,6 @@
-// 1 bumber pr let wali fir 487 prif (!FEED_VIDEOS_ENABLED) wali and story mein bucket name stories2 ki jgh stories krna hai or web on krne ke liye script.js chat.js user.js main.html style.css in mein jana h  // 🔕 vapis shi krna kr liye
+// 1 number pr let wali fir 487 prif (!FEED_VIDEOS_ENABLED) wali and story mein bucket name stories2 ki jgh stories krna hai or web on krne ke liye script.js chat.js user.js main.html style.css in mein jana h  // 🔕 vapis shi krna kr liye
 // ----------let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band----------
-let FEED_VIDEOS_ENABLED = false;
+// let FEED_VIDEOS_ENABLED = false;
 
 
 const STORY_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -490,10 +490,7 @@ if (!FEED_VIDEOS_ENABLED) {
   return;
 }
 */
-if (!FEED_VIDEOS_ENABLED) {
-  main.innerHTML = "";   // feed empty
-  return;
-}
+
 
 
 
@@ -1999,7 +1996,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "2.6";
+const currentVersion = "2.7";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE
@@ -2306,7 +2303,7 @@ showStoriesSkeleton();
 
 const { data: freshData } = await supabaseClient
 
-    .from("stories2")
+    .from("stories")
     .select("*")
     .order("created_at", { ascending:false });
 const data = freshData || [];
@@ -2393,14 +2390,14 @@ document.getElementById("storyFileInput")
   const isVideo = file.type.startsWith("video");
 
   await supabaseClient.storage
-    .from("stories2")
+    .from("stories")
     .upload(fileName, file, { contentType:file.type });
 
   const { data } = supabaseClient
-    .storage.from("stories2")
+    .storage.from("stories")
     .getPublicUrl(fileName);
 
-await supabaseClient.from("stories2").insert({
+await supabaseClient.from("stories").insert({
   user_id: user.uid,
   uploader_username: profile.username,
   uploader_image: profile.image,
@@ -2428,13 +2425,13 @@ async function deleteExpiredStories(stories){
       if(story.media_path){
         await supabaseClient
           .storage
-          .from("stories2")
+          .from("stories")
           .remove([story.media_path]);
       }
 
       // 🗑️ DELETE STORY + VIEWS FROM TABLE
       await supabaseClient
-        .from("stories2")
+        .from("stories")
         .delete()
         .or(`id.eq.${story.id},story_id.eq.${story.id}`);
     }
@@ -2567,7 +2564,7 @@ async function saveStoryView(storyId){
 
   // pehle check karo already viewed?
   const { data: already } = await supabaseClient
-    .from("stories2")
+    .from("stories")
     .select("id")
     .eq("story_id", storyId)
     .eq("viewer_uid", user.uid)
@@ -2578,7 +2575,7 @@ async function saveStoryView(storyId){
   const profile = await getPinoraProfile(user.uid);
   if(!profile) return;
 
-  await supabaseClient.from("stories2").insert({
+  await supabaseClient.from("stories").insert({
     story_id: storyId,
     viewer_uid: user.uid,
     viewer_username: profile.username,
@@ -2594,7 +2591,7 @@ async function loadSeenCount(storyId){
 
   // check owner
   const { data: story } = await supabaseClient
-    .from("stories2")
+    .from("stories")
     .select("user_id")
     .eq("id", storyId)
     .single();
@@ -2602,7 +2599,7 @@ async function loadSeenCount(storyId){
   if(story?.user_id !== user.uid) return;
 
 const { count } = await supabaseClient
-  .from("stories2")
+  .from("stories")
   .select("*", { count: "exact", head: true })
   .eq("story_id", storyId);
 
@@ -2616,7 +2613,7 @@ async function openSeenList(){
 
 const { data } = await supabaseClient
  
-    .from("stories2")
+    .from("stories")
     .select("viewer_uid, viewer_username")
     .eq("story_id", currentStoryId)
     .not("viewer_uid", "is", null)
@@ -2733,7 +2730,7 @@ function hideStoriesSkeleton(){
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
+/*document.addEventListener("DOMContentLoaded", () => {
 
   const popup = document.getElementById("shutdownPopup");
   const voteBtn = document.getElementById("voteBtn");
@@ -2782,4 +2779,4 @@ document.addEventListener("DOMContentLoaded", () => {
     voteBtn.disabled = true;
   };
 
-});
+}); */

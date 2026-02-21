@@ -1807,7 +1807,7 @@ body {
 
 
 
-#shutdownPopup{
+/*#shutdownPopup{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,0.85);
@@ -1845,8 +1845,10 @@ body {
   cursor:pointer;
   font-size:16px;
 }
+
 #voteBtn:disabled{
-  color: #000;        /* 🔥 text black */
-  opacity: 1;         /* optional: text clear dikhe */
+  color: #000;       
+  opacity: 1;  
   cursor: not-allowed;
-}
+} 
+  */

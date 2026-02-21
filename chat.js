@@ -125,7 +125,7 @@ firebase.database().ref("users/" + currentUser).once("value").then(snap => {
 
 
 // ---------- (chatoffkrna wla )chatListScreen.style.display = "none";----------
-chatListScreen.style.display = "none";
+
 
 
 

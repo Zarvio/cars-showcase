@@ -125,7 +125,7 @@ firebase.database().ref("users/" + currentUser).once("value").then(snap => {
 
 
 // ---------- (chatoffkrna wla )chatListScreen.style.display = "none";----------
-
+chatListScreen.style.display = "none";
 
 
 
@@ -1681,7 +1681,77 @@ imgBtn.addEventListener("click", () => {
 
 imgInput.addEventListener("change", async () => {
   const file = imgInput.files[0];
-  if (!file || !selectedUser) return;
+ if (!file || (!selectedUser && !selectedGroup)) return;
+
+ // ======= 👇👇👇 GROUP MEDIA SEND (YAHAN PASTE) =======
+  
+  if (selectedGroup) {
+
+    const ext = file.name.split(".").pop();
+    const fileName = `${Date.now()}.${ext}`;
+
+    const msgRef = firebase.database()
+      .ref(`groupChats/${selectedGroup}`)
+      .push();
+
+    // 🔥 sender info
+    const userSnap = await firebase.database()
+      .ref("users/" + currentUser)
+      .once("value");
+
+    const userData = userSnap.val() || {};
+
+    // 🔥 placeholder message
+    await msgRef.set({
+      sender: currentUser,
+      senderName: userData.username || "User",
+      senderPhoto: userData.photoURL || "dp.jpg",
+      text: "",
+      media: "",
+      mediaType: file.type.startsWith("image/") ? "image" : "video",
+      uploading: true,
+      progress: 0,
+      time: Date.now(),
+      seenBy: {
+        [currentUser]: true
+      }
+    });
+
+    // 🔥 fake progress
+    let progress = 0;
+    const timer = setInterval(() => {
+      progress += 10;
+      if (progress > 90) progress = 90;
+      msgRef.update({ progress });
+    }, 400);
+
+    // 🔥 upload to Supabase
+    const { error } = await supabaseClient.storage
+      .from("videos")
+      .upload(fileName, file);
+
+    clearInterval(timer);
+
+    if (error) {
+      msgRef.remove();
+      alert("Upload failed");
+      return;
+    }
+
+    const { data } = supabaseClient.storage
+      .from("videos")
+      .getPublicUrl(fileName);
+
+    // 🔥 upload complete
+    msgRef.update({
+      media: data.publicUrl,
+      uploading: false,
+      progress: 100
+    });
+
+    imgInput.value = "";
+    return; // ⛔ single chat code yahan nahi chalega
+  }
 
   const chatId = getChatId(currentUser, selectedUser);
   const ext = file.name.split(".").pop();
@@ -1985,7 +2055,13 @@ if(msg.sender !== currentUser){
 
        <div class="insta-bubble">
          ${replyHTML}
-         <div class="msg-text">${linkify(msg.text)}</div>
+         ${
+  msg.media
+    ? (msg.mediaType === "image"
+        ? `<img src="${msg.media}" style="max-width:220px;border-radius:10px;">`
+        : `<video src="${msg.media}" controls style="max-width:220px;border-radius:10px;"></video>`)
+    : `<div class="msg-text">${linkify(msg.text || "")}</div>`
+}
          ${msg.edited ? '<div class="edited">(edited)</div>' : ''}
          <div class="msg-time-swipe">${time12}</div>
        </div>
@@ -1998,7 +2074,13 @@ else{
     <div class="insta-msg-row you">
       <div class="insta-bubble you-bubble">
         ${replyHTML}
-        <div class="msg-text">${linkify(msg.text)}</div>
+       ${
+  msg.media
+    ? (msg.mediaType === "image"
+        ? `<img src="${msg.media}" style="max-width:220px;border-radius:10px;">`
+        : `<video src="${msg.media}" controls style="max-width:220px;border-radius:10px;"></video>`)
+    : `<div class="msg-text">${linkify(msg.text || "")}</div>`
+}
         ${msg.edited ? '<div class="edited">(edited)</div>' : ''}
         <div class="msg-time-swipe">${time12}</div>
       </div>

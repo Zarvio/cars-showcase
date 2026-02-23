@@ -1,7 +1,7 @@
 // 1 number pr let wali fir 487 prif (!FEED_VIDEOS_ENABLED) wali and story mein bucket name stories2 ki jgh stories krna hai or web on krne ke liye script.js chat.js user.js main.html style.css in mein jana h  // 🔕 vapis shi krna kr liye
 // ----------let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band----------
 // let FEED_VIDEOS_ENABLED = false;
-
+//abi script.js and style.css and main.html k last m or chat and user js m off hai 
 
 const STORY_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -1996,7 +1996,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "2.7";
+const currentVersion = "2.8";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE
@@ -2730,7 +2730,7 @@ function hideStoriesSkeleton(){
 
 
 
-/*document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
 
   const popup = document.getElementById("shutdownPopup");
   const voteBtn = document.getElementById("voteBtn");
@@ -2779,4 +2779,4 @@ function hideStoriesSkeleton(){
     voteBtn.disabled = true;
   };
 
-}); */
+}); 

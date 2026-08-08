@@ -1,5 +1,5 @@
 //document.body.style.display = "none"; // ---------- ye line remove krte hi shi ho jayega ----------
-document.body.style.display = "none"; 
+
 
 
 
@@ -15,8 +15,8 @@ const firebaseConfig = {
   appId: "1:125014633127:web:d29e4c37628ab637f40982"
 };
 firebase.initializeApp(firebaseConfig);
-const SUPABASE_URL = "https://apewbmwwgobliozdollx.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZXdibXd3Z29ibGlvemRvbGx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDc4MzksImV4cCI6MjA4Njk4MzgzOX0.8wm8Rpis6W13ZJeavfY-ijicXj57A_1ycYu3heVX5X8";
+   const SUPABASE_URL = "https://bgscumoqgnlrcpehvwqy.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_5Sf30aiZGl71F7-owfHAag_DIT0FSgL";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Elements

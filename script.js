@@ -1,6 +1,6 @@
 // 1 number pr let wali fir 487 prif (!FEED_VIDEOS_ENABLED) wali and story mein bucket name stories2 ki jgh stories krna hai or web on krne ke liye script.js chat.js user.js main.html style.css in mein jana h  // 🔕 vapis shi krna kr liye
 // ----------let FEED_VIDEOS_ENABLED = false; // ❌ false = videos band----------
-// let FEED_VIDEOS_ENABLED = false;
+let FEED_VIDEOS_ENABLED = true;
 //abi script.js and style.css and main.html k last m or chat and user js m off hai 
 
 const STORY_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -226,8 +226,8 @@ function markViewed(postId) {
 // MAIN DOM LOADED
 // ----------------------
 document.addEventListener("DOMContentLoaded", async () => {
-    const SUPABASE_URL = "https://apewbmwwgobliozdollx.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZXdibXd3Z29ibGlvemRvbGx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDc4MzksImV4cCI6MjA4Njk4MzgzOX0.8wm8Rpis6W13ZJeavfY-ijicXj57A_1ycYu3heVX5X8";
+    const SUPABASE_URL = "https://bgscumoqgnlrcpehvwqy.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_5Sf30aiZGl71F7-owfHAag_DIT0FSgL";
 
     window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -294,80 +294,145 @@ if(allPosts.length > 0){
 // ----------------------
 // 👁️ REAL VIEW COUNT LOGIC
 // ----------------------
-// ----------------------
-// 👁️ REAL VIEW COUNT
-// ----------------------
 async function countView(postId) {
 
-  // ❌ already viewed in this session → STOP
-  if (hasViewed(postId)) return;
+  console.log("👁️ countView START:", postId);
+
+  // Already viewed in this browser/session
+  if (hasViewed(postId)) {
+    console.log("⚠️ Already viewed in this session");
+    return;
+  }
 
   const user = firebase.auth().currentUser;
   const viewsRef = firebase.database().ref(`videoViews/${postId}`);
 
   try {
+
+    // =========================
+    // 👤 LOGGED-IN USER
+    // =========================
     if (user) {
+
       const userRef = viewsRef.child(`users/${user.uid}`);
       const snap = await userRef.get();
 
       if (!snap.exists()) {
+
+        console.log("🆕 New user view");
+
+        // 🔥 FIRST update Supabase
+        const success = await incrementSupabaseViews(postId);
+
+        // ❌ Supabase failed → DON'T mark Firebase
+        if (!success) {
+          console.error("❌ View was NOT saved to Supabase");
+          return;
+        }
+
+        // ✅ Supabase succeeded → now mark Firebase
         await userRef.set(true);
-        await incrementSupabaseViews(postId);
-        markViewed(postId); // ✅ mark
+
+        markViewed(postId);
+
+        console.log("✅ View completely saved");
+
+      } else {
+
+        console.log("⚠️ User already viewed this video");
       }
 
-    } else {
+    }
+
+    // =========================
+    // 🌐 GUEST / BROWSER
+    // =========================
+    else {
+
       const browserId = getBrowserId();
-      const browserRef = viewsRef.child(`browsers/${browserId}`);
+      const browserRef =
+        viewsRef.child(`browsers/${browserId}`);
+
       const snap = await browserRef.get();
 
       if (!snap.exists()) {
+
+        console.log("🆕 New browser view");
+
+        // 🔥 FIRST update Supabase
+        const success =
+          await incrementSupabaseViews(postId);
+
+        // ❌ Failed
+        if (!success) {
+          console.error("❌ Guest view NOT saved");
+          return;
+        }
+
+        // ✅ Success
         await browserRef.set(true);
-        await incrementSupabaseViews(postId);
-        markViewed(postId); // ✅ mark
+
+        markViewed(postId);
+
+        console.log("✅ Guest view completely saved");
+
+      } else {
+
+        console.log("⚠️ Browser already viewed this video");
       }
     }
+
   } catch (err) {
-    console.error("Count view error:", err);
+
+    console.error("❌ Count view error:", err);
+
   }
 }
-
 // ----------------------
 // ➕ INCREMENT SUPABASE VIEWS
 // ----------------------
 async function incrementSupabaseViews(postId) {
   try {
+
     const { data, error } = await supabaseClient
       .from("pinora823")
       .select("views")
       .eq("id", postId)
       .single();
 
-   
-
     if (error || !data) {
-      console.error("Fetch views error:", error);
-      return;
+      console.error("❌ Fetch views error:", error);
+      return false;
     }
 
     const newViews = Number(data.views || 0) + 1;
 
+    console.log("👁️ Old views:", data.views);
+    console.log("👁️ New views:", newViews);
+
     const { error: updateError } = await supabaseClient
       .from("pinora823")
-      .update({ views: newViews })
+      .update({
+        views: newViews
+      })
       .eq("id", postId);
 
     if (updateError) {
-      console.error("UPDATE ERROR:", updateError);
-    } else {
-      
+      console.error("❌ UPDATE ERROR:", updateError);
+      return false;
     }
 
+    console.log("✅ SUPABASE VIEW UPDATED:", newViews);
+
+    return true;
+
   } catch (err) {
-    console.error("Increment views error:", err);
+
+    console.error("❌ Increment views error:", err);
+
+    return false;
   }
 }
-
 
     // ----------------
     // SEARCH
@@ -484,12 +549,12 @@ function clearFeed() {
 
 
 // 🔕 FEED VIDEO TOGGLE (currently disabled)
-/*
+
 if (!FEED_VIDEOS_ENABLED) {
   main.innerHTML = "";   // feed empty
   return;
 }
-*/
+
 
 
 
@@ -1996,7 +2061,7 @@ function personalizeFeed(posts){
 // ==============================
 // 🔢 CURRENT VERSION
 // ==============================
-const currentVersion = "2.8";
+const currentVersion = "2.9";
 
 // ==============================
 // 🔍 CHECK FOR UPDATE
@@ -2726,7 +2791,7 @@ function hideStoriesSkeleton(){
 
 
 
-/* vote wala popup------------------------------------- */
+/* vote wala popup------------------------------------- 
 
 
 
@@ -2779,4 +2844,4 @@ document.addEventListener("DOMContentLoaded", () => {
     voteBtn.disabled = true;
   };
 
-}); 
+}); */

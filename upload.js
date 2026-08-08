@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const helloAudio = document.getElementById("helloSound");
   helloAudio.volume = 0.5; // optional, halka sound
   helloAudio.play();
-  const SUPABASE_URL = "https://apewbmwwgobliozdollx.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZXdibXd3Z29ibGlvemRvbGx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDc4MzksImV4cCI6MjA4Njk4MzgzOX0.8wm8Rpis6W13ZJeavfY-ijicXj57A_1ycYu3heVX5X8";
+  const SUPABASE_URL = "https://bgscumoqgnlrcpehvwqy.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_5Sf30aiZGl71F7-owfHAag_DIT0FSgL";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const uploadForm = document.getElementById("uploadForm");

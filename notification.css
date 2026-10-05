@@ -1,170 +1,85 @@
-/* notification.css (Home.css style ke hisab se) */
+/* =========================================================
+   PINORA — notification page CSS (main page jaisa look)
+   Phone: bottom nav | Laptop: left sidebar
+   ========================================================= */
+:root{
+  --bg:#0b0b0f; --surface:#15151b; --surface2:#1e1e26; --line:#2a2a34;
+  --text:#f5f5f7; --muted:#9a9aa8; --accent:#ff2d55; --gold:#ffd24a; --green:#22c55e;
+  --nav-w:88px; --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;color:inherit}
+img,video{max-width:100%}
+.hidden{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#3a3a46;border-radius:6px}
 
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial;
+/* Font Awesome icons ko system font se bachane ke liye */
+.fa,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free" !important;font-weight:900}
+.fa-regular{font-weight:400}
+.fa-brands{font-family:"Font Awesome 6 Brands" !important;font-weight:400}
+
+/* ---------- HEADER ---------- */
+.top-header{position:sticky;top:0;z-index:800;width:100%;height:58px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;background:rgba(11,11,15,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.logo{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.profile-icon{width:38px;height:38px;background:#fff url('default.jpg') center/contain no-repeat;border-radius:50%;border:2px solid var(--line);cursor:pointer}
+
+/* ---------- CONTENT ---------- */
+.main-content{max-width:720px;margin-inline:auto;padding:16px 16px 110px}
+
+.notif-title{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.6px;margin:18px 4px 8px;text-transform:uppercase}
+
+.notif-container{display:flex;flex-direction:column;gap:10px}
+
+.notif-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);cursor:pointer;transition:background .2s,border-color .2s,transform .15s}
+.notif-item:hover{background:var(--surface2);border-color:#3a3a46}
+.notif-item:active{transform:scale(.98)}
+.notif-item img{width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#222;border:2px solid var(--line)}
+.notif-item i{font-size:18px;color:var(--accent);flex-shrink:0}
+.notif-item .notif-text{flex:1;min-width:0;font-size:14px;line-height:1.4;color:var(--text);word-break:break-word}
+
+/* unread highlight (agar JS mein .unread class lagti ho) */
+.notif-item.unread{background:rgba(255,45,85,.08);border-color:rgba(255,45,85,.35)}
+
+/* ---------- SPINNER ---------- */
+.spinner{width:30px;height:30px;margin:30px auto;border:4px solid rgba(255,255,255,.15);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* ---------- SKELETON ---------- */
+.notif-skeleton-container{display:flex;flex-direction:column;gap:10px;padding:12px 0;margin-top:8px}
+.notif-skeleton-item{display:flex;gap:12px;align-items:center;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.skel-avatar,.skel-line{background:linear-gradient(90deg,#1e1e26 25%,#2a2a34 37%,#1e1e26 63%);background-size:400% 100%;animation:skel 1.4s ease infinite}
+.skel-avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0}
+.skel-lines{flex:1;min-width:0}
+.skel-line{height:12px;margin-bottom:6px;border-radius:6px}
+.skel-line:last-child{margin-bottom:0}
+.skel-line.short{width:40%}
+@keyframes skel{0%{background-position:100% 0}100%{background-position:0 0}}
+
+/* ---------- BOTTOM NAV (phone) ---------- */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:900;display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));background:rgba(11,11,15,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.nav-item{position:relative;text-align:center;color:var(--muted);font-size:18px;padding:6px 12px;border-radius:14px;cursor:pointer;transition:background .2s,color .2s}
+.nav-item span{display:block;font-size:11px;margin-top:3px}
+.nav-item:hover{color:var(--text)}
+.nav-item.active,.active{background:rgba(255,255,255,.1);color:var(--text)}
+.notifCount{display:none;position:absolute;top:0;right:4px;min-width:18px;height:18px;padding:0 5px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;line-height:18px;border-radius:9px;z-index:2}
+
+/* =========================================================
+   LAPTOP ≥ 1024px — left sidebar
+   ========================================================= */
+@media (min-width:1024px){
+  body{padding-left:var(--nav-w)}
+  .bottom-nav{top:0;bottom:0;right:auto;width:var(--nav-w);flex-direction:column;justify-content:center;align-items:center;gap:10px;padding:16px 8px;border-top:none;border-right:1px solid var(--line)}
+  .nav-item{width:68px;padding:10px 4px}
+  .nav-item i{font-size:20px}
+  .nav-item:hover{background:rgba(255,255,255,.06)}
+  .top-header{padding:0 28px}
+  .main-content{padding-bottom:40px}
 }
 
-body {
-    background: #070707f9;
-    color: white;
-}
-
-/* Header */
-.top-header {
-    width: 100%;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: transparent;
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.profile-icon {
-    width: 42px;
-    height: 42px;
-    background: url('default.jpg') center center no-repeat;
-    background-size: contain; /* 🔥 zoom band, full logo dikhega */
-    background-color: white; /* optional but recommended */
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.2);
-    box-shadow: 0 0 10px rgba(0,0,0,0.4);
-    cursor: pointer;
-}
-
-
-/* Content Area */
-.main-content {
-    padding: 20px;
-    padding-bottom: 100px;
-}
-
-.notif-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.notif-item {
-    background: rgba(255,255,255,0.05);
-    padding: 12px 15px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    backdrop-filter: blur(4px);
-}
-
-.notif-item i {
-    font-size: 20px;
-    color: #1e90ff;
-}
-
-.notif-item .notif-text {
-    font-size: 14px;
-    color: white;
-}
-
-/* Bottom Navigation */
-.bottom-nav {
-    position: fixed;
-    
-    bottom: 0;
-    width: 100%;
-    background: #07070700;
-    backdrop-filter: blur(8px);
-    padding: 10px 0;
-    display: flex;
-    justify-content: space-around;
-}
-
-.nav-item {
-    text-align: center;
-    color: #bbb;
-    font-size: 14px;
-    padding: 8px 15px;
-    border-radius: 15px;
-}
-
-.nav-item span {
-    display: block;
-    font-size: 12px;
-    margin-top: 3px;
-}
-
-.active {
-    background: rgba(255,255,255,0.12);
-    color: white;
-}
-
-.spinner {
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  border-top: 4px solid #fff;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.notif-title {
-  color: #888;
-  font-size: 13px;
-  margin: 15px 0 6px 10px;
-  text-transform: uppercase;
-}
-.notif-skeleton-container {
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  margin-top: 50px;
-}
-
-.notif-skeleton-item {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.skel-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 37%, #1e1e1e 63%);
-  background-size: 400% 100%;
-  animation: skel 1.4s ease infinite;
-}
-
-.skel-lines {
-  flex: 1;
-}
-
-.skel-line {
-  height: 12px;
-  margin-bottom: 6px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 37%, #1e1e1e 63%);
-  background-size: 400% 100%;
-  animation: skel 1.4s ease infinite;
-}
-
-.skel-line.short {
-  width: 40%;
-}
-
-@keyframes skel {
-  0% { background-position: 100% 0; }
-  100% { background-position: 0 0; }
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
 }

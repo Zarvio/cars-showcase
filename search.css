@@ -1,155 +1,91 @@
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial;
+/* =========================================================
+   PINORA — search page CSS (main page jaisa look)
+   Phone: bottom nav | Laptop: left sidebar
+   ========================================================= */
+:root{
+  --bg:#0b0b0f; --surface:#15151b; --surface2:#1e1e26; --line:#2a2a34;
+  --text:#f5f5f7; --muted:#9a9aa8; --accent:#ff2d55; --gold:#ffd24a; --green:#22c55e;
+  --nav-w:88px; --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);padding-bottom:84px;min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;color:inherit}
+img,video{max-width:100%}
+.hidden{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#3a3a46;border-radius:6px}
+
+/* ---------- SEARCH HEADER ---------- */
+.search-header{position:sticky;top:0;z-index:700;padding:12px 16px;background:rgba(11,11,15,.92);backdrop-filter:blur(10px);max-width:1200px;margin-inline:auto}
+#searchInput,#searchVideoInput{width:100%;padding:12px 16px;font-size:16px;border-radius:24px;border:1px solid var(--line);outline:none;background:var(--surface);color:var(--text);transition:border-color .2s}
+#searchInput:focus,#searchVideoInput:focus{border-color:var(--accent)}
+#searchInput::placeholder,#searchVideoInput::placeholder{color:var(--muted)}
+
+/* ---------- TAGS ---------- */
+.section-title{max-width:1200px;margin:20px auto 10px;padding:0 16px;font-size:15px;font-weight:700;color:var(--muted)}
+.tags-box{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px;max-width:1200px;margin-inline:auto}
+.tag{padding:8px 18px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s,color .2s}
+.tag:hover{color:var(--text)}
+.tag.active{background:var(--text);color:#000;border-color:var(--text)}
+
+/* ---------- VIDEO GRID ---------- */
+.video-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;max-width:1400px;margin-inline:auto}
+.video{position:relative;width:100%;border-radius:var(--r);overflow:hidden;background:var(--surface);cursor:pointer;min-width:0}
+.video img,.video video{width:100%;display:block;aspect-ratio:9/14;object-fit:cover;background:#000}
+
+/* agar search results mein main page jaisa pin-box use ho raha ho */
+.pin-box{background:var(--surface);border-radius:var(--r);overflow:hidden;cursor:pointer;min-width:0}
+.mediaContainer{position:relative;width:100%;aspect-ratio:9/14;background:#000;overflow:hidden}
+.postMedia{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+
+/* ---------- SUGGESTIONS ---------- */
+.suggestions{width:100%;max-width:1200px;margin:8px auto 0;padding:0 16px}
+.suggestion-item{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;background:var(--surface);transition:background .2s}
+.suggestion-item:first-child{border-radius:var(--r) var(--r) 0 0}
+.suggestion-item:last-child{border-bottom:0;border-radius:0 0 var(--r) var(--r)}
+.suggestion-item:only-child{border-radius:var(--r)}
+.suggestion-item:hover{background:var(--surface2)}
+.suggestion-photo{width:36px;height:36px;border-radius:50%;object-fit:cover;margin-right:12px;border:2px solid var(--line);background:#444;flex-shrink:0}
+.suggestion-info{display:flex;flex-direction:column;min-width:0}
+.suggestion-username{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.suggestion-name{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- BOTTOM NAV (phone) ---------- */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:900;display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));background:rgba(11,11,15,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.nav-item{position:relative;text-align:center;color:var(--muted);font-size:18px;padding:6px 12px;border-radius:14px;cursor:pointer;transition:background .2s,color .2s}
+.nav-item span{display:block;font-size:11px;margin-top:3px}
+.nav-item:hover{color:var(--text)}
+.nav-item.active,.active{background:rgba(255,255,255,.1);color:var(--text)}
+.notifCount{display:none;position:absolute;top:0;right:4px;min-width:18px;height:18px;padding:0 5px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;line-height:18px;border-radius:9px;z-index:2}
+
+/* =========================================================
+   TABLET ≥ 700px
+   ========================================================= */
+@media (min-width:700px){
+  .video-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:14px 20px 20px}
 }
 
-body {
-    background: #070707f9;
-    color: white;
+/* =========================================================
+   LAPTOP ≥ 1024px — left sidebar
+   ========================================================= */
+@media (min-width:1024px){
+  body{padding-left:var(--nav-w);padding-bottom:0}
+  .bottom-nav{top:0;bottom:0;right:auto;width:var(--nav-w);flex-direction:column;justify-content:center;align-items:center;gap:10px;padding:16px 8px;border-top:none;border-right:1px solid var(--line)}
+  .nav-item{width:68px;padding:10px 4px}
+  .nav-item i{font-size:20px}
+  .nav-item:hover{background:rgba(255,255,255,.06)}
+  .video-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .video,.pin-box{transition:transform .2s,box-shadow .2s}
+  .video:hover,.pin-box:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.5)}
 }
 
-/* Search Header */
-.search-header {
-    padding: 15px;
-    background: #07070700;
-    position: sticky;
-    top: 0;
+@media (min-width:1500px){
+  .video-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .search-header,.section-title,.tags-box,.suggestions{max-width:1400px}
 }
 
-#searchInput {
-    width: 100%;
-    padding: 12px 15px;
-    font-size: 16px;
-    border-radius: 12px;
-    border: none;
-    outline: none;
-    background: rgba(255,255,255,0.1);
-    color: white;
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
 }
-
-/* Tags */
-.section-title {
-    margin: 20px 15px 10px;
-    opacity: 0.8;
-}
-
-.tags-box {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 0 15px;
-}
-
-.tag {
-    padding: 6px 14px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 20px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-/* Video Grid */
-.video-grid {
-    columns: 2;
-    gap: 10px;
-    padding: 15px;
-}
-
-.video {
-    width: 100%;
-    border-radius: 10px;
-    overflow: hidden;
-    background: rgba(255,255,255,0.1);
-}
-
-.video img {
-    width: 100%;
-    display: block;
-}
-
-/* Bottom Navigation */
-.bottom-nav {
-    position: fixed;
-    
-    bottom: 0;
-    width: 100%;
-    background: #07070700;
-    backdrop-filter: blur(8px);
-    padding: 10px 0;
-    display: flex;
-    justify-content: space-around;
-}
-
-.nav-item {
-    text-align: center;
-    color: #bbb;
-    font-size: 14px;
-    padding: 8px 15px;
-    border-radius: 15px;
-}
-
-.nav-item span {
-    display: block;
-    font-size: 12px;
-    margin-top: 3px;
-}
-
-.active {
-    background: rgba(255,255,255,0.12);
-    color: white;
-}
-
-#searchVideoInput {
-    width: 100%;
-    padding: 12px 15px;
-    font-size: 16px;
-    border-radius: 12px;
-    border: none;
-    outline: none;
-    background: rgba(255,255,255,0.1);
-    color: white;
-}
-
-.suggestions {
-    width: 100%;
-    margin-top: 10px;
-}
-
-.suggestion-item {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-    border-bottom: 1px solid #333;
-    cursor: pointer;
-}
-
-.suggestion-item:last-child {
-    border-bottom: 0;
-}
-
-.suggestion-photo {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 10px;
-}
-
-.suggestion-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.suggestion-username {
-    font-weight: bold;
-}
-
-.suggestion-name {
-    color: #aaa;
-    font-size: 13px;
-}
-
-

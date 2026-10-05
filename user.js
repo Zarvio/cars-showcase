@@ -15,8 +15,8 @@ const firebaseConfig = {
   appId: "1:125014633127:web:d29e4c37628ab637f40982"
 };
 firebase.initializeApp(firebaseConfig);
-   const SUPABASE_URL = "https://bgscumoqgnlrcpehvwqy.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_5Sf30aiZGl71F7-owfHAag_DIT0FSgL";
+   const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_fcAvi5DEE_9n7yO9yxGR2A_B4aneu1H";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Elements

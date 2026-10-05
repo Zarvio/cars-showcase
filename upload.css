@@ -1,557 +1,257 @@
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial;
+/* =========================================================
+   PINORA — upload page CSS (main page jaisa look)
+   Phone: bottom nav | Laptop: left sidebar
+   ========================================================= */
+:root{
+  --bg:#0b0b0f; --surface:#15151b; --surface2:#1e1e26; --line:#2a2a34;
+  --text:#f5f5f7; --muted:#9a9aa8; --accent:#ff2d55; --gold:#ffd24a; --green:#22c55e;
+  --nav-w:88px; --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;color:inherit}
+img,video{max-width:100%}
+.hidden{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#3a3a46;border-radius:6px}
+
+/* Font Awesome icons ko Arial/system font se bachane ke liye */
+.fa,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free" !important;font-weight:900}
+.fa-regular{font-weight:400}
+.fa-brands{font-family:"Font Awesome 6 Brands" !important;font-weight:400}
+
+/* ---------- HEADER ---------- */
+.top-header{position:sticky;top:0;z-index:800;width:100%;height:58px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;background:rgba(11,11,15,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.logo{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.profile-icon{width:38px;height:38px;background:url('default.jpg') center/cover no-repeat;border-radius:50%;border:2px solid var(--line);cursor:pointer}
+
+/* ---------- CONTENT ---------- */
+.main-content{max-width:640px;margin-inline:auto;padding:20px 16px 110px}
+.welcome{color:var(--muted);margin-bottom:20px}
+
+form input,form textarea,form select{width:100%;padding:12px 16px;margin:8px 0;border-radius:14px;border:1px solid var(--line);outline:none;background:var(--surface);color:var(--text);font-size:16px;transition:border-color .2s}
+form input:focus,form textarea:focus,form select:focus{border-color:var(--accent)}
+form input::placeholder,form textarea::placeholder{color:var(--muted)}
+form button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-weight:700;font-size:16px;cursor:pointer;transition:transform .15s,opacity .2s}
+form button:active{transform:scale(.97)}
+form button:disabled{opacity:.5}
+
+.select-btn{width:100%;padding:13px;background:var(--surface);color:var(--text);border:1px dashed var(--line);border-radius:14px;font-size:16px;cursor:pointer;transition:border-color .2s,background .2s}
+.select-btn:hover{border-color:var(--accent);background:var(--surface2)}
+
+/* ---------- BOTTOM NAV (phone) ---------- */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:900;display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));background:rgba(11,11,15,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.nav-item{position:relative;text-align:center;color:var(--muted);font-size:18px;padding:6px 12px;border-radius:14px;cursor:pointer;transition:background .2s,color .2s}
+.nav-item span{display:block;font-size:11px;margin-top:3px}
+.nav-item:hover{color:var(--text)}
+.nav-item.active,.active{background:rgba(255,255,255,.1);color:var(--text)}
+.notifCount{display:none;position:absolute;top:0;right:4px;min-width:18px;height:18px;padding:0 5px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;line-height:18px;border-radius:9px;z-index:2}
+
+/* ---------- UPLOAD PROGRESS POPUP ---------- */
+.upload-popup,.popup{position:fixed;inset:0;z-index:9999;display:flex;justify-content:center;align-items:center;padding:16px;background:rgba(0,0,0,.75)}
+.upload-popup.hidden,.popup.hidden{display:none}
+.popup-box{width:100%;max-width:340px;padding:24px 20px;border-radius:20px;background:var(--surface);color:var(--text);border:1px solid var(--line);text-align:center;animation:popup .25s ease}
+.popup-box h3{margin-bottom:8px}
+.popup-box p{color:var(--muted);line-height:1.5;font-size:14px}
+.popup-box button{margin-top:16px;padding:10px 24px;border:none;border-radius:12px;background:var(--green);color:#fff;font-weight:600;cursor:pointer}
+.progress-bar{width:100%;height:10px;background:var(--surface2);border-radius:10px;overflow:hidden;margin-top:12px}
+#progressFill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#ffb800);transition:width .3s ease}
+
+/* ---------- CUSTOM ALERT ---------- */
+#customAlertOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999}
+#customAlert{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;width:90%;max-width:400px;padding:24px 20px;border-radius:20px;background:var(--surface);border:1px solid var(--line);color:var(--text);box-shadow:0 12px 40px rgba(0,0,0,.6);text-align:center}
+#customAlertMsg{margin-bottom:16px;font-size:16px;line-height:1.5}
+#customAlertBtn{padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:12px;cursor:pointer;font-size:15px;font-weight:600;transition:transform .15s}
+#customAlertBtn:hover{background:var(--accent)}
+#customAlertBtn:active{transform:scale(.95)}
+
+/* =========================================================
+   TEDDY PET (same as before)
+   ========================================================= */
+.with-pet{display:flex;align-items:center;gap:14px}
+.teddy-pet{position:relative}
+.teddy-bubble{position:absolute;top:-42px;left:-20px;background:#bfbaba;color:#000;font-weight:500;padding:6px 10px;border-radius:14px;font-size:11px;box-shadow:0 4px 10px rgba(0,0,0,.15);animation:bubbleFloat 3s infinite;white-space:nowrap}
+.teddy{width:40px;height:40px;background:#c98b59;border-radius:50%;position:relative;animation:idleFloat 3s ease-in-out infinite}
+.ears::before,.ears::after{content:"";position:absolute;width:14px;height:14px;background:#c98b59;border-radius:50%;top:-6px}
+.ears::before{left:-6px}
+.ears::after{right:-6px}
+.face{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;text-align:center}
+.eyes{display:flex;justify-content:center;gap:6px}
+.eye{position:relative;width:4px;height:6px;background:#000;border-radius:50%;animation:blink 5s infinite}
+.mouth{width:10px;height:5px;border-bottom:2px solid #000;border-radius:50%;margin:3px auto 0}
+.hands{position:absolute;bottom:-6px;left:0;right:0;display:flex;justify-content:space-between;padding:0 4px}
+.hand{width:8px;height:12px;background:#c98b59;border-radius:10px}
+.center-pet{display:flex;justify-content:center;align-items:center;margin-top:20px}
+
+@keyframes idleFloat{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+@keyframes blink{0%,95%,100%{height:6px}96%,99%{height:1px}}
+@keyframes bubbleFloat{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+
+.jump{animation:jump .6s}
+@keyframes jump{0%{transform:translateY(0)}50%{transform:translateY(-20px)}100%{transform:translateY(0)}}
+
+.clap .left{animation:clapLeft .4s infinite}
+.clap .right{animation:clapRight .4s infinite}
+@keyframes clapLeft{0%{transform:rotate(0)}50%{transform:rotate(20deg)}}
+@keyframes clapRight{0%{transform:rotate(0)}50%{transform:rotate(-20deg)}}
+
+.sad .mouth{border-bottom:none;border-top:2px solid #000}
+.sad{animation:none}
+.sad .eye::after{content:"";position:absolute;top:6px;left:1px;width:2px;height:6px;background:#00aaff;border-radius:2px;animation:tearDrop 1s infinite}
+@keyframes tearDrop{0%{opacity:0;transform:translateY(0)}50%{opacity:1}100%{opacity:0;transform:translateY(6px)}}
+
+.sleep{animation:none;opacity:.9}
+.sleep .eye{height:2px}
+.sleep .mouth{display:none}
+.teddy::after{content:"";opacity:0}
+.sleep .teddy::after{content:"Zzz";position:absolute;top:-20px;right:-18px;font-size:10px;opacity:1;animation:zzzFloat 2s infinite}
+@keyframes zzzFloat{0%{transform:translateY(0);opacity:.4}50%{transform:translateY(-6px);opacity:1}100%{transform:translateY(-12px);opacity:0}}
+
+.dance{animation:danceMove .6s infinite alternate}
+@keyframes danceMove{0%{transform:rotate(-5deg) translateY(0)}100%{transform:rotate(5deg) translateY(-4px)}}
+
+/* =========================================================
+   PRIVACY POPUP
+   ========================================================= */
+#privacyPopup{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.75)}
+.privacyCard{width:100%;max-width:360px;padding:24px 20px;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.5);animation:popup .25s ease;text-align:center}
+@keyframes popup{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.privacyCard h3{font-size:16px;margin-bottom:16px;color:var(--text)}
+.privacyOptions{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.option{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:var(--surface2);cursor:pointer;font-size:15px;border:1px solid var(--line);transition:background .2s,border-color .2s}
+.option:hover{border-color:#3a3a46}
+.option input{display:none}
+.option:has(input:checked){background:rgba(255,45,85,.15);border-color:var(--accent);color:#fff}
+#confirmPrivacy{width:100%;padding:14px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s}
+#confirmPrivacy:active{transform:scale(.97)}
+
+/* =========================================================
+   LAPTOP ≥ 1024px — left sidebar
+   ========================================================= */
+@media (min-width:1024px){
+  body{padding-left:var(--nav-w)}
+  .bottom-nav{top:0;bottom:0;right:auto;width:var(--nav-w);flex-direction:column;justify-content:center;align-items:center;gap:10px;padding:16px 8px;border-top:none;border-right:1px solid var(--line)}
+  .nav-item{width:68px;padding:10px 4px}
+  .nav-item i{font-size:20px}
+  .nav-item:hover{background:rgba(255,255,255,.06)}
+  .top-header{padding:0 28px}
+  .main-content{padding-bottom:40px}
 }
 
-body {
-    background: #070707f9;
-    color: white;
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+}
+/* =========================================================
+   UPLOAD PAGE FIX: teddy bubble + better form look
+   ========================================================= */
+
+/* ---- Teddy + bubble: header ke neeche na dabe ---- */
+.center-pet{
+  margin-top:0;
+  padding-top:64px;      /* bubble ke liye jagah */
+  padding-bottom:8px;
+  position:relative;
+  z-index:5;
+}
+.teddy-pet{position:relative;z-index:5}
+.teddy-bubble{
+  top:auto;
+  bottom:calc(100% + 10px);
+  left:50%;
+  transform:translateX(-50%);
+  z-index:10;
+  white-space:normal;
+  width:max-content;
+  max-width:min(280px,80vw);
+  text-align:center;
+  padding:9px 14px;
+  border-radius:16px;
+  font-size:12px;
+  line-height:1.4;
+  background:#f5f5f7;
+  color:#111;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+  animation:bubbleFloat2 3s ease-in-out infinite;
+}
+/* chhota sa tail neeche */
+.teddy-bubble::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-6px;
+  width:12px;height:12px;
+  background:inherit;
+  transform:translateX(-50%) rotate(45deg);
+  border-radius:2px;
+}
+@keyframes bubbleFloat2{
+  0%,100%{transform:translateX(-50%) translateY(0)}
+  50%{transform:translateX(-50%) translateY(-4px)}
 }
 
-/* Header */
-.top-header {
-    width: 100%;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: transparent;
+/* ---- Form ko card jaisa look ---- */
+.main-content{padding-top:8px}
+form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:18px 16px;
+  margin-top:8px;
+}
+form input,form textarea,form select{
+  margin:0;
+  background:var(--surface2);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px 16px;
+}
+form input:focus,form textarea:focus,form select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(255,45,85,.15);
 }
 
-.logo {
-    font-size: 24px;
-    font-weight: bold;
+/* ---- Select Video button: bada upload box ---- */
+.select-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  padding:28px 16px;
+  background:var(--surface2);
+  color:var(--text);
+  border:2px dashed #3a3a46;
+  border-radius:16px;
+  font-size:16px;
+  font-weight:600;
+  transition:border-color .2s,background .2s,transform .15s;
 }
+.select-btn i{font-size:22px;color:var(--accent)}
+.select-btn:hover{border-color:var(--accent);background:rgba(255,45,85,.06)}
+.select-btn:active{transform:scale(.98)}
 
-.profile-icon {
-    width: 42px;
-    height: 42px;
-    background: url('default.jpg');
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.2);
-    box-shadow: 0 0 10px rgba(0,0,0,0.4);
-    cursor: pointer;
+/* ---- Upload button ---- */
+form button[type="submit"],
+form button#uploadBtn,
+form > button:last-child{
+  margin-top:4px;
+  padding:14px;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),#ff6a3d);
+  color:#fff;
+  font-size:16px;
+  font-weight:700;
+  box-shadow:0 8px 20px rgba(255,45,85,.3);
 }
+form button:disabled{opacity:.5;box-shadow:none}
 
-/* Content Area */
-.main-content {
-    padding: 20px;
-    padding-bottom: 100px;
-}
-
-.welcome {
-    opacity: 0.7;
-    margin-bottom: 20px;
-}
-
-form input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: none;
-}
-
-form button {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    background: #3c3b3b;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* Bottom Navigation */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    
-    background: #070707bb;
-    backdrop-filter: blur(8px);
-    padding: 10px 0;
-    display: flex;
-    justify-content: space-around;
-}
-
-.nav-item {
-    text-align: center;
-    color: #bbb;
-    font-size: 14px;
-    padding: 8px 15px;
-    border-radius: 15px;
-}
-
-.nav-item span {
-    display: block;
-    font-size: 12px;
-    margin-top: 3px;
-}
-
-.active {
-    background: rgba(255,255,255,0.12);
-    color: white;
-}
-
-
-.select-btn {
-  width: 100%;
-  padding: 12px;
-  background: #242323;
-  color: white;
-  border-radius: 10px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.upload-popup {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.upload-popup.hidden {
-  display: none;
-}
-
-.popup-box {
-  background: white;
-  width: 80%;
-  max-width: 300px;
-  padding: 20px;
-  border-radius: 15px;
-  text-align: center;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: #ddd;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-top: 10px;
-}
-
-#progressFill {
-  height: 100%;
-  width: 0%;
-  background: black;
-  transition: width 0.3s ease;
-}
-.popup {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.popup.hidden {
-  display: none;
-}
-
-.popup-box {
-  background: white;
-  color: black;
-  padding: 20px;
-  width: 280px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.popup-box h3 {
-  margin-bottom: 8px;
-}
-
-.popup-box button {
-  margin-top: 15px;
-  padding: 8px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #000;
-  color: white;
-  cursor: pointer;
-}
-/* Overlay behind the popup */
-#customAlertOverlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.4);
-  z-index: 999;
-}
-
-/* Custom Alert Box */
-#customAlert {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgb(18, 17, 17);
-  color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  z-index: 1000;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  font-family: sans-serif;
-}
-
-/* Message paragraph */
-#customAlertMsg {
-  margin-bottom: 15px;
-  font-size: 16px;
-}
-
-/* OK Button */
-#customAlertBtn {
-  padding: 8px 16px;
-  background: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s;
-}
-
-#customAlertBtn:hover {
-  background: #0056b3;
-}
-.with-pet {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-/* Pet container */
-.teddy-pet {
-  position: relative;
-}
-
-/* Bubble */
-.teddy-bubble {
-  position: absolute;
-  top: -42px;
-  left: -20px;
-  background: #bfbaba;
-  padding: 6px 10px;
-  border-radius: 14px;
-  font-size: 11px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  animation: bubbleFloat 3s infinite;
-  white-space: nowrap;
-}
-
-/* Teddy body */
-.teddy {
-  width: 40px;
-  height: 40px;
-  background: #c98b59;
-  border-radius: 50%;
-  position: relative;
-  animation: idleFloat 3s ease-in-out infinite;
-}
-
-/* Ears */
-.ears::before,
-.ears::after {
-  content: "";
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  background: #c98b59;
-  border-radius: 50%;
-  top: -6px;
-}
-.ears::before { left: -6px; }
-.ears::after { right: -6px; }
-
-/* Face perfectly center */
-.face {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  text-align: center;
-}
-
-/* Eyes row */
-.eyes {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-}
-
-/* Eyes */
-.eye {
-  width: 4px;
-  height: 6px;
-  background: #000;
-  border-radius: 50%;
-  animation: blink 5s infinite;
-}
-
-/* Mouth just below eyes */
-.mouth {
-  width: 10px;
-  height: 5px;
-  border-bottom: 2px solid #000;
-  border-radius: 50%;
-  margin: 3px auto 0;
-}
-
-
-/* Hands */
-.hands {
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 4px;
-}
-.hand {
-  width: 8px;
-  height: 12px;
-  background: #c98b59;
-  border-radius: 10px;
-}
-
-/* Animations */
-@keyframes idleFloat {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0); }
-}
-
-@keyframes blink {
-  0%, 95%, 100% { height: 6px; }
-  96%, 99% { height: 1px; }
-}
-
-@keyframes bubbleFloat {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-  100% { transform: translateY(0); }
-}
-
-/* Jump */
-.jump {
-  animation: jump 0.6s;
-}
-@keyframes jump {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0); }
-}
-
-/* Clap */
-.clap .left {
-  animation: clapLeft 0.4s infinite;
-}
-.clap .right {
-  animation: clapRight 0.4s infinite;
-}
-@keyframes clapLeft {
-  0% { transform: rotate(0); }
-  50% { transform: rotate(20deg); }
-}
-@keyframes clapRight {
-  0% { transform: rotate(0); }
-  50% { transform: rotate(-20deg); }
-}
-/* Center teddy */
-.center-pet {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-}
-
-/* Bubble text black */
-.teddy-bubble {
-  color: #000;
-  font-weight: 500;
-}
-/* Sad face */
-.sad .mouth {
-  border-bottom: none;
-  border-top: 2px solid #000;
-}
-
-.sad {
-  animation: none;
-}
-/* Sleep mode */
-.sleep {
-  animation: none;
-  opacity: 0.9;
-}
-
-.sleep .eye {
-  height: 2px;
-}
-
-.sleep .mouth {
-  display: none;
-}
-/* Zzz text (ONLY in sleep) */
-.sleep .teddy::after {
-  content: "Zzz";
-  position: absolute;
-  top: -20px;
-  right: -18px;
-  font-size: 10px;
-  opacity: 1;
-  animation: zzzFloat 2s infinite;
-}
-
-.teddy::after {
-  content: "";
-  opacity: 0;
-}
-
-
-@keyframes zzzFloat {
-  0% { transform: translateY(0); opacity: 0.4; }
-  50% { transform: translateY(-6px); opacity: 1; }
-  100% { transform: translateY(-12px); opacity: 0; }
-}
-/* Tears */
-.sad .eye::after {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 1px;
-  width: 2px;
-  height: 6px;
-  background: #00aaff;
-  border-radius: 2px;
-  animation: tearDrop 1s infinite;
-}
-
-@keyframes tearDrop {
-  0% { opacity: 0; transform: translateY(0); }
-  50% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(6px); }
-}
-/* Dance animation */
-.dance {
-  animation: danceMove 0.6s infinite alternate;
-}
-
-@keyframes danceMove {
-  0% { transform: rotate(-5deg) translateY(0); }
-  100% { transform: rotate(5deg) translateY(-4px); }
-}
-/* ===== OVERLAY ===== */
-#privacyPopup {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-/* ===== CARD ===== */
-.privacyCard {
-  background: #09161e;
-  width: 90%;
-  max-width: 340px;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-  animation: popup 0.25s ease;
-  text-align: center;
-}
-
-@keyframes popup {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* ===== TITLE ===== */
-.privacyCard h3 {
-  font-size: 16px;
-  margin-bottom: 16px;
-  color: #ffffff;
-}
-
-/* ===== OPTIONS ===== */
-.privacyOptions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 12px;
-  background: #111;
-  cursor: pointer;
-  font-size: 15px;
-  border: 2px solid transparent;
-}
-
-/* hide radio */
-.option input {
-  display: none;
-}
-
-/* selected */
-.option:has(input:checked) {
-  background: #776e6e; 
-  color: #fff;
-}
-
-/* ===== BUTTON ===== */
-#confirmPrivacy {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 14px;
-  background: #111;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.fa,
-.fa-solid,
-.fa-regular,
-.fa-brands {
-  font-family: "Font Awesome 6 Free" !important;
-  font-weight: 900;
-}
-.hidden {
-  display: none !important;
+/* ---- Laptop pe bubble aur form thoda sahi ---- */
+@media (min-width:1024px){
+  .center-pet{padding-top:72px}
+  .main-content{max-width:560px}
 }

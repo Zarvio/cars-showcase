@@ -553,8 +553,8 @@ firebase.auth().onAuthStateChanged(async user => {
 
 
 // ---------- Supabase Config ----------
-const SUPABASE_URL = "https://bgscumoqgnlrcpehvwqy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_5Sf30aiZGl71F7-owfHAag_DIT0FSgL";
+const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_fcAvi5DEE_9n7yO9yxGR2A_B4aneu1H";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ----------------------
@@ -835,18 +835,18 @@ confirmDeleteBtn.addEventListener("click", async () => {
 
 
 const logoutBtn = document.getElementById("logoutBtn");
+const logoutPopup = document.getElementById("logoutPopup");
 
-logoutBtn?.addEventListener("click", () => {
+logoutBtn?.addEventListener("click", () => logoutPopup.classList.remove("hidden"));
+document.getElementById("logoutNo").onclick = () => logoutPopup.classList.add("hidden");
+document.getElementById("logoutYes").onclick = () => {
   firebase.auth().signOut()
-    .then(() => {
-      // Logout successful → redirect to login page
-      window.location.href = "main.html";
-    })
+    .then(() => { window.location.href = "main.html"; })
     .catch(err => {
       console.error("Logout failed:", err);
       alert("Logout failed. Try again.");
     });
-});
+};
 document.getElementById("saveCrop").onclick = async () => {
   const out = document.createElement("canvas");
   out.width = 300;

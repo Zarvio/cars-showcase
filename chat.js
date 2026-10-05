@@ -14,8 +14,8 @@ const firebaseConfig = {
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
 // ---------- Supabase Config ----------
-   const SUPABASE_URL = "https://bgscumoqgnlrcpehvwqy.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_5Sf30aiZGl71F7-owfHAag_DIT0FSgL";
+   const SUPABASE_URL = "https://lxbojhmvcauiuxahjwzk.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_fcAvi5DEE_9n7yO9yxGR2A_B4aneu1H";
 const supabaseClient = supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
@@ -202,9 +202,10 @@ if(chatDivMap[chatId]){
     div = document.createElement("div");
     div.className = "chat-item"; // default class, unread baad me add hoga
     chatDivMap[chatId] = div;
-    chatList.prepend(div); // latest chat top
+    chatList.appendChild(div);
 }
-
+div.dataset.time = last.time || 0;
+sortChatList();
 
       // 🔥 user data fetch
 firebase.database().ref("users/"+other).once("value").then(userSnap=>{
@@ -292,7 +293,7 @@ firebase.database().ref(`chats/${chatId}`).once("value").then(chatSnap => {
             div = document.createElement("div");
             div.className = "chat-item";
             chatDivMap[groupId] = div;
-            chatList.prepend(div);
+            chatList.appendChild(div);
         }
 
         // 🔥 COUNT UNREAD GROUP MESSAGES
@@ -300,6 +301,10 @@ firebase.database().ref("groupChats/"+groupId).on("value", chatSnap => {
 
 
   const msgs = chatSnap.val() || {};
+  let lastT = group.createdAt || 0;
+  Object.values(msgs).forEach(m => { if (m.time > lastT) lastT = m.time; });
+  div.dataset.time = lastT;
+  sortChatList();
   let unreadCount = 0;
 
   Object.entries(msgs).forEach(([key, m]) => {
@@ -491,7 +496,7 @@ typingIndicator.innerHTML = `
   <div class="msg received typing-msg">
     <div class="dp-space"></div>
     <div class="bubble typing-bubble">
-      <span class="jump-text">${user.username} is typing</span>
+      <span class="typing-dots"><span></span><span></span><span></span></span>
     </div>
   </div>
 `;
@@ -554,7 +559,7 @@ typingRefListener.on("value", snap => {
           typingDiv.innerHTML = `
             <div class="dp-space"></div>
             <div class="bubble typing-bubble">
-              <span class="jump-text">${user.username} is typing</span>
+              <span class="typing-dots"><span></span><span></span><span></span></span>
             </div>
           `;
 
@@ -1511,50 +1516,6 @@ if(editingMessageId && !inputClicked && !replyClicked && !optionsClicked && e.ta
         }
     },0);
 }
-
-
-
-
-// cooming soon wala popup audio call
-
-
-const comingSoonPopup = document.getElementById("comingSoonPopup");
-const closePopup = document.getElementById("closePopup");
-// Leave Group button click
-document.getElementById("leaveGroupBtn").addEventListener("click", () => {
-  document.getElementById("leaveGroupPopup").classList.remove("hidden");
-});
-
-// Cancel button
-document.getElementById("cancelLeaveBtn").addEventListener("click", () => {
-  document.getElementById("leaveGroupPopup").classList.add("hidden");
-});
-
-// Confirm Leave button
-document.getElementById("confirmLeaveBtn").addEventListener("click", leaveGroup);
-
-// audio call button
-document.getElementById("audioCallBtn")?.addEventListener("click", () => {
-  comingSoonPopup.classList.remove("hidden");
-});
-
-// video call button
-document.getElementById("videoCallBtn")?.addEventListener("click", () => {
-  comingSoonPopup.classList.remove("hidden");
-});
-
-// close popup
-closePopup.addEventListener("click", () => {
-  comingSoonPopup.classList.add("hidden");
-});
-
-
-// cooming soon wala popup audio call
-
-
-
-
-
   });
 
 
@@ -2487,3 +2448,57 @@ function leaveGroup(){
 
 }
 
+// cooming soon wala popup audio call
+
+
+const comingSoonPopup = document.getElementById("comingSoonPopup");
+const closePopup = document.getElementById("closePopup");
+// Leave Group button click
+document.getElementById("leaveGroupBtn").addEventListener("click", () => {
+  document.getElementById("leaveGroupPopup").classList.remove("hidden");
+});
+
+// Cancel button
+document.getElementById("cancelLeaveBtn").addEventListener("click", () => {
+  document.getElementById("leaveGroupPopup").classList.add("hidden");
+});
+
+// Confirm Leave button
+document.getElementById("confirmLeaveBtn").addEventListener("click", leaveGroup);
+
+// audio call button
+document.getElementById("audioCallBtn")?.addEventListener("click", () => {
+  comingSoonPopup.classList.remove("hidden");
+});
+
+// video call button
+document.getElementById("videoCallBtn")?.addEventListener("click", () => {
+  comingSoonPopup.classList.remove("hidden");
+});
+
+// close popup
+closePopup.addEventListener("click", () => {
+  comingSoonPopup.classList.add("hidden");
+});
+// ---- typing 2.5 sec ruk jaye ya input khali ho to dots hata do ----
+let typingIdleTimer;
+function stopTyping() {
+  if (selectedUser) {
+    const chatId = getChatId(currentUser, selectedUser);
+    firebase.database().ref(`typing/${chatId}/${currentUser}`).set(false);
+  }
+  if (selectedGroup) {
+    firebase.database().ref(`groupTyping/${selectedGroup}/${currentUser}`).set(false);
+  }
+}
+msgInput.addEventListener("input", () => {
+  clearTimeout(typingIdleTimer);
+  if (!msgInput.value.trim()) { stopTyping(); return; }
+  typingIdleTimer = setTimeout(stopTyping, 2500);
+});
+// ---- chat list ko last message time se sort karo (naya upar) ----
+function sortChatList(){
+  const items = Array.from(chatList.children);
+  items.sort((a, b) => (Number(b.dataset.time) || 0) - (Number(a.dataset.time) || 0));
+  items.forEach(el => chatList.appendChild(el));
+}

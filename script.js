@@ -282,20 +282,41 @@ function clearFeed() {
 }
 
 // ==============================
-// 🔽 LAZY LOAD (sirf visible video load hogi)
+// 🔽 LAZY LOAD + PROGRESSIVE VIDEO BUFFER
 // ==============================
+
 const lazyMap = new WeakMap(); // box -> media
+
+// First 3 videos ko priority milegi
+const INITIAL_VIDEO_COUNT = 3;
+
+// Video ko viewport ke thoda pehle load karna
 const lazyObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
-    const media = lazyMap.get(entry.target);
-    if (media && media.dataset.src) {
+
+    const box = entry.target;
+    const media = lazyMap.get(box);
+
+    if (!media) return;
+
+    // Agar video/image ka source abhi pending hai
+    if (media.dataset.src) {
       media.src = media.dataset.src;
       delete media.dataset.src;
+
+      // Video ko browser ke through progressive buffering allow karo
+      if (media.tagName === "VIDEO") {
+        media.preload = "auto";
+        media.load();
+      }
     }
-    lazyObserver.unobserve(entry.target);
+
+    lazyObserver.unobserve(box);
   });
-}, { rootMargin: "100px 0px" }); // screen se thoda hi pehle load shuru
+}, {
+  rootMargin: "300px 0px"
+});
 
 // ==============================
 // 📺 DISPLAY VIDEOS
@@ -313,7 +334,12 @@ function displayVideos(posts) {
   batchIndex++;
 
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  uniqueBatch.forEach(post => renderPost(post, isMobile));
+  uniqueBatch.forEach((post, index) => {
+  // First batch ke first 3 videos ko priority preload milega
+  const priorityVideo = batchIndex === 1 && index < INITIAL_VIDEO_COUNT;
+
+  renderPost(post, isMobile, priorityVideo);
+});
 
   setTimeout(fillIfShort, 300);
 }
@@ -325,7 +351,7 @@ function fillIfShort() {
   }
 }
 
-function renderPost(post, isMobile) {
+function renderPost(post, isMobile, priorityVideo = false) {
   const box = document.createElement("div");
   box.classList.add("pin-box");
 
@@ -368,15 +394,36 @@ function renderPost(post, isMobile) {
   const isVideo = (post.file_type || "").startsWith("video");
   let media;
   if (isVideo && isMobile) {
-    media = document.createElement("img");
+
+  media = document.createElement("img");
+
+  if (priorityVideo) {
+    // Mobile ke first 3 videos ke thumbnails immediately load honge
+    media.src = post.thumb_url || "dp.jpg";
+  } else {
+    // Baaki thumbnails lazy load hongi
     media.dataset.src = post.thumb_url || "dp.jpg";
-  } else if (isVideo) {
-    media = document.createElement("video");
+  }
+
+} else if (isVideo) {
+  media = document.createElement("video");
+
+  media.muted = true;
+  media.loop = true;
+  media.playsInline = true;
+
+  // Thumbnail pehle dikhegi
+  media.poster = post.thumb_url || "";
+
+  if (priorityVideo) {
+    // First 3 videos ko immediately progressive loading start
+    media.src = post.file_url;
+    media.preload = "auto";
+  } else {
+    // Baaki videos viewport ke paas aane par load hongi
     media.dataset.src = post.file_url;
-    media.muted = true;
-    media.loop = true;
-    media.playsInline = true;
     media.preload = "metadata";
+  }
   } else {
     media = document.createElement("img");
     media.dataset.src = post.file_url;
@@ -395,7 +442,12 @@ function renderPost(post, isMobile) {
   main.appendChild(box);
 
   lazyMap.set(box, media);
+
+// First 3 priority videos already loading hain,
+// isliye unhe observer ki zarurat nahi.
+if (!priorityVideo) {
   lazyObserver.observe(box);
+}
 }
 
 // ==============================
@@ -465,14 +517,28 @@ function openModal(post) {
   const hideSkel = () => removeModalSkeleton();
 
   if (isVideo) {
-    modalVideo.onloadeddata = hideSkel;
-    modalVideo.oncanplay = hideSkel;
-    modalVideo.onerror = hideSkel;
-    modalVideo.controls = false;
-    modalVideo.src = post.file_url;
-    modalVideo.load();
+  modalVideo.onloadeddata = hideSkel;
+  modalVideo.oncanplay = hideSkel;
+  modalVideo.onerror = hideSkel;
+
+  modalVideo.controls = false;
+
+  // Progressive buffering
+  modalVideo.preload = "auto";
+  modalVideo.src = post.file_url;
+
+  modalVideo.load();
+
+  // Video ready hote hi play
+  modalVideo.addEventListener("canplay", function startVideo() {
+    modalVideo.removeEventListener("canplay", startVideo);
+
     modalVideo.play().catch(() => {});
-    setTimeout(hideSkel, 4000);
+  });
+
+  // Loading stuck hone par skeleton ko forever mat rakho
+  setTimeout(hideSkel, 4000);
+
   } else {
     modalImage.onload = hideSkel;
     modalImage.onerror = hideSkel;
